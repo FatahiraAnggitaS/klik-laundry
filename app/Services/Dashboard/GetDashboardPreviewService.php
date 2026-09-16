@@ -220,7 +220,7 @@ final class GetDashboardPreviewService
     {
         return [
             ['title' => 'Risk validation', 'description' => 'Domain contract siap; sign-off dan sandbox live masih blocker', 'status' => 'blocked'],
-            ['title' => 'Foundation engineering', 'description' => 'SQLite reference slice dan CI tersedia; hosted run masih pending', 'status' => 'current'],
+            ['title' => 'Foundation engineering', 'description' => 'SQLite reference slice dan hosted CI PostgreSQL/Redis sudah lulus', 'status' => 'completed'],
             ['title' => 'Identity & core operations', 'description' => 'Authentication, tenancy, order, dispatch, dan payment', 'status' => 'later'],
         ];
     }

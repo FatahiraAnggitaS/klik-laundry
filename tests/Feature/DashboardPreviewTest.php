@@ -12,6 +12,7 @@ it('renders the default customer dashboard without a database', function () {
             ->has('metrics', 4)
             ->has('workItems', 3)
             ->has('milestones', 3)
+            ->where('milestones.1.status', 'completed')
         );
 });
 

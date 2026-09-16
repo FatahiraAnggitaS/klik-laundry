@@ -15,7 +15,7 @@ export function MilestoneCard({ milestones, role }: MilestoneCardProps) {
                     <p className="text-xs font-bold uppercase tracking-[0.14em] text-muted">Project foundation</p>
                     <h2 className="mt-2 text-lg font-black tracking-[-0.025em] text-ink">Roadmap implementasi</h2>
                 </div>
-                <span className="rounded-full bg-brand-50 px-2.5 py-1 text-[11px] font-bold text-brand-700">M1 · active</span>
+                <span className="rounded-full bg-success-soft px-2.5 py-1 text-[11px] font-bold text-success">M1 · complete</span>
             </div>
 
             <ol className="mt-6 space-y-0">
@@ -28,6 +28,8 @@ export function MilestoneCard({ milestones, role }: MilestoneCardProps) {
                             className={`relative mt-1 size-[15px] shrink-0 rounded-full border-[3px] ${
                                 milestone.status === 'current'
                                     ? 'border-accent bg-brand-700'
+                                    : milestone.status === 'completed'
+                                      ? 'border-success bg-success-soft'
                                     : milestone.status === 'blocked'
                                       ? 'border-warning bg-warning-soft'
                                     : 'border-line bg-surface'

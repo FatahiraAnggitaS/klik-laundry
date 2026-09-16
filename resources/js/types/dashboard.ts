@@ -55,7 +55,7 @@ export interface WorkItem {
 export interface Milestone {
     title: string;
     description: string;
-    status: 'blocked' | 'current' | 'later';
+    status: 'blocked' | 'completed' | 'current' | 'later';
 }
 
 export interface DashboardPageProps {

@@ -5,7 +5,7 @@
 ## Status milestone
 
 - Milestone 0: **in progress — external blockers**. Contract, threat model, wireflow, dan sandbox harness tersedia; live provider/legal sign-off belum ada.
-- Milestone 1: **in progress — secret scan rerun pending**. Persistence slice, boundary enforcement, safe error mapping, static analysis, dan workflow CI sudah tersedia.
+- Milestone 1: **selesai — CI hijau pada run #2 (commit 9b23f68)**. Persistence slice, boundary enforcement, safe error mapping, static analysis, dan workflow CI PostgreSQL 18/Redis 8 terverifikasi hosted.
 - Milestone 2 dan seterusnya: belum diimplementasikan.
 
 Authentication, actor authorization, tenant isolation, order/payment mutation, payout, dan production integration belum tersedia. `User` masih model Laravel baseline; Policy baru dibuat saat identity dan actor Milestone 2 memiliki behavior nyata.
@@ -82,7 +82,7 @@ Architecture tests memblokir Controller/Form Request dari persistence detail, Se
 
 Workflow `.github/workflows/ci.yml` menjalankan install dari lockfile, manifest validation, migration/test PostgreSQL, Redis smoke, Larastan, Pint, ESLint, TypeScript, production build, dependency audit, dan Gitleaks CLI yang dipin ke image digest. Workflow mendukung manual dispatch, concurrency cancellation, dan timeout; syntax telah diverifikasi lokal dengan actionlint 1.7.12.
 
-Hosted run pertama pada commit `9c5d770` membuktikan job quality lulus penuh pada PostgreSQL 18 dan Redis 8. Job secret gagal pada contoh credential palsu di dokumentasi skill. Contoh sudah di-redact dan satu fingerprint historis sudah ditambahkan; hosted rerun masih diperlukan sebelum Milestone 1 dinyatakan selesai.
+Hosted run pertama pada commit `9c5d770` membuktikan job quality lulus penuh pada PostgreSQL 18 dan Redis 8. Job secret awal gagal pada contoh credential palsu di dokumentasi skill. Contoh kemudian di-redact dan satu fingerprint historis ditambahkan. [Hosted run #2](https://github.com/FatahiraAnggitaS/klik-laundry/actions/runs/35100746075) lulus penuh dan memenuhi exit criteria Milestone 1.
 
 `.gitleaksignore` hanya memuat satu fingerprint historis untuk contoh credential palsu pada dokumentasi skill; contoh aktif sudah diganti menjadi `[REDACTED]`. Tidak ada allowlist path atau rule global.
 

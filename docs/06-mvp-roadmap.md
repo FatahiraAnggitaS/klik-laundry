@@ -2,7 +2,7 @@
 
 > Roadmap menggunakan [`01-product-scope.md`](01-product-scope.md) sebagai scope contract dan [`02-architecture.md`](02-architecture.md) sebagai architecture contract. Milestone berbasis outcome, bukan estimasi kalender.
 
-> Status per 16 September 2026: Milestone 0 tetap memiliki external blocker. Milestone 1 **in progress — secret scan rerun pending**. Hosted CI telah membuktikan PostgreSQL/Redis dan seluruh quality gate; secret job awal gagal pada contoh credential palsu. Perbaikan dan fingerprint pengecualian yang sempit sudah disiapkan lokal. Authentication tetap Milestone 2.
+> Status per 16 September 2026: Milestone 0 tetap memiliki external blocker. Milestone 1 **selesai — hosted CI hijau**. PostgreSQL 18, Redis 8, seluruh quality gate, dependency audit, dan secret scan telah lulus. Authentication tetap Milestone 2.
 
 ## Prinsip delivery
 
@@ -53,7 +53,7 @@ Exit criteria:
 
 ## Milestone 1 — Foundation dan architecture enforcement
 
-> Status implementasi: **in progress — secret scan rerun pending**. SQLite menjadi default local/test. Hosted CI PostgreSQL/Redis dan quality job lulus; secret scan fix menunggu commit, push, dan hosted rerun.
+> Status implementasi: **selesai — CI hijau pada run #2 (commit 9b23f68)**. SQLite menjadi default local/test. Hosted CI PostgreSQL/Redis, quality job, dan secret scan lulus.
 
 Deliverables:
 
