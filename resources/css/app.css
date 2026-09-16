@@ -1,0 +1,127 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../js/**/*.{ts,tsx}';
+
+@theme {
+    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+
+    --color-canvas: #f6f8f7;
+    --color-surface: #ffffff;
+    --color-ink: #183a36;
+    --color-copy: #385650;
+    --color-muted: #71847f;
+    --color-subtle: #8d9b97;
+    --color-line: #e2e9e5;
+    --color-line-strong: #cad8d1;
+    --color-brand-50: #eef7f2;
+    --color-brand-100: #dff0e7;
+    --color-brand-500: #2f8a78;
+    --color-brand-600: #247467;
+    --color-brand-700: #1e5d54;
+    --color-brand-900: #173f3b;
+    --color-brand-950: #123633;
+    --color-accent: #d9ff74;
+    --color-accent-soft: #e8ffa7;
+    --color-info-soft: #e9f4fd;
+    --color-info: #2f7398;
+    --color-success-soft: #e7f6ed;
+    --color-success: #237a52;
+    --color-warning-soft: #fff2d8;
+    --color-warning: #96631a;
+    --color-violet-soft: #f0eafd;
+    --color-violet: #7351a6;
+    --color-neutral-soft: #edf2ef;
+    --color-neutral: #60736e;
+
+    --radius-panel: 1.375rem;
+    --shadow-panel: 0 18px 50px rgb(25 58 54 / 0.05);
+    --shadow-panel-hover: 0 22px 55px rgb(25 58 54 / 0.09);
+    --shadow-floating: 0 24px 70px rgb(18 54 51 / 0.18);
+}
+
+@layer base {
+    html {
+        scroll-behavior: smooth;
+    }
+
+    body {
+        min-width: 320px;
+        background: var(--color-canvas);
+        color: var(--color-ink);
+    }
+
+    button,
+    summary,
+    a,
+    input {
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    :focus-visible {
+        scroll-margin-block: 6rem;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        html {
+            scroll-behavior: auto;
+        }
+
+        *,
+        *::before,
+        *::after {
+            scroll-behavior: auto !important;
+            transition-duration: 0.01ms !important;
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+        }
+    }
+}
+
+@layer utilities {
+    .text-balance {
+        text-wrap: balance;
+    }
+
+    .scrollbar-hidden {
+        scrollbar-width: none;
+    }
+
+    .scrollbar-hidden::-webkit-scrollbar {
+        display: none;
+    }
+
+    .sidebar-glow::before {
+        position: absolute;
+        top: -7rem;
+        right: -8rem;
+        width: 18rem;
+        height: 18rem;
+        border-radius: 9999px;
+        background: rgba(217, 255, 116, 0.09);
+        filter: blur(12px);
+        content: '';
+    }
+
+    .sidebar-glow::after {
+        position: absolute;
+        bottom: -8rem;
+        left: -8rem;
+        width: 18rem;
+        height: 18rem;
+        border-radius: 9999px;
+        background: rgba(72, 176, 163, 0.1);
+        filter: blur(18px);
+        content: '';
+    }
+
+    .hero-grid {
+        background-image: linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+        background-size: 34px 34px;
+        mask-image: linear-gradient(to right, transparent 5%, black 75%);
+    }
+
+}

@@ -1,0 +1,117 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    runs-on: ubuntu-24.04
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_DB: klik_laundry_test
+          POSTGRES_USER: klik_laundry
+          POSTGRES_PASSWORD: test-only-password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U klik_laundry -d klik_laundry_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:8-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      APP_ENV: testing
+      APP_DEBUG: false
+      DB_CONNECTION: pgsql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 5432
+      DB_DATABASE: klik_laundry_test
+      DB_USERNAME: klik_laundry
+      DB_PASSWORD: test-only-password
+      REDIS_CLIENT: phpredis
+      REDIS_HOST: 127.0.0.1
+      REDIS_PORT: 6379
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: pdo_pgsql, redis
+          coverage: none
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install PHP dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Prepare application
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+          php artisan migrate --force
+
+      - name: Verify Redis connection
+        run: php artisan tinker --execute="Illuminate\Support\Facades\Redis::set('ci-health', 'ok'); throw_unless(Illuminate\Support\Facades\Redis::get('ci-health') === 'ok', new RuntimeException('Redis unavailable'));"
+
+      - name: Backend tests
+        run: composer test
+
+      - name: Static analysis
+        run: composer analyse
+
+      - name: PHP formatting
+        run: composer format:check
+
+      - name: Frontend lint
+        run: npm run lint
+
+      - name: TypeScript
+        run: npm run types:check
+
+      - name: Production build
+        run: npm run build
+
+      - name: Composer audit
+        run: composer audit --locked --no-interaction
+
+      - name: npm audit
+        run: npm audit --audit-level=high
+
+  secrets:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout full history
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Secret scan
+        uses: gitleaks/gitleaks-action@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
