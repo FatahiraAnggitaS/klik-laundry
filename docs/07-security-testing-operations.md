@@ -96,6 +96,7 @@ Layer separation adalah control security: ia mencegah endpoint/job baru melewati
 - `APP_KEY`, Duitku key, database/Redis/storage credential tidak memakai `VITE_*` atau Inertia props.
 - CI menggunakan encrypted secret dan sandbox credential; untrusted fork tidak mendapat production secret.
 - Secret scan berjalan pada staged diff/CI.
+- Pengecualian secret scan harus berupa fingerprint temuan yang spesifik dan memiliki alasan; jangan mengecualikan folder/source secara luas.
 - Secret yang pernah terekspos harus revoke/rotate dan diperiksa pada history/log/artifact.
 
 ## Test strategy per layer

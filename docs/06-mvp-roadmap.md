@@ -2,7 +2,7 @@
 
 > Roadmap menggunakan [`01-product-scope.md`](01-product-scope.md) sebagai scope contract dan [`02-architecture.md`](02-architecture.md) sebagai architecture contract. Milestone berbasis outcome, bukan estimasi kalender.
 
-> Status per 16 September 2026: Milestone 0 tetap memiliki external blocker. Milestone 1 **in progress** dengan SQLite local-first, reference persistence slice, layer enforcement, safe domain exception mapping, Larastan, dan workflow CI PostgreSQL/Redis. Hosted CI belum pernah dijalankan sehingga exit criteria belum dinyatakan selesai. Authentication tetap Milestone 2.
+> Status per 16 September 2026: Milestone 0 tetap memiliki external blocker. Milestone 1 **in progress — secret scan rerun pending**. Hosted CI telah membuktikan PostgreSQL/Redis dan seluruh quality gate; secret job awal gagal pada contoh credential palsu. Perbaikan dan fingerprint pengecualian yang sempit sudah disiapkan lokal. Authentication tetap Milestone 2.
 
 ## Prinsip delivery
 
@@ -53,7 +53,7 @@ Exit criteria:
 
 ## Milestone 1 — Foundation dan architecture enforcement
 
-> Status implementasi: **in progress — hosted CI verification pending**. SQLite menjadi default local/test sesuai keputusan terbaru; PostgreSQL compatibility diuji oleh workflow CI. Redis tersedia sebagai service CI dan belum diwajibkan untuk local foundation.
+> Status implementasi: **in progress — secret scan rerun pending**. SQLite menjadi default local/test. Hosted CI PostgreSQL/Redis dan quality job lulus; secret scan fix menunggu commit, push, dan hosted rerun.
 
 Deliverables:
 
