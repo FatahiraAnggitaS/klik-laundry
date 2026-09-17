@@ -26,6 +26,8 @@
 - Super User hanya dibuat melalui interactive command yang tidak menerima/mencetak password pada argument/log.
 - Tidak ada impersonation, web signup Super User, role promotion, atau shared owner credential.
 
+Implementasi M2 menggunakan `auth_version` yang distempel saat login. Middleware account-status membandingkan versi tersebut pada route project dan seluruh route account settings Fortify; suspend, close, serta password reset/update menaikkan versi dan menghapus database sessions. Re-auth action terpisah memverifikasi password dan TOTP, berlaku 900 detik, dan tidak digantikan oleh `password.confirm`. Passkeys tidak diaktifkan.
+
 ### Authorization dan layer defense
 
 - Controller dan Form Request tidak mengakses/query Model, Repository, DB, Gateway, atau business Job/Event.
@@ -202,6 +204,8 @@ Test tidak boleh ditandai lulus ketika di-skip. Migration compatibility, sandbox
 Log teknis memuat correlation ID, safe actor/Tenant/order/payment public ID, event, result, latency, dan error class. Redact password, TOTP/recovery code, token, cookie/session/auth header, Duitku credential/signature, raw callback, PII, dan signed URL.
 
 Business audit terpisah dari debug log, append-only, dan memuat actor, action, target, reason, safe before/after, serta timestamp. Audit tidak boleh bergantung pada frontend event.
+
+Pada M2, profile audit hanya mencatat boolean field-changed; payout audit hanya memuat status verifikasi dan bank. Phone, email, nama personal, plaintext/ciphertext rekening, password/hash, secret TOTP, serta recovery code tidak disalin ke audit.
 
 ### Metrics dan alert
 

@@ -2,7 +2,7 @@
 
 > Roadmap menggunakan [`01-product-scope.md`](01-product-scope.md) sebagai scope contract dan [`02-architecture.md`](02-architecture.md) sebagai architecture contract. Milestone berbasis outcome, bukan estimasi kalender.
 
-> Status per 16 September 2026: Milestone 0 tetap memiliki external blocker. Milestone 1 **selesai — hosted CI hijau**. PostgreSQL 18, Redis 8, seluruh quality gate, dependency audit, dan secret scan telah lulus. Authentication tetap Milestone 2.
+> Status per 17 September 2026: Milestone 0 tetap memiliki external blocker. Milestone 1 **selesai — hosted CI hijau**. Implementasi Milestone 2 lengkap dan seluruh gate lokal lulus; status final menunggu commit/push serta hosted PostgreSQL 18/Redis 8 CI hijau.
 
 ## Prinsip delivery
 
@@ -73,6 +73,8 @@ Exit criteria:
 - Tidak ada secret atau debug artifact pada tracked files.
 
 ## Milestone 2 — Identity, Tenant, dan Super User
+
+> Status implementasi per 17 September 2026: **implementation complete locally — hosted CI pending**. Session auth Fortify, lifecycle Tenant, payout account terenkripsi, re-auth sensitif, audit, isolation tests, responsive Inertia UI, dan migration round-trip SQLite telah tersedia. Milestone baru dinyatakan selesai setelah commit final dipush dan hosted PostgreSQL 18/Redis 8 CI hijau.
 
 Deliverables:
 

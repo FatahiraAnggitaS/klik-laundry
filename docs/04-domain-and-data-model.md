@@ -62,6 +62,14 @@ MVP menggunakan satu role per user:
 - `driver`: `tenant_id` wajib dan hanya satu Tenant;
 - `super_user`: `tenant_id` null dan hanya satu akun aktif dari command aman.
 
+### Schema Milestone 2 yang terimplementasi
+
+Migration M2 mempertahankan user legacy sebagai Customer aktif, melakukan backfill `public_id` ULID, dan membiarkan phone legacy nullable karena data yang tidak tersedia tidak boleh dikarang. Semua registration baru tetap mewajibkan phone. `role_slot` unik menegakkan satu owner per Tenant dan satu Super User; `auth_version` mencabut session lama ketika password/status berubah.
+
+`tenants` menyimpan snapshot outlet awal hanya untuk onboarding. Outlet operasional dan readiness belum dibuat sebelum Milestone 3. Lifecycle yang diizinkan adalah pending/inactive menuju approved/active atau rejected/inactive; rejected dapat kembali pending melalui resubmission; approved active dapat suspended/reactivated; closure yang telah difinalkan menjadi terminal.
+
+`tenant_payout_accounts` mengenkripsi nama holder dan nomor rekening menggunakan encrypted cast server-side. Browser hanya menerima bank, holder masked, nomor masked, dan verification status. Perubahan rekening menyupersede record lama serta membuat current record baru berstatus pending. `activity_logs` append-only pada Model dan hanya menyimpan metadata before/after yang aman tanpa password, TOTP, recovery code, telepon, atau data rekening.
+
 ## Outlet, catalog, dan scheduling
 
 | Table | Column penting | Constraint/index penting |

@@ -2,6 +2,8 @@
 
 namespace Database\Factories;
 
+use App\Enums\UserRole;
+use App\Enums\UserStatus;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
@@ -25,8 +27,15 @@ class UserFactory extends Factory
     public function definition(): array
     {
         return [
+            'public_id' => (string) Str::ulid(),
+            'tenant_id' => null,
+            'role' => UserRole::Customer,
+            'status' => UserStatus::Active,
+            'auth_version' => 1,
+            'role_slot' => null,
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
+            'phone' => fake()->numerify('08##########'),
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),

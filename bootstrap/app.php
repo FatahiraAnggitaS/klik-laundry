@@ -1,6 +1,9 @@
 <?php
 
 use App\Exceptions\Domain\DomainException;
+use App\Http\Middleware\EnsureActiveIdentitySession;
+use App\Http\Middleware\EnsureRecentSensitiveAuthentication;
+use App\Http\Middleware\EnsureRequiredTwoFactorAuthentication;
 use App\Http\Middleware\HandleInertiaRequests;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -15,6 +18,12 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->alias([
+            'identity.active' => EnsureActiveIdentitySession::class,
+            'two-factor.required' => EnsureRequiredTwoFactorAuthentication::class,
+            'sensitive.confirmed' => EnsureRecentSensitiveAuthentication::class,
+        ]);
+
         $middleware->web(append: [
             HandleInertiaRequests::class,
         ]);

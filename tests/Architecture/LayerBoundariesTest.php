@@ -1,7 +1,19 @@
 <?php
 
+use App\Contracts\TransactionManagerInterface;
+use App\Gateways\Identity\FortifySensitiveAuthenticationVerifier;
+use App\Gateways\Identity\SensitiveAuthenticationVerifierInterface;
+use App\Infrastructure\LaravelTransactionManager;
+use App\Repositories\Contracts\ActivityLogRepositoryInterface;
+use App\Repositories\Contracts\PayoutAccountRepositoryInterface;
 use App\Repositories\Contracts\PlatformSettingRepositoryInterface;
+use App\Repositories\Contracts\TenantRepositoryInterface;
+use App\Repositories\Contracts\UserRepositoryInterface;
+use App\Repositories\Eloquent\EloquentActivityLogRepository;
+use App\Repositories\Eloquent\EloquentPayoutAccountRepository;
 use App\Repositories\Eloquent\EloquentPlatformSettingRepository;
+use App\Repositories\Eloquent\EloquentTenantRepository;
+use App\Repositories\Eloquent\EloquentUserRepository;
 use Illuminate\Support\Facades\File;
 
 function phpSourcesIn(string $directory): array
@@ -55,5 +67,11 @@ it('keeps repositories away from orchestration and external side effects', funct
 
 it('resolves repository contracts to their infrastructure implementations', function () {
     expect(app(PlatformSettingRepositoryInterface::class))
-        ->toBeInstanceOf(EloquentPlatformSettingRepository::class);
+        ->toBeInstanceOf(EloquentPlatformSettingRepository::class)
+        ->and(app(UserRepositoryInterface::class))->toBeInstanceOf(EloquentUserRepository::class)
+        ->and(app(TenantRepositoryInterface::class))->toBeInstanceOf(EloquentTenantRepository::class)
+        ->and(app(PayoutAccountRepositoryInterface::class))->toBeInstanceOf(EloquentPayoutAccountRepository::class)
+        ->and(app(ActivityLogRepositoryInterface::class))->toBeInstanceOf(EloquentActivityLogRepository::class)
+        ->and(app(TransactionManagerInterface::class))->toBeInstanceOf(LaravelTransactionManager::class)
+        ->and(app(SensitiveAuthenticationVerifierInterface::class))->toBeInstanceOf(FortifySensitiveAuthenticationVerifier::class);
 });

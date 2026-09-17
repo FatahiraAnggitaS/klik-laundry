@@ -1,14 +1,15 @@
 # Implementation Baseline
 
-> Status aktual per 16 September 2026. Dokumen ini menjelaskan implementasi yang benar-benar tersedia dan tidak menggantikan product, domain, atau architecture contract.
+> Status aktual per 17 September 2026. Dokumen ini menjelaskan implementasi yang benar-benar tersedia dan tidak menggantikan product, domain, atau architecture contract.
 
 ## Status milestone
 
 - Milestone 0: **in progress — external blockers**. Contract, threat model, wireflow, dan sandbox harness tersedia; live provider/legal sign-off belum ada.
 - Milestone 1: **selesai — CI hijau pada run #2 (commit 9b23f68)**. Persistence slice, boundary enforcement, safe error mapping, static analysis, dan workflow CI PostgreSQL 18/Redis 8 terverifikasi hosted.
-- Milestone 2 dan seterusnya: belum diimplementasikan.
+- Milestone 2: **implementation complete locally — hosted CI pending**. Identity, Tenant lifecycle, Super User, payout account, security middleware, audit, serta responsive UI tersedia; status final menunggu commit/push dan hosted PostgreSQL 18/Redis 8 CI hijau.
+- Milestone 3 dan seterusnya: belum diimplementasikan.
 
-Authentication, actor authorization, tenant isolation, order/payment mutation, payout, dan production integration belum tersedia. `User` masih model Laravel baseline; Policy baru dibuat saat identity dan actor Milestone 2 memiliki behavior nyata.
+Order, Driver invitation, Outlet operasional, payment mutation, payout transaction, dan production integration belum tersedia. Payout pada M2 hanya mencakup onboarding rekening dan payout hold, bukan pemindahan dana.
 
 ## Runtime dan dependency aktual
 
@@ -16,6 +17,7 @@ Authentication, actor authorization, tenant isolation, order/payment mutation, p
 | --- | --- |
 | PHP lokal | 8.4.25 |
 | Laravel | 13.31.0 |
+| Laravel Fortify | 1.39.0 |
 | Inertia Laravel adapter | 3.0.0 |
 | Inertia React adapter | 3.0.3 |
 | React | 19.0.8 |
@@ -39,6 +41,16 @@ Schema domain pertama adalah `platform_settings` dengan record global awal:
 - payment maintenance disabled;
 - version 1;
 - optional updating actor untuk milestone authorization berikutnya.
+
+Schema M2 menambahkan `tenants`, identity/lifecycle/Fortify fields pada `users`, `tenant_payout_accounts`, dan `activity_logs`. Migration melakukan backfill ULID user legacy, reversible pada SQLite, serta memakai tipe/constraint portable untuk PostgreSQL. Payout PII disimpan dengan encrypted cast dan current account ditegakkan melalui nullable unique key.
+
+## Identity, Tenant, dan Super User
+
+Fortify menangani registration Customer, login/logout, reset/update password, email verification, password confirmation, TOTP, recovery codes, dan challenge. Passkeys dinonaktifkan. `/tenant/register` membuat Tenant pending/inactive dan owner; Driver tetap di luar scope hingga M5; Super User hanya dibuat melalui `php artisan super-user:provision` tanpa password argument/output.
+
+Route terautentikasi memakai account-status + `auth_version`; Tenant owner dan Super User wajib email verified serta TOTP confirmed. Sensitive mutation memerlukan password+TOTP re-auth yang berumur maksimal 15 menit. Lifecycle dan mutation mengikuti `Form Request -> Controller -> Service -> Repository`, dibungkus transaction bersama append-only audit.
+
+Workspace Inertia menyediakan profile, status blocker, onboarding/resubmission, payout readiness/hold, rekening masked, closure request, security settings, dan audit terbaru. Super User memperoleh tenant pagination, explicit review/lifecycle actions, payout hold, user suspension/reactivation, serta antrean rekening pending tanpa plaintext/ciphertext PII.
 
 ## Reference vertical slice
 
@@ -81,6 +93,8 @@ npm audit --audit-level=high
 Architecture tests memblokir Controller/Form Request dari persistence detail, Service dari Eloquent/query builder, dan Repository dari Service/Gateway/HTTP/Notification. Test juga memastikan contract resolve ke Eloquent implementation.
 
 Workflow `.github/workflows/ci.yml` menjalankan install dari lockfile, manifest validation, migration/test PostgreSQL, Redis smoke, Larastan, Pint, ESLint, TypeScript, production build, dependency audit, dan Gitleaks CLI yang dipin ke image digest. Workflow mendukung manual dispatch, concurrency cancellation, dan timeout; syntax telah diverifikasi lokal dengan actionlint 1.7.12.
+
+Verifikasi lokal M2 per 17 September 2026 mencakup 67 Pest test/755 assertion, migration forward/rollback pada SQLite terisolasi, Larastan tanpa error/baseline, Pint, ESLint, TypeScript, production build, Composer/npm audit, actionlint 1.7.12, secret pattern review, dan `git diff --check`. Gitleaks penuh serta PostgreSQL 18/Redis 8 tetap dibuktikan oleh hosted CI karena binary Gitleaks lokal tidak tersedia.
 
 Hosted run pertama pada commit `9c5d770` membuktikan job quality lulus penuh pada PostgreSQL 18 dan Redis 8. Job secret awal gagal pada contoh credential palsu di dokumentasi skill. Contoh kemudian di-redact dan satu fingerprint historis ditambahkan. [Hosted run #2](https://github.com/FatahiraAnggitaS/klik-laundry/actions/runs/35100746075) lulus penuh dan memenuhi exit criteria Milestone 1.
 

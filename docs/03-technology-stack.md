@@ -11,6 +11,7 @@ Versi di bawah adalah baseline major version untuk bootstrap, divalidasi pada 15
 | Runtime | PHP 8.5 | Menjalankan Laravel | Versi stable yang didukung Laravel 13; cek extension dan image production sebelum mengunci |
 | JavaScript runtime | Node.js 24 LTS + npm | Menjalankan Vite, lint, typecheck, dan frontend build | LTS memberi baseline CI/deploy yang stabil; npm dipilih agar setup familiar dan lockfile tunggal |
 | Backend | Laravel 13.x | HTTP, auth, validation, policy, Eloquent, queue, notification, cache | Convention lengkap mengurangi custom infrastructure; framework tetap harus di-upgrade berkala |
+| Identity | Laravel Fortify 1.39 | Primitive registration, login/logout, reset, email verification, password confirmation, dan TOTP/recovery code | Headless auth resmi cocok dengan Inertia UI; lifecycle Tenant, session revocation, re-auth sensitif, dan audit tetap milik Service project |
 | Frontend bridge | Inertia.js 3.x | Menghubungkan controller Laravel dengan page React | Tidak perlu API terpisah untuk web app; coupling ke server-driven navigation memang disengaja |
 | UI | React 19 + TypeScript | Presentation dan interaction | Sesuai official React starter kit; TypeScript menambah correctness dengan sedikit compile overhead |
 | Styling | Tailwind CSS 4 | Design system dan responsive UI | Sudah menjadi baseline starter kit; jaga reusable component agar class tidak terduplikasi |
@@ -59,7 +60,7 @@ Binding didefinisikan eksplisit di Service Provider. Jangan resolve dependency m
 
 ### Authentication dan authorization
 
-Gunakan built-in authentication dari official Laravel React starter kit, session/cookie auth, email verification, TOTP 2FA, middleware, gates/policies, dan enum untuk empat role: `customer`, `tenant_owner`, `driver`, dan `super_user`. TOTP wajib untuk Tenant owner dan Super User. Jangan memasang Sanctum kecuali public/mobile API benar-benar masuk scope, dan jangan memasang permission package untuk role MVP yang statis.
+Implementasi memakai Laravel Fortify 1.39 sebagai primitive session/cookie auth, email verification, reset/update password, serta TOTP/recovery code. UI tetap Inertia/React milik project. Middleware, gates/policies, lifecycle account/Tenant, `auth_version`, re-auth password+TOTP, tenant isolation, dan audit tetap diimplementasikan pada layer project. Empat role adalah `customer`, `tenant_owner`, `driver`, dan `super_user`; TOTP wajib untuk Tenant owner dan Super User. Passkeys dinonaktifkan, Sanctum belum diperlukan, dan tidak ada permission package untuk role MVP yang statis.
 
 Pros:
 
