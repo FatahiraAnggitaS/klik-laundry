@@ -43,6 +43,18 @@ final class Tenant extends Model
         return $this->hasMany(TenantPayoutAccount::class);
     }
 
+    /** @return HasMany<Outlet, $this> */
+    public function outlets(): HasMany
+    {
+        return $this->hasMany(Outlet::class);
+    }
+
+    /** @return HasMany<ServicePackage, $this> */
+    public function packages(): HasMany
+    {
+        return $this->hasMany(ServicePackage::class);
+    }
+
     /** @return array<string, string> */
     protected function casts(): array
     {

@@ -137,6 +137,8 @@ Gunakan static analysis/architecture test yang kompatibel dengan dependency aktu
 - PII visibility windows, re-auth requirement, session revocation, dan audit creation.
 - After-commit event semantics.
 
+M3 menambahkan verifikasi lifecycle outlet/package, seluruh blocker readiness, perubahan rekening payout yang menurunkan outlet aktif menjadi draft, konflik global radius, invariant fixed/per-kg, ownership/default address, serta lead time/horizon/weekday/blackout scheduling.
+
 Unit test Service boleh memakai fake Repository/Gateway untuk decision matrix. Race/transaction/constraint behavior wajib diuji lagi menggunakan database.
 
 ### Repository integration tests
@@ -169,6 +171,8 @@ Repository test tidak menguji business decision; ia membuktikan query/persistenc
 - Refund, Tenant payout, Driver payout, hold, report, dan masked CSV.
 - Private broadcast channel authorization dan minimal payload.
 - Upload validation, authorized temporary access, dan cleanup eligibility.
+
+Feature suite M3 juga membuktikan discovery guest/Customer, filter pricing, urutan/radius distance, dua kandidat alamat, cross-Tenant fail-closed, Tenant nonaktif read-only, serta query count bounded pada fixture 10 Tenant/20 outlet.
 
 ### Realtime, queue, dan browser tests
 

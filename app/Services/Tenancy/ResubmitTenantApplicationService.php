@@ -5,6 +5,7 @@ namespace App\Services\Tenancy;
 use App\Contracts\IdentityUser;
 use App\Contracts\TransactionManagerInterface;
 use App\DTOs\Audit\ActivityLogData;
+use App\DTOs\Outlets\OutletInputData;
 use App\DTOs\Tenancy\TenantResubmissionData;
 use App\Enums\TenantOnboardingStatus;
 use App\Enums\UserRole;
@@ -12,12 +13,14 @@ use App\Enums\UserStatus;
 use App\Exceptions\Domain\DomainActionConflict;
 use App\Exceptions\Domain\DomainRecordNotFound;
 use App\Repositories\Contracts\ActivityLogRepositoryInterface;
+use App\Repositories\Contracts\OutletRepositoryInterface;
 use App\Repositories\Contracts\TenantRepositoryInterface;
 
 final readonly class ResubmitTenantApplicationService
 {
     public function __construct(
         private TenantRepositoryInterface $tenants,
+        private OutletRepositoryInterface $outlets,
         private ActivityLogRepositoryInterface $activityLogs,
         private TransactionManagerInterface $transactions,
     ) {}
@@ -38,6 +41,18 @@ final readonly class ResubmitTenantApplicationService
             }
 
             $updated = $this->tenants->resubmit($tenant->id, $data);
+            $this->outlets->syncInitialDraft($tenant->id, new OutletInputData(
+                name: $data->outletName,
+                contactPhone: $data->phone,
+                address: $data->outletAddress,
+                city: $data->city,
+                area: $data->area,
+                latitude: $data->latitude,
+                longitude: $data->longitude,
+                serviceRadiusKm: 1,
+                pickupFee: 0,
+                deliveryFee: 0,
+            ));
             $this->activityLogs->record(new ActivityLogData(
                 tenantId: $tenant->id,
                 actorId: $actor->databaseId(),

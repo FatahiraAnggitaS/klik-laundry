@@ -12,6 +12,7 @@ use App\Enums\UserStatus;
 use App\Exceptions\Domain\DomainActionConflict;
 use App\Exceptions\Domain\DomainRecordNotFound;
 use App\Repositories\Contracts\ActivityLogRepositoryInterface;
+use App\Repositories\Contracts\OutletRepositoryInterface;
 use App\Repositories\Contracts\PayoutAccountRepositoryInterface;
 use App\Repositories\Contracts\TenantRepositoryInterface;
 
@@ -20,6 +21,7 @@ final readonly class SubmitPayoutAccountService
     public function __construct(
         private TenantRepositoryInterface $tenants,
         private PayoutAccountRepositoryInterface $accounts,
+        private OutletRepositoryInterface $outlets,
         private ActivityLogRepositoryInterface $activityLogs,
         private TransactionManagerInterface $transactions,
     ) {}
@@ -50,6 +52,7 @@ final readonly class SubmitPayoutAccountService
 
             $previous = $this->accounts->lockCurrentForTenant($tenantId);
             $this->accounts->supersedeCurrent($tenantId);
+            $deactivatedOutlets = $this->outlets->deactivateAllForTenant($tenantId);
             $account = $this->accounts->create(
                 tenantId: $tenantId,
                 submitterId: $actor->databaseId(),
@@ -66,7 +69,10 @@ final readonly class SubmitPayoutAccountService
                 subjectType: 'tenant_payout_account',
                 subjectId: $account->publicId,
                 before: ['verificationStatus' => $previous?->verificationStatus],
-                after: ['verificationStatus' => $account->verificationStatus, 'bankName' => $account->bankName],
+                after: [
+                    'verificationStatus' => $account->verificationStatus,
+                    'deactivatedOutlets' => $deactivatedOutlets,
+                ],
             ));
         });
     }

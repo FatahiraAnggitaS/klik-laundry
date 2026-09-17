@@ -5,11 +5,17 @@ use App\Gateways\Identity\FortifySensitiveAuthenticationVerifier;
 use App\Gateways\Identity\SensitiveAuthenticationVerifierInterface;
 use App\Infrastructure\LaravelTransactionManager;
 use App\Repositories\Contracts\ActivityLogRepositoryInterface;
+use App\Repositories\Contracts\CustomerAddressRepositoryInterface;
+use App\Repositories\Contracts\OutletRepositoryInterface;
+use App\Repositories\Contracts\PackageRepositoryInterface;
 use App\Repositories\Contracts\PayoutAccountRepositoryInterface;
 use App\Repositories\Contracts\PlatformSettingRepositoryInterface;
 use App\Repositories\Contracts\TenantRepositoryInterface;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Repositories\Eloquent\EloquentActivityLogRepository;
+use App\Repositories\Eloquent\EloquentCustomerAddressRepository;
+use App\Repositories\Eloquent\EloquentOutletRepository;
+use App\Repositories\Eloquent\EloquentPackageRepository;
 use App\Repositories\Eloquent\EloquentPayoutAccountRepository;
 use App\Repositories\Eloquent\EloquentPlatformSettingRepository;
 use App\Repositories\Eloquent\EloquentTenantRepository;
@@ -72,6 +78,9 @@ it('resolves repository contracts to their infrastructure implementations', func
         ->and(app(TenantRepositoryInterface::class))->toBeInstanceOf(EloquentTenantRepository::class)
         ->and(app(PayoutAccountRepositoryInterface::class))->toBeInstanceOf(EloquentPayoutAccountRepository::class)
         ->and(app(ActivityLogRepositoryInterface::class))->toBeInstanceOf(EloquentActivityLogRepository::class)
+        ->and(app(OutletRepositoryInterface::class))->toBeInstanceOf(EloquentOutletRepository::class)
+        ->and(app(PackageRepositoryInterface::class))->toBeInstanceOf(EloquentPackageRepository::class)
+        ->and(app(CustomerAddressRepositoryInterface::class))->toBeInstanceOf(EloquentCustomerAddressRepository::class)
         ->and(app(TransactionManagerInterface::class))->toBeInstanceOf(LaravelTransactionManager::class)
         ->and(app(SensitiveAuthenticationVerifierInterface::class))->toBeInstanceOf(FortifySensitiveAuthenticationVerifier::class);
 });

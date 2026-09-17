@@ -85,6 +85,14 @@ Outlet `draft` hanya dapat menjadi `active` jika Tenant approved/active, rekenin
 
 Paket berlaku pada seluruh outlet Tenant. Harga per outlet tidak tersedia. Package/outlet yang pernah dipakai hanya dapat diarsipkan.
 
+### Schema Milestone 3 yang terimplementasi
+
+Migration M3 membuat `outlets`, `outlet_operating_hours`, `outlet_slots`, `outlet_blackouts`, `packages`, dan `customer_addresses`. Snapshot outlet onboarding yang sudah ada dibackfill menjadi satu outlet `draft`; snapshot pada Tenant tetap dipertahankan sehingga rollback tidak kehilangan data. Registrasi Tenant baru langsung membuat outlet draft yang sama, sedangkan resubmission menyinkronkan draft awal.
+
+Radius disimpan sebagai integer meter, nominal fee/harga sebagai integer rupiah, durasi paket sebagai integer menit, dan koordinat sebagai decimal tujuh digit. Default address memakai nullable unique owner key agar invariant satu default per Customer portable di SQLite/PostgreSQL. Deaktivasi outlet/package adalah `active -> draft`; archive hanya dari draft dan terminal.
+
+SQLite local tidak menyediakan fungsi trigonometri secara konsisten. Repository discovery memakai bounding query lalu Haversine dan pagination di PHP untuk SQLite; PostgreSQL menghitung/filter/sort Haversine di SQL. Kedua jalur memakai eligibility dan hasil presentasi yang sama serta diuji pada CI masing-masing.
+
 ## Orders
 
 | Table | Column penting | Constraint/index penting |

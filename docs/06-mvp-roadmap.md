@@ -2,7 +2,7 @@
 
 > Roadmap menggunakan [`01-product-scope.md`](01-product-scope.md) sebagai scope contract dan [`02-architecture.md`](02-architecture.md) sebagai architecture contract. Milestone berbasis outcome, bukan estimasi kalender.
 
-> Status per 17 September 2026: Milestone 0 tetap memiliki external blocker. Milestone 1 dan Milestone 2 **selesai — hosted CI hijau**. PostgreSQL 18, Redis 8, seluruh quality gate, dependency audit, dan secret scan telah lulus untuk implementation commit M2 `3af7fdb`.
+> Status per 17 September 2026: Milestone 0 tetap memiliki external blocker. Milestone 1 dan Milestone 2 **selesai — hosted CI hijau**. Milestone 3 telah terimplementasi dan lulus verifikasi lokal; hosted PostgreSQL 18/Redis 8 CI masih menunggu implementation commit.
 
 ## Prinsip delivery
 
@@ -93,6 +93,8 @@ Exit criteria:
 - Sensitive action menolak stale re-auth dan mencatat audit tanpa secret.
 
 ## Milestone 3 — Outlet, catalog, discovery, dan scheduling
+
+> Status implementasi per 17 September 2026: **selesai secara lokal — hosted CI pending**. Schema/backfill reversible, lifecycle/readiness, discovery, address book, scheduling preview, responsive Inertia UI, isolation, dan query-count test telah tersedia. Status final baru diubah menjadi selesai setelah implementation commit dan hosted CI hijau.
 
 Deliverables:
 

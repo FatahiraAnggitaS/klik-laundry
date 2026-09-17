@@ -9,11 +9,17 @@ use App\Infrastructure\LaravelTransactionManager;
 use App\Listeners\StampAuthenticationSession;
 use App\Policies\IdentityPolicy;
 use App\Repositories\Contracts\ActivityLogRepositoryInterface;
+use App\Repositories\Contracts\CustomerAddressRepositoryInterface;
+use App\Repositories\Contracts\OutletRepositoryInterface;
+use App\Repositories\Contracts\PackageRepositoryInterface;
 use App\Repositories\Contracts\PayoutAccountRepositoryInterface;
 use App\Repositories\Contracts\PlatformSettingRepositoryInterface;
 use App\Repositories\Contracts\TenantRepositoryInterface;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Repositories\Eloquent\EloquentActivityLogRepository;
+use App\Repositories\Eloquent\EloquentCustomerAddressRepository;
+use App\Repositories\Eloquent\EloquentOutletRepository;
+use App\Repositories\Eloquent\EloquentPackageRepository;
 use App\Repositories\Eloquent\EloquentPayoutAccountRepository;
 use App\Repositories\Eloquent\EloquentPlatformSettingRepository;
 use App\Repositories\Eloquent\EloquentTenantRepository;
@@ -38,6 +44,9 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(TenantRepositoryInterface::class, EloquentTenantRepository::class);
         $this->app->bind(PayoutAccountRepositoryInterface::class, EloquentPayoutAccountRepository::class);
         $this->app->bind(ActivityLogRepositoryInterface::class, EloquentActivityLogRepository::class);
+        $this->app->bind(OutletRepositoryInterface::class, EloquentOutletRepository::class);
+        $this->app->bind(PackageRepositoryInterface::class, EloquentPackageRepository::class);
+        $this->app->bind(CustomerAddressRepositoryInterface::class, EloquentCustomerAddressRepository::class);
         $this->app->bind(TransactionManagerInterface::class, LaravelTransactionManager::class);
         $this->app->bind(SensitiveAuthenticationVerifierInterface::class, FortifySensitiveAuthenticationVerifier::class);
     }

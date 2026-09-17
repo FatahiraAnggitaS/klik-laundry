@@ -216,6 +216,7 @@ Untuk paket `fixed`, pembayaran dilakukan setelah order dibuat dan sebelum picku
 - Jika tidak ada Driver yang menerima pickup sampai slot terlewati, order tetap aktif dan mendapat indikator `pickup_delayed`. Tenant wajib memilih slot baru dengan alasan; sistem memberi notifikasi kepada Customer tanpa cancel/refund otomatis.
 - Jika tidak ada Driver yang menerima delivery sampai slot terlewati, order tetap `ready_for_delivery` dan mendapat indikator `delivery_delayed`. Tenant memilih slot baru dengan alasan dan Customer menerima notifikasi.
 - Paket/harga/alamat/nama customer yang relevan disnapshot ke order agar histori tidak berubah.
+- Durasi estimasi paket disimpan sebagai integer menit dan dapat ditampilkan sebagai jam/hari oleh UI.
 - Outlet, paket, dan Driver yang sudah direferensikan transaksi/task tidak dapat di-hard-delete; gunakan status inactive/archive. Draft yang belum pernah direferensikan boleh dihapus permanen setelah authorization.
 - Order, payment, payout, refund, commission, status history, dan audit record tidak memiliki action hard delete pada aplikasi MVP.
 
@@ -257,6 +258,7 @@ Untuk paket `fixed`, pembayaran dilakukan setelah order dibuat dan sebelum picku
 - Tanpa izin lokasi, Customer dapat browsing outlet berdasarkan kota/area, tetapi tidak dapat membuat order sampai koordinat pickup dan delivery tersedia serta lolos validasi radius.
 - Outlet hanya dapat diaktifkan jika Tenant berstatus `approved`, rekening payout sudah terverifikasi, profil/koordinat/radius lengkap, jam dan slot tersedia, serta minimal satu paket aktif.
 - Outlet yang belum lolos readiness check tetap `draft` dan tidak tampil kepada Customer. Tenant dapat menonaktifkan outlet untuk menghentikan order baru tanpa mengganggu order berjalan.
+- Deaktivasi sementara outlet/paket menggunakan transisi `active -> draft`; `archived` bersifat terminal dan hanya dapat dicapai dari `draft`.
 - Permintaan penutupan Tenant langsung menghentikan order baru, tetapi tidak menghapus atau membatalkan proses aktif. Super User hanya dapat memfinalisasi penutupan setelah order, refund, payout, dan adjustment terselesaikan.
 - Tenant yang ditutup kehilangan akses operasional; record transaksi dan audit dipertahankan sesuai retention policy.
 

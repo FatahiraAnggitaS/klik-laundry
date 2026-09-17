@@ -34,7 +34,11 @@ Input publik dibatasi pada area/name filter, pricing type, serta koordinat bila 
 
 `SearchOutletService` memuat global radius cap dan membentuk `OutletSearchCriteria` dari rule lifecycle Tenant, readiness outlet, package availability, serta `service_radius_m`. `OutletRepositoryInterface` menerjemahkan criteria tersebut menjadi bounding/Haversine query, sorting, dan pagination. Dengan demikian Service memiliki keputusan eligibility, sedangkan Repository hanya mengeksekusi query teknis secara efisien.
 
+Implementasi M3 memakai SQL Haversine pada PostgreSQL. Karena build SQLite PHP lokal tidak menjamin extension matematika, jalur SQLite mengambil kandidat dari bounding box lalu menghitung, memfilter, mengurutkan, dan memaginasi hasil di Repository. Batas global 20 km serta profil awal 20 outlet menjaga jalur local-first tetap terbatas; PostgreSQL tetap jalur production.
+
 Jika location permission ditolak, Customer boleh browse berdasarkan kota/area tanpa jarak. Order tidak dapat dibuat sebelum koordinat pickup dan delivery tersedia serta keduanya lolos radius. UI menyebut jarak sebagai perkiraan garis lurus, bukan driving distance/ETA.
+
+M3 menyediakan detail outlet yang mengevaluasi dua alamat tersimpan milik Customer sebagai order candidate tanpa membuat Order. Koordinat browser hanya dikirim setelah consent eksplisit dan tidak disimpan otomatis.
 
 ## 3. Membuat order dan scheduling
 
