@@ -1,6 +1,6 @@
 # Dokumentasi Laundry Multi-Tenant
 
-Dokumen ini adalah blueprint untuk MVP aplikasi laundry multi-tenant. Baseline keputusan divalidasi pada **15 September 2026**. Repository memiliki foundation Laravel/Inertia, prototype Milestone 0, vertical slice Identity/Tenant/Super User Milestone 2, serta implementasi lokal Outlet/Catalog/Discovery/Scheduling Milestone 3 per **17 September 2026**; versi aktual pada `composer.lock` dan `package-lock.json` tetap menjadi source of truth.
+Dokumen ini adalah blueprint untuk MVP aplikasi laundry multi-tenant. Baseline keputusan divalidasi pada **15 September 2026**. Repository memiliki foundation Laravel/Inertia, prototype Milestone 0, vertical slice Identity/Tenant/Super User Milestone 2, serta vertical slice Outlet/Catalog/Discovery/Scheduling Milestone 3 yang telah terverifikasi hosted CI per **17 September 2026**; versi aktual pada `composer.lock` dan `package-lock.json` tetap menjadi source of truth.
 
 ## Daftar dokumen
 

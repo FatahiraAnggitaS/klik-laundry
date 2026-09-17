@@ -7,7 +7,7 @@
 - Milestone 0: **in progress — external blockers**. Contract, threat model, wireflow, dan sandbox harness tersedia; live provider/legal sign-off belum ada.
 - Milestone 1: **selesai — CI hijau pada run #2 (commit 9b23f68)**. Persistence slice, boundary enforcement, safe error mapping, static analysis, dan workflow CI PostgreSQL 18/Redis 8 terverifikasi hosted.
 - Milestone 2: **selesai — hosted CI hijau pada run #4 (commit `3af7fdb`)**. Identity, Tenant lifecycle, Super User, payout account, security middleware, audit, responsive UI, PostgreSQL 18, Redis 8, dan Gitleaks telah terverifikasi.
-- Milestone 3: **selesai secara lokal — hosted CI pending**. Outlet, katalog, address book, discovery, scheduling preview, lifecycle/readiness, dan UI operasional tersedia; status final menunggu implementation commit serta PostgreSQL 18/Redis 8 hosted CI hijau.
+- Milestone 3: **selesai — hosted CI hijau pada run #5 (commit `2b9366d`)**. Outlet, katalog, address book, discovery, scheduling preview, lifecycle/readiness, responsive UI, PostgreSQL 18/Redis 8, dan Gitleaks telah terverifikasi.
 - Milestone 4 dan seterusnya: belum diimplementasikan.
 
 Order, Driver invitation, payment mutation, payout transaction, dan production integration belum tersedia. Payout hanya mencakup onboarding rekening dan payout hold, bukan pemindahan dana.
@@ -99,7 +99,9 @@ Workflow `.github/workflows/ci.yml` menjalankan install dari lockfile, manifest 
 
 Verifikasi lokal M2 per 17 September 2026 mencakup 67 Pest test/755 assertion, migration forward/rollback pada SQLite terisolasi, Larastan tanpa error/baseline, Pint, ESLint, TypeScript, production build, Composer/npm audit, actionlint 1.7.12, secret pattern review, dan `git diff --check`. Gitleaks penuh serta PostgreSQL 18/Redis 8 tetap dibuktikan oleh hosted CI karena binary Gitleaks lokal tidak tersedia.
 
-Verifikasi lokal M3 sementara mencakup 84 Pest test/1.069 assertion, migration forward/rollback dan backfill preservation SQLite, Larastan tanpa error, Pint, ESLint, TypeScript, production build, Composer/npm audit, actionlint 1.7.12, Gitleaks staged scan 8.30.1, query-count fixture 10 Tenant/20 outlet, dan `git diff --check`. Angka final serta bukti hosted CI dicatat setelah implementation commit dijalankan oleh GitHub Actions.
+Verifikasi lokal M3 mencakup 84 Pest test/1.069 assertion, migration forward/rollback dan backfill preservation SQLite, Larastan tanpa error, Pint, ESLint, TypeScript, production build, Composer/npm audit, actionlint 1.7.12, Gitleaks staged scan 8.30.1, query-count fixture 10 Tenant/20 outlet, dan `git diff --check`.
+
+[Hosted CI run #5](https://github.com/FatahiraAnggitaS/klik-laundry/actions/runs/35216592473) untuk implementation commit M3 `2b9366d` lulus pada kedua job: quality menggunakan PostgreSQL 18/Redis 8 dan secret scan menggunakan Gitleaks full-history.
 
 [Hosted CI run #4](https://github.com/FatahiraAnggitaS/klik-laundry/actions/runs/35181807014) untuk implementation commit M2 `3af7fdb` lulus pada kedua job: quality menggunakan PostgreSQL 18/Redis 8 dan secret scan Gitleaks full-history.
 
