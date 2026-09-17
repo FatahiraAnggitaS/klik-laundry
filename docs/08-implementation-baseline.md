@@ -8,7 +8,7 @@
 - Milestone 1: **selesai — CI hijau pada run #2 (commit 9b23f68)**. Persistence slice, boundary enforcement, safe error mapping, static analysis, dan workflow CI PostgreSQL 18/Redis 8 terverifikasi hosted.
 - Milestone 2: **selesai — hosted CI hijau pada run #4 (commit `3af7fdb`)**. Identity, Tenant lifecycle, Super User, payout account, security middleware, audit, responsive UI, PostgreSQL 18, Redis 8, dan Gitleaks telah terverifikasi.
 - Milestone 3: **selesai — hosted CI hijau pada run #5 (commit `2b9366d`)**. Outlet, katalog, address book, discovery, scheduling preview, lifecycle/readiness, responsive UI, PostgreSQL 18/Redis 8, dan Gitleaks telah terverifikasi.
-- Milestone 4: **implementation complete locally — hosted CI pending**. Order fixed/per-kg, snapshot/idempotency, lifecycle, isolation, monitoring, dan responsive Inertia UI tersedia.
+- Milestone 4: **selesai — hosted CI hijau pada run #7 (commit `af34964`)**. Order fixed/per-kg, snapshot/idempotency, lifecycle, isolation, monitoring, responsive Inertia UI, PostgreSQL 18/Redis 8, dan Gitleaks telah terverifikasi.
 - Milestone 5 dan seterusnya: belum diimplementasikan.
 
 Driver invitation, actual weight, payment mutation, payout transaction, dan production integration belum tersedia. Payout hanya mencakup onboarding rekening dan payout hold, bukan pemindahan dana.
@@ -104,7 +104,9 @@ Verifikasi lokal M2 per 17 September 2026 mencakup 67 Pest test/755 assertion, m
 
 Verifikasi lokal M3 mencakup 84 Pest test/1.069 assertion, migration forward/rollback dan backfill preservation SQLite, Larastan tanpa error, Pint, ESLint, TypeScript, production build, Composer/npm audit, actionlint 1.7.12, Gitleaks staged scan 8.30.1, query-count fixture 10 Tenant/20 outlet, dan `git diff --check`.
 
-Verifikasi lokal M4 mencakup 93 Pest test/1.184 assertion, migration round-trip SQLite, snapshot/idempotency/isolation/query-count regression, Larastan tanpa error, Pint, ESLint, TypeScript, production build, Composer/npm audit, dan `git diff --check`. Actionlint, Gitleaks full-history, PostgreSQL 18, serta Redis 8 menunggu hosted CI.
+Verifikasi lokal M4 mencakup 93 Pest test/1.184 assertion, migration round-trip SQLite, snapshot/idempotency/isolation/query-count regression, Larastan tanpa error, Pint, ESLint, TypeScript, production build, Composer/npm audit, dan `git diff --check`. Actionlint, dependency audit, Gitleaks full-history, PostgreSQL 18, serta Redis 8 lulus pada hosted CI.
+
+[Hosted CI run #7](https://github.com/FatahiraAnggitaS/klik-laundry/actions/runs/35245827541) untuk implementation commit M4 `af34964` lulus pada job quality dan secrets.
 
 [Hosted CI run #5](https://github.com/FatahiraAnggitaS/klik-laundry/actions/runs/35216592473) untuk implementation commit M3 `2b9366d` lulus pada kedua job: quality menggunakan PostgreSQL 18/Redis 8 dan secret scan menggunakan Gitleaks full-history.
 

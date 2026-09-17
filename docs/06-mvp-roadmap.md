@@ -2,7 +2,7 @@
 
 > Roadmap menggunakan [`01-product-scope.md`](01-product-scope.md) sebagai scope contract dan [`02-architecture.md`](02-architecture.md) sebagai architecture contract. Milestone berbasis outcome, bukan estimasi kalender.
 
-> Status per 17 September 2026: Milestone 0 tetap memiliki external blocker. Milestone 1–3 **selesai — hosted CI hijau**. Milestone 4 selesai secara lokal dan menunggu verifikasi hosted PostgreSQL 18/Redis 8 CI.
+> Status per 17 September 2026: Milestone 0 tetap memiliki external blocker. Milestone 1–4 **selesai — hosted CI hijau**. Implementation commit M4 `af34964` lulus pada run #7 dengan PostgreSQL 18, Redis 8, seluruh quality gate, dependency audit, dan secret scan.
 
 ## Prinsip delivery
 
@@ -113,7 +113,7 @@ Exit criteria:
 
 ## Milestone 4 — Order, scheduling, dan cancellation slice
 
-> Status per 17 September 2026: **implementation complete locally — hosted CI pending**. Aggregate Order, snapshot, idempotency, lifecycle, isolation, monitoring job, dan UI responsive tersedia; status selesai baru diberikan setelah hosted CI hijau.
+> Status per 17 September 2026: **selesai — hosted CI hijau pada run #7 (commit `af34964`)**. Aggregate Order, snapshot, idempotency, lifecycle, isolation, monitoring job, dan UI responsive terverifikasi pada SQLite lokal serta PostgreSQL 18/Redis 8 hosted CI.
 
 Deliverables:
 
