@@ -6,7 +6,7 @@
 
 - Milestone 0: **in progress — external blockers**. Contract, threat model, wireflow, dan sandbox harness tersedia; live provider/legal sign-off belum ada.
 - Milestone 1: **selesai — CI hijau pada run #2 (commit 9b23f68)**. Persistence slice, boundary enforcement, safe error mapping, static analysis, dan workflow CI PostgreSQL 18/Redis 8 terverifikasi hosted.
-- Milestone 2: **implementation complete locally — hosted CI pending**. Identity, Tenant lifecycle, Super User, payout account, security middleware, audit, serta responsive UI tersedia; status final menunggu commit/push dan hosted PostgreSQL 18/Redis 8 CI hijau.
+- Milestone 2: **selesai — hosted CI hijau pada run #4 (commit `3af7fdb`)**. Identity, Tenant lifecycle, Super User, payout account, security middleware, audit, responsive UI, PostgreSQL 18, Redis 8, dan Gitleaks telah terverifikasi.
 - Milestone 3 dan seterusnya: belum diimplementasikan.
 
 Order, Driver invitation, Outlet operasional, payment mutation, payout transaction, dan production integration belum tersedia. Payout pada M2 hanya mencakup onboarding rekening dan payout hold, bukan pemindahan dana.
@@ -95,6 +95,8 @@ Architecture tests memblokir Controller/Form Request dari persistence detail, Se
 Workflow `.github/workflows/ci.yml` menjalankan install dari lockfile, manifest validation, migration/test PostgreSQL, Redis smoke, Larastan, Pint, ESLint, TypeScript, production build, dependency audit, dan Gitleaks CLI yang dipin ke image digest. Workflow mendukung manual dispatch, concurrency cancellation, dan timeout; syntax telah diverifikasi lokal dengan actionlint 1.7.12.
 
 Verifikasi lokal M2 per 17 September 2026 mencakup 67 Pest test/755 assertion, migration forward/rollback pada SQLite terisolasi, Larastan tanpa error/baseline, Pint, ESLint, TypeScript, production build, Composer/npm audit, actionlint 1.7.12, secret pattern review, dan `git diff --check`. Gitleaks penuh serta PostgreSQL 18/Redis 8 tetap dibuktikan oleh hosted CI karena binary Gitleaks lokal tidak tersedia.
+
+[Hosted CI run #4](https://github.com/FatahiraAnggitaS/klik-laundry/actions/runs/35181807014) untuk implementation commit M2 `3af7fdb` lulus pada kedua job: quality menggunakan PostgreSQL 18/Redis 8 dan secret scan Gitleaks full-history.
 
 Hosted run pertama pada commit `9c5d770` membuktikan job quality lulus penuh pada PostgreSQL 18 dan Redis 8. Job secret awal gagal pada contoh credential palsu di dokumentasi skill. Contoh kemudian di-redact dan satu fingerprint historis ditambahkan. [Hosted run #2](https://github.com/FatahiraAnggitaS/klik-laundry/actions/runs/35100746075) lulus penuh dan memenuhi exit criteria Milestone 1.
 
