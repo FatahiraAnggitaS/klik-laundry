@@ -11,6 +11,7 @@ use App\Enums\ResourceStatus;
 use App\Exceptions\Domain\DomainActionConflict;
 use App\Exceptions\Domain\DomainRecordNotFound;
 use App\Repositories\Contracts\ActivityLogRepositoryInterface;
+use App\Repositories\Contracts\OrderRepositoryInterface;
 use App\Repositories\Contracts\PackageRepositoryInterface;
 use App\Services\Tenancy\TenantOperationsGuard;
 
@@ -19,6 +20,7 @@ final readonly class ManagePackageService
     public function __construct(
         private TenantOperationsGuard $guard,
         private PackageRepositoryInterface $packages,
+        private OrderRepositoryInterface $orders,
         private ActivityLogRepositoryInterface $activityLogs,
         private TransactionManagerInterface $transactions,
     ) {}
@@ -57,6 +59,9 @@ final readonly class ManagePackageService
             $package = $this->packages->lockOwned($tenant->id, $publicId) ?? throw new DomainRecordNotFound;
             if ($package->status !== ResourceStatus::Draft->value) {
                 throw new DomainActionConflict('Only draft package can be deleted.', 'Hanya paket draft yang dapat dihapus.');
+            }
+            if ($this->orders->hasOrdersForPackage($package->id)) {
+                throw new DomainActionConflict('Referenced package cannot be deleted.', 'Paket yang pernah dipakai order tidak dapat dihapus.');
             }
             $this->packages->delete($package->id);
             $this->audit($actor, $tenant->id, 'package.deleted', $publicId, ['status' => $package->status], []);

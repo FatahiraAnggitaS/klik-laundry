@@ -8,9 +8,10 @@
 - Milestone 1: **selesai — CI hijau pada run #2 (commit 9b23f68)**. Persistence slice, boundary enforcement, safe error mapping, static analysis, dan workflow CI PostgreSQL 18/Redis 8 terverifikasi hosted.
 - Milestone 2: **selesai — hosted CI hijau pada run #4 (commit `3af7fdb`)**. Identity, Tenant lifecycle, Super User, payout account, security middleware, audit, responsive UI, PostgreSQL 18, Redis 8, dan Gitleaks telah terverifikasi.
 - Milestone 3: **selesai — hosted CI hijau pada run #5 (commit `2b9366d`)**. Outlet, katalog, address book, discovery, scheduling preview, lifecycle/readiness, responsive UI, PostgreSQL 18/Redis 8, dan Gitleaks telah terverifikasi.
-- Milestone 4 dan seterusnya: belum diimplementasikan.
+- Milestone 4: **implementation complete locally — hosted CI pending**. Order fixed/per-kg, snapshot/idempotency, lifecycle, isolation, monitoring, dan responsive Inertia UI tersedia.
+- Milestone 5 dan seterusnya: belum diimplementasikan.
 
-Order, Driver invitation, payment mutation, payout transaction, dan production integration belum tersedia. Payout hanya mencakup onboarding rekening dan payout hold, bukan pemindahan dana.
+Driver invitation, actual weight, payment mutation, payout transaction, dan production integration belum tersedia. Payout hanya mencakup onboarding rekening dan payout hold, bukan pemindahan dana.
 
 ## Runtime dan dependency aktual
 
@@ -47,6 +48,8 @@ Schema M2 menambahkan `tenants`, identity/lifecycle/Fortify fields pada `users`,
 
 Schema M3 menambahkan `outlets`, operating hours, pickup/delivery slots, blackout, package global Tenant, dan customer address. Snapshot outlet onboarding dibackfill non-destruktif menjadi satu outlet draft; rollback menghapus tabel M3 tanpa menghapus snapshot. Default address memakai nullable unique owner key yang portable. Discovery menghitung Haversine di SQL PostgreSQL dan memakai bounding query plus perhitungan PHP pada SQLite.
 
+Schema M4 menambahkan Order aggregate, satu item, dua address snapshot, append-only status/schedule history, dan incident indicator. Unique Customer/idempotency key, request fingerprint, foreign key `restrict`, serta transaction boundary melindungi duplicate dan perubahan master. Timestamp disimpan UTC; validasi schedule memakai `Asia/Jakarta`.
+
 ## Identity, Tenant, dan Super User
 
 Fortify menangani registration Customer, login/logout, reset/update password, email verification, password confirmation, TOTP, recovery codes, dan challenge. Passkeys dinonaktifkan. `/tenant/register` membuat Tenant pending/inactive dan owner; Driver tetap di luar scope hingga M5; Super User hanya dibuat melalui `php artisan super-user:provision` tanpa password argument/output.
@@ -76,7 +79,7 @@ Dashboard preview dan wireflow Milestone 0 tetap memakai fixture. Dashboard meny
 
 ## Frontend
 
-Struktur frontend tetap memisahkan `pages`, `layouts`, reusable `components/ui`, domain composition, dan shared `types`. Halaman foundation responsive, keyboard-focusable, dan hanya menerima konfigurasi publik yang diperlukan. M3 menambahkan discovery publik, detail/coverage outlet, address book Customer, workspace operasional Tenant, serta konfigurasi radius Super User. Tidak ada credential, alamat tersembunyi lintas owner, atau internal exception message di Inertia props.
+Struktur frontend tetap memisahkan `pages`, `layouts`, reusable `components/ui`, domain composition, dan shared `types`. Halaman foundation responsive, keyboard-focusable, dan hanya menerima konfigurasi publik yang diperlukan. M3 menambahkan discovery/address/workspace; M4 menambahkan checkout, daftar/filter/detail Order, timeline, lifecycle form, dan printable receipt skeleton. Tidak ada credential, payment URL palsu, alamat lintas owner, atau internal exception message di Inertia props.
 
 ## Quality gates
 
@@ -100,6 +103,8 @@ Workflow `.github/workflows/ci.yml` menjalankan install dari lockfile, manifest 
 Verifikasi lokal M2 per 17 September 2026 mencakup 67 Pest test/755 assertion, migration forward/rollback pada SQLite terisolasi, Larastan tanpa error/baseline, Pint, ESLint, TypeScript, production build, Composer/npm audit, actionlint 1.7.12, secret pattern review, dan `git diff --check`. Gitleaks penuh serta PostgreSQL 18/Redis 8 tetap dibuktikan oleh hosted CI karena binary Gitleaks lokal tidak tersedia.
 
 Verifikasi lokal M3 mencakup 84 Pest test/1.069 assertion, migration forward/rollback dan backfill preservation SQLite, Larastan tanpa error, Pint, ESLint, TypeScript, production build, Composer/npm audit, actionlint 1.7.12, Gitleaks staged scan 8.30.1, query-count fixture 10 Tenant/20 outlet, dan `git diff --check`.
+
+Verifikasi lokal M4 mencakup 93 Pest test/1.184 assertion, migration round-trip SQLite, snapshot/idempotency/isolation/query-count regression, Larastan tanpa error, Pint, ESLint, TypeScript, production build, Composer/npm audit, dan `git diff --check`. Actionlint, Gitleaks full-history, PostgreSQL 18, serta Redis 8 menunggu hosted CI.
 
 [Hosted CI run #5](https://github.com/FatahiraAnggitaS/klik-laundry/actions/runs/35216592473) untuk implementation commit M3 `2b9366d` lulus pada kedua job: quality menggunakan PostgreSQL 18/Redis 8 dan secret scan menggunakan Gitleaks full-history.
 

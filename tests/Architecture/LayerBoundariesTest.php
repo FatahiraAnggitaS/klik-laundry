@@ -6,6 +6,7 @@ use App\Gateways\Identity\SensitiveAuthenticationVerifierInterface;
 use App\Infrastructure\LaravelTransactionManager;
 use App\Repositories\Contracts\ActivityLogRepositoryInterface;
 use App\Repositories\Contracts\CustomerAddressRepositoryInterface;
+use App\Repositories\Contracts\OrderRepositoryInterface;
 use App\Repositories\Contracts\OutletRepositoryInterface;
 use App\Repositories\Contracts\PackageRepositoryInterface;
 use App\Repositories\Contracts\PayoutAccountRepositoryInterface;
@@ -14,6 +15,7 @@ use App\Repositories\Contracts\TenantRepositoryInterface;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Repositories\Eloquent\EloquentActivityLogRepository;
 use App\Repositories\Eloquent\EloquentCustomerAddressRepository;
+use App\Repositories\Eloquent\EloquentOrderRepository;
 use App\Repositories\Eloquent\EloquentOutletRepository;
 use App\Repositories\Eloquent\EloquentPackageRepository;
 use App\Repositories\Eloquent\EloquentPayoutAccountRepository;
@@ -79,6 +81,7 @@ it('resolves repository contracts to their infrastructure implementations', func
         ->and(app(PayoutAccountRepositoryInterface::class))->toBeInstanceOf(EloquentPayoutAccountRepository::class)
         ->and(app(ActivityLogRepositoryInterface::class))->toBeInstanceOf(EloquentActivityLogRepository::class)
         ->and(app(OutletRepositoryInterface::class))->toBeInstanceOf(EloquentOutletRepository::class)
+        ->and(app(OrderRepositoryInterface::class))->toBeInstanceOf(EloquentOrderRepository::class)
         ->and(app(PackageRepositoryInterface::class))->toBeInstanceOf(EloquentPackageRepository::class)
         ->and(app(CustomerAddressRepositoryInterface::class))->toBeInstanceOf(EloquentCustomerAddressRepository::class)
         ->and(app(TransactionManagerInterface::class))->toBeInstanceOf(LaravelTransactionManager::class)

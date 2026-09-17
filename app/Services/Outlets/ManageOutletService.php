@@ -11,6 +11,7 @@ use App\Exceptions\Domain\DomainActionConflict;
 use App\Exceptions\Domain\DomainRecordNotFound;
 use App\Exceptions\Domain\PlatformSettingsUnavailable;
 use App\Repositories\Contracts\ActivityLogRepositoryInterface;
+use App\Repositories\Contracts\OrderRepositoryInterface;
 use App\Repositories\Contracts\OutletRepositoryInterface;
 use App\Repositories\Contracts\PlatformSettingRepositoryInterface;
 use App\Services\Tenancy\TenantOperationsGuard;
@@ -20,6 +21,7 @@ final readonly class ManageOutletService
     public function __construct(
         private TenantOperationsGuard $guard,
         private OutletRepositoryInterface $outlets,
+        private OrderRepositoryInterface $orders,
         private PlatformSettingRepositoryInterface $settings,
         private ActivityLogRepositoryInterface $activityLogs,
         private TransactionManagerInterface $transactions,
@@ -60,6 +62,9 @@ final readonly class ManageOutletService
             $outlet = $this->outlets->lockOwned($tenant->id, $publicId) ?? throw new DomainRecordNotFound;
             if ($outlet->status !== ResourceStatus::Draft->value) {
                 throw new DomainActionConflict('Only draft outlet can be deleted.', 'Hanya outlet draft yang dapat dihapus.');
+            }
+            if ($this->orders->hasOrdersForOutlet($outlet->id)) {
+                throw new DomainActionConflict('Referenced outlet cannot be deleted.', 'Outlet yang pernah dipakai order tidak dapat dihapus.');
             }
             $this->outlets->delete($outlet->id);
             $this->audit($actor, $tenant->id, 'outlet.deleted', $publicId, ['status' => $outlet->status], []);

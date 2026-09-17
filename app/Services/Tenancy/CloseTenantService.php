@@ -11,6 +11,7 @@ use App\Enums\UserStatus;
 use App\Exceptions\Domain\DomainActionConflict;
 use App\Exceptions\Domain\DomainRecordNotFound;
 use App\Repositories\Contracts\ActivityLogRepositoryInterface;
+use App\Repositories\Contracts\OrderRepositoryInterface;
 use App\Repositories\Contracts\TenantRepositoryInterface;
 use App\Repositories\Contracts\UserRepositoryInterface;
 
@@ -19,6 +20,7 @@ final readonly class CloseTenantService
     public function __construct(
         private TenantRepositoryInterface $tenants,
         private UserRepositoryInterface $users,
+        private OrderRepositoryInterface $orders,
         private ActivityLogRepositoryInterface $activityLogs,
         private TransactionManagerInterface $transactions,
     ) {}
@@ -34,6 +36,9 @@ final readonly class CloseTenantService
 
             if (! $tenant->closureRequested || $tenant->operationalStatus === TenantOperationalStatus::Closed->value) {
                 throw new DomainActionConflict('Tenant is not ready for closure.', 'Tenant belum dapat ditutup.');
+            }
+            if ($this->orders->hasNonTerminalForTenant($tenant->id)) {
+                throw new DomainActionConflict('Tenant still has non-terminal orders.', 'Tenant masih memiliki order yang belum selesai.');
             }
 
             $this->tenants->close($tenant->id, $actor->databaseId(), $reason);

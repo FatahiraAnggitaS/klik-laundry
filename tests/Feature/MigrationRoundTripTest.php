@@ -33,6 +33,12 @@ it('migrates forward and rolls back on an isolated sqlite database', function ()
             ->and(Schema::connection('m2_roundtrip')->hasTable('outlet_blackouts'))->toBeTrue()
             ->and(Schema::connection('m2_roundtrip')->hasTable('packages'))->toBeTrue()
             ->and(Schema::connection('m2_roundtrip')->hasTable('customer_addresses'))->toBeTrue();
+        expect(Schema::connection('m2_roundtrip')->hasTable('orders'))->toBeTrue()
+            ->and(Schema::connection('m2_roundtrip')->hasTable('order_items'))->toBeTrue()
+            ->and(Schema::connection('m2_roundtrip')->hasTable('order_addresses'))->toBeTrue()
+            ->and(Schema::connection('m2_roundtrip')->hasTable('order_status_histories'))->toBeTrue()
+            ->and(Schema::connection('m2_roundtrip')->hasTable('order_schedule_histories'))->toBeTrue()
+            ->and(Schema::connection('m2_roundtrip')->hasTable('order_indicators'))->toBeTrue();
 
         expect(Artisan::call('migrate:reset', ['--database' => 'm2_roundtrip', '--force' => true]))->toBe(0)
             ->and(Schema::connection('m2_roundtrip')->hasTable('tenants'))->toBeFalse()

@@ -264,6 +264,28 @@ final class EloquentOutletRepository implements OutletRepositoryInterface
         return $outlet === null ? null : $this->map($outlet);
     }
 
+    public function findSlotForOutlet(int $outletId, string $slotPublicId): ?array
+    {
+        $slot = OutletSlot::query()->where('outlet_id', $outletId)->where('public_id', $slotPublicId)->first();
+
+        return $slot === null ? null : [
+            'id' => (int) $slot->id,
+            'publicId' => $slot->public_id,
+            'type' => $slot->type->value,
+            'dayOfWeek' => (int) $slot->day_of_week,
+            'startsAt' => substr($slot->starts_at, 0, 5),
+            'endsAt' => substr($slot->ends_at, 0, 5),
+            'active' => (bool) $slot->is_active,
+        ];
+    }
+
+    public function findSlotIdForOutlet(int $outletId, string $slotPublicId): ?int
+    {
+        $id = OutletSlot::query()->where('outlet_id', $outletId)->where('public_id', $slotPublicId)->value('id');
+
+        return $id === null ? null : (int) $id;
+    }
+
     /** @return Builder<Outlet> */
     private function ownedQuery(int $tenantId): Builder
     {

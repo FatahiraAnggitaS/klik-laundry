@@ -13,6 +13,7 @@ use App\Http\Controllers\Identity\ShowSensitiveAuthenticationController;
 use App\Http\Controllers\Identity\ShowWorkspaceController;
 use App\Http\Controllers\Identity\UpdateProfileController;
 use App\Http\Controllers\MilestoneZero\ShowWireflowPreviewController;
+use App\Http\Controllers\Orders\OrderController;
 use App\Http\Controllers\Outlets\ChangeOutletStatusController;
 use App\Http\Controllers\Outlets\OperatingHoursController;
 use App\Http\Controllers\Outlets\OutletBlackoutController;
@@ -78,12 +79,23 @@ Route::middleware(['auth', 'identity.active'])->group(function (): void {
     Route::post('/customer/addresses/{address}/default', [CustomerAddressController::class, 'makeDefault'])->name('customer.addresses.default');
 
     Route::middleware('verified')->group(function (): void {
+        Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
+        Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
+        Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
+        Route::get('/orders/{order}/receipt', [OrderController::class, 'receipt'])->name('orders.receipt');
+        Route::patch('/orders/{order}/pickup-schedule', [OrderController::class, 'reschedule'])->name('orders.reschedule');
+        Route::post('/orders/{order}/cancellation', [OrderController::class, 'cancel'])->name('orders.cancel');
         Route::get('/workspace', ShowWorkspaceController::class)
             ->middleware('two-factor.required')
             ->name('workspace');
 
         Route::middleware('two-factor.required')->prefix('tenant')->name('tenant.')->group(function (): void {
             Route::get('/operations', TenantOperationsController::class)->name('operations');
+            Route::get('/orders', [OrderController::class, 'tenantIndex'])->name('orders.index');
+            Route::get('/orders/{order}', [OrderController::class, 'tenantShow'])->name('orders.show');
+            Route::get('/orders/{order}/receipt', [OrderController::class, 'receipt'])->name('orders.receipt');
+            Route::patch('/orders/{order}/pickup-schedule', [OrderController::class, 'reschedule'])->name('orders.reschedule');
+            Route::post('/orders/{order}/cancellation', [OrderController::class, 'cancel'])->name('orders.cancel');
             Route::post('/outlets', [OutletController::class, 'store'])->name('outlets.store');
             Route::put('/outlets/{outlet}', [OutletController::class, 'update'])->name('outlets.update');
             Route::delete('/outlets/{outlet}', [OutletController::class, 'destroy'])->name('outlets.destroy');

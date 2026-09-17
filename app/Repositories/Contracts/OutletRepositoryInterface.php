@@ -50,4 +50,9 @@ interface OutletRepositoryInterface
     public function search(OutletSearchCriteria $criteria): array;
 
     public function findDiscoverable(string $publicId, int $maximumRadiusMeters): ?OutletData;
+
+    /** @return array{id: int, publicId: string, type: string, dayOfWeek: int, startsAt: string, endsAt: string, active: bool}|null */
+    public function findSlotForOutlet(int $outletId, string $slotPublicId): ?array;
+
+    public function findSlotIdForOutlet(int $outletId, string $slotPublicId): ?int;
 }

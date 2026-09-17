@@ -11,6 +11,7 @@ use App\Enums\SlotType;
 use App\Exceptions\Domain\DomainActionConflict;
 use App\Exceptions\Domain\DomainRecordNotFound;
 use App\Repositories\Contracts\ActivityLogRepositoryInterface;
+use App\Repositories\Contracts\OrderRepositoryInterface;
 use App\Repositories\Contracts\OutletRepositoryInterface;
 use App\Services\Tenancy\TenantOperationsGuard;
 
@@ -19,6 +20,7 @@ final readonly class ManageOutletScheduleService
     public function __construct(
         private TenantOperationsGuard $guard,
         private OutletRepositoryInterface $outlets,
+        private OrderRepositoryInterface $orders,
         private EvaluateOutletReadinessService $readiness,
         private ActivityLogRepositoryInterface $activityLogs,
         private TransactionManagerInterface $transactions,
@@ -83,6 +85,10 @@ final readonly class ManageOutletScheduleService
             if (! collect($outlet->slots)->contains('publicId', $slotPublicId)) {
                 throw new DomainRecordNotFound;
             }
+            $slotId = $this->outlets->findSlotIdForOutlet($outlet->id, $slotPublicId) ?? throw new DomainRecordNotFound;
+            if ($this->orders->hasOrdersForSlot($slotId)) {
+                throw new DomainActionConflict('Referenced outlet slot cannot be deleted.', 'Slot yang pernah dipakai order tidak dapat dihapus.');
+            }
 
             return $this->outlets->deleteSlot($outlet->id, $slotPublicId);
         });
@@ -93,6 +99,9 @@ final readonly class ManageOutletScheduleService
         $this->mutate($actor, $outletPublicId, 'outlet.blackout_created', function (OutletData $outlet) use ($date, $reason, $actor): OutletData {
             if (collect($outlet->blackouts)->contains('date', $date)) {
                 throw new DomainActionConflict('Duplicate outlet blackout.', 'Tanggal blackout sudah tersedia.');
+            }
+            if ($this->orders->hasScheduledOrderOnDate($outlet->id, $date)) {
+                throw new DomainActionConflict('Scheduled orders prevent blackout.', 'Pindahkan order terjadwal sebelum membuat blackout.');
             }
 
             return $this->outlets->createBlackout($outlet->id, $date, $reason, $actor->databaseId());

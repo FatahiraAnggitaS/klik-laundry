@@ -10,6 +10,7 @@ use App\Exceptions\Domain\PlatformSettingsUnavailable;
 use App\Repositories\Contracts\CustomerAddressRepositoryInterface;
 use App\Repositories\Contracts\OutletRepositoryInterface;
 use App\Repositories\Contracts\PlatformSettingRepositoryInterface;
+use Illuminate\Support\Str;
 
 final readonly class GetOutletDetailsService
 {
@@ -66,6 +67,7 @@ final readonly class GetOutletDetailsService
             'availableSlots' => $this->schedule->handle($outlet),
             'savedAddresses' => $savedAddresses,
             'coverage' => $coverage,
+            'checkoutToken' => $actor?->role() === UserRole::Customer ? (string) Str::uuid() : null,
         ];
     }
 

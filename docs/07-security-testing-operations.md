@@ -139,6 +139,8 @@ Gunakan static analysis/architecture test yang kompatibel dengan dependency aktu
 
 M3 menambahkan verifikasi lifecycle outlet/package, seluruh blocker readiness, perubahan rekening payout yang menurunkan outlet aktif menjadi draft, konflik global radius, invariant fixed/per-kg, ownership/default address, serta lead time/horizon/weekday/blackout scheduling.
 
+M4 menambahkan proof untuk server-authoritative calculation, duplicate idempotency, snapshot immutability, Customer/Tenant isolation, PII masking order cancelled, lifecycle reschedule/cancel, monitoring indicator idempotent, serta blocker blackout/slot/master/closure yang sudah memiliki referensi Order.
+
 Unit test Service boleh memakai fake Repository/Gateway untuk decision matrix. Race/transaction/constraint behavior wajib diuji lagi menggunakan database.
 
 ### Repository integration tests

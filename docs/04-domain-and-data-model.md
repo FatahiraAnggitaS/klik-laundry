@@ -101,11 +101,19 @@ SQLite local tidak menyediakan fungsi trigonometri secara konsisten. Repository 
 | `order_items` | Order/package ID, package/pricing snapshot, unit price, integer quantity, minimum/actual/billable weight, subtotal | unique `order_id` karena satu paket |
 | `order_addresses` | Order ID, pickup/delivery type, contact/address/city/area snapshot, lat/lng | unique `(order_id, type)` |
 | `order_status_histories` | Order ID, from/to status, actor, reason/note, timestamp | append-only; index order/time |
+| `order_schedule_histories` | Order ID, slot/range lama dan baru, actor, alasan, timestamp | append-only; index order/time |
+| `order_indicators` | Order ID, type, active key, context aman, detected/resolved timestamp | satu indicator aktif per order/type |
 | `weight_confirmations` | Order ID, actual/minimum/billable grams, rounding, totals, actor/time, optional proof key, current/superseded marker | partial unique untuk satu current confirmation; koreksi tetap diaudit |
 
 Money breakdown minimum adalah `items_subtotal`, `pickup_fee`, `delivery_fee`, dan `grand_total`. Fixed package memakai integer quantity. Per-kg memakai `max(actual, minimum)` lalu dibulatkan naik per 100 gram; harga per kg wajib habis dibagi 10 agar hasil setiap 100 gram tetap integer rupiah. Service menetapkan formula dan hasil.
 
 Indicator `delayed`, `pickup_delayed`, `delivery_delayed`, dan `awaiting_customer` bukan fulfillment state. Simpan detected/resolved timestamps dan reason/context.
+
+### Schema Milestone 4 yang terimplementasi
+
+Migration M4 membuat aggregate `orders`, item/alamat snapshot, append-only status/schedule history, dan incident indicator. Nomor order serta public ID unik; `(customer_id, idempotency_key)` mencegah duplicate submit. Foreign key master memakai `restrict`, sedangkan child aggregate hanya mengikuti lifecycle Order yang tidak memiliki hard-delete use case.
+
+Fixed order menyimpan subtotal dan grand total final. Per-kg hanya menyimpan optional estimated weight, billable estimate per 100 gram, serta estimated subtotal/total; actual weight dan invoice final tetap M5/M6. Tenant/outlet/package/fee/alamat/jadwal disnapshot sehingga perubahan master tidak mengubah presentasi transaksi lama.
 
 ## Dispatch dan Driver commission
 

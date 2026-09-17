@@ -69,13 +69,15 @@ Business rules Service:
 - Slot mengikuti `Asia/Jakarta`, minimum lead time dua jam, horizon tujuh hari, outlet hours, dan blackout.
 - Tidak ada capacity planning; validitas slot tidak berarti reservasi kuota.
 - Order otomatis diterima jika seluruh readiness rule lulus.
-- Fixed: integer quantity, total langsung final, channel dipilih saat checkout, status `awaiting_payment`.
+- Fixed: integer quantity, total langsung final, status `awaiting_payment`; pemilihan dan persistence channel payment baru tersedia pada M6.
 - Per-kg: estimate Customer opsional, belum menjadi tagihan, status `awaiting_pickup`.
 - Harga/package/address/fees disnapshot dalam transaction.
 - Idempotency key/form token mencegah double submit tanpa mengandalkan disabled button.
-- Event/notifikasi hanya dikirim setelah commit.
+- Event/notifikasi baru ditambahkan saat consumer nyata tersedia pada M5/M7; M4 tidak membuat event placeholder.
 
 Customer dapat memiliki beberapa order aktif. Setiap order mempunyai payment, task, dan payout lifecycle independen.
+
+Implementasi M4 memakai unique idempotency key per Customer dan fingerprint payload. Retry dengan key/payload sama mengembalikan aggregate lama; reuse key dengan payload berbeda ditolak. Customer dan Tenant mendapat list/detail/filter, timeline, reschedule/cancel terkontrol, serta receipt skeleton tanpa field provider palsu. Monitoring lima-menitan membuat dan menyelesaikan indicator secara idempotent melalui Service.
 
 ## 4. Pickup, offer Driver, timbang, dan delay
 
