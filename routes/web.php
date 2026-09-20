@@ -5,6 +5,12 @@ use App\Http\Controllers\Catalog\ChangePackageStatusController;
 use App\Http\Controllers\Catalog\PackageController;
 use App\Http\Controllers\Customers\CustomerAddressController;
 use App\Http\Controllers\Dashboard\ShowDashboardPreviewController;
+use App\Http\Controllers\Dispatch\DispatchController;
+use App\Http\Controllers\Dispatch\DriverInvitationController;
+use App\Http\Controllers\Dispatch\DriverTaskController;
+use App\Http\Controllers\Dispatch\PrivateProofController;
+use App\Http\Controllers\Dispatch\TenantDriverController;
+use App\Http\Controllers\Dispatch\WeightConfirmationController;
 use App\Http\Controllers\Foundation\ManagePlatformSettingsController;
 use App\Http\Controllers\Foundation\ShowPlatformSettingsController;
 use App\Http\Controllers\Identity\ConfirmSensitiveAuthenticationController;
@@ -66,6 +72,11 @@ Route::get('/outlets/{outlet}', ShowOutletController::class)->name('outlets.show
 Route::middleware('guest')->group(function (): void {
     Route::get('/tenant/register', ShowTenantRegistrationController::class)->name('tenant.register');
     Route::post('/tenant/register', StoreTenantRegistrationController::class)->name('tenant.register.store');
+    Route::get('/driver/invitations/{invitation}/{token}', [DriverInvitationController::class, 'consume'])
+        ->middleware('throttle:10,1')->name('driver.invitation.consume');
+    Route::get('/driver/invitation/accept', [DriverInvitationController::class, 'create'])->name('driver.invitation.accept.create');
+    Route::post('/driver/invitation/accept', [DriverInvitationController::class, 'store'])
+        ->middleware('throttle:5,1')->name('driver.invitation.accept.store');
 });
 
 Route::middleware(['auth', 'identity.active'])->group(function (): void {
@@ -89,7 +100,29 @@ Route::middleware(['auth', 'identity.active'])->group(function (): void {
             ->middleware('two-factor.required')
             ->name('workspace');
 
+        Route::prefix('driver')->name('driver.')->group(function (): void {
+            Route::get('/tasks', [DriverTaskController::class, 'index'])->name('tasks.index');
+            Route::patch('/availability', [DriverTaskController::class, 'availability'])->name('availability.update');
+            Route::post('/offers/{offer}/accept', [DriverTaskController::class, 'accept'])->name('offers.accept');
+            Route::post('/offers/{offer}/reject', [DriverTaskController::class, 'reject'])->name('offers.reject');
+            Route::post('/tasks/{task}/start', [DriverTaskController::class, 'start'])->name('tasks.start');
+            Route::post('/tasks/{task}/complete', [DriverTaskController::class, 'complete'])->middleware('throttle:20,1')->name('tasks.complete');
+        });
+
+        Route::get('/private-proofs/tasks/{task}', [PrivateProofController::class, 'task'])->name('proofs.tasks.show');
+        Route::get('/private-proofs/orders/{order}/weight', [PrivateProofController::class, 'weight'])->name('proofs.weights.show');
+
         Route::middleware('two-factor.required')->prefix('tenant')->name('tenant.')->group(function (): void {
+            Route::get('/drivers', [TenantDriverController::class, 'index'])->name('drivers.index');
+            Route::post('/driver-invitations', [TenantDriverController::class, 'invite'])->middleware('throttle:10,1')->name('driver-invitations.store');
+            Route::delete('/driver-invitations/{invitation}', [TenantDriverController::class, 'revoke'])->name('driver-invitations.destroy');
+            Route::put('/driver-settings/commission', [TenantDriverController::class, 'settings'])->name('driver-settings.commission.update');
+            Route::post('/drivers/{driver}/deactivation', [TenantDriverController::class, 'deactivate'])->name('drivers.deactivate');
+            Route::post('/drivers/{driver}/reactivation', [TenantDriverController::class, 'reactivate'])->name('drivers.reactivate');
+            Route::get('/dispatch', [DispatchController::class, 'index'])->name('dispatch.index');
+            Route::post('/orders/{order}/driver-offers', [DispatchController::class, 'offer'])->name('driver-offers.store');
+            Route::post('/tasks/{task}/reassignment', [DispatchController::class, 'reassign'])->name('tasks.reassign');
+            Route::post('/orders/{order}/weight-confirmations', WeightConfirmationController::class)->middleware('throttle:20,1')->name('weight-confirmations.store');
             Route::get('/operations', TenantOperationsController::class)->name('operations');
             Route::get('/orders', [OrderController::class, 'tenantIndex'])->name('orders.index');
             Route::get('/orders/{order}', [OrderController::class, 'tenantShow'])->name('orders.show');

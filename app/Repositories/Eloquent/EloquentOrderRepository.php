@@ -164,19 +164,19 @@ final class EloquentOrderRepository implements OrderRepositoryInterface
         return $this->query()->whereNotIn('fulfillment_status', [FulfillmentStatus::Completed, FulfillmentStatus::Cancelled])->get()->map(fn (Order $order): OrderData => $this->map($order))->all();
     }
 
-    public function syncIndicator(int $orderId, OrderIndicatorType $type, bool $active, string $occurredAt, array $context = []): void
+    public function syncIndicator(int $orderId, OrderIndicatorType $type, bool $active, string $occurredAt, array $context = []): bool
     {
         $key = "{$orderId}:{$type->value}";
         if ($active) {
-            OrderIndicator::query()->firstOrCreate(
+            $indicator = OrderIndicator::query()->firstOrCreate(
                 ['active_key' => $key],
                 ['order_id' => $orderId, 'type' => $type, 'context' => $context, 'detected_at' => $occurredAt],
             );
 
-            return;
+            return $indicator->wasRecentlyCreated;
         }
 
-        OrderIndicator::query()->where('active_key', $key)->update(['active_key' => null, 'resolved_at' => $occurredAt, 'updated_at' => now()]);
+        return OrderIndicator::query()->where('active_key', $key)->update(['active_key' => null, 'resolved_at' => $occurredAt, 'updated_at' => now()]) > 0;
     }
 
     /** @param Builder<Order> $query @param array{fulfillment_status?: string|null, payment_status?: string|null, query?: string|null} $filters */
@@ -239,7 +239,7 @@ final class EloquentOrderRepository implements OrderRepositoryInterface
             pickupFee: (int) $order->pickup_fee, deliveryFee: (int) $order->delivery_fee, grandTotal: $order->grand_total, estimatedGrandTotal: $order->estimated_grand_total,
             estimatedReadyAt: $order->estimated_ready_at?->toIso8601String(), readyAt: $order->ready_at?->toIso8601String(), completedAt: $order->completed_at?->toIso8601String(), cancelledAt: $order->cancelled_at?->toIso8601String(), cancellationReason: $order->cancellation_reason,
             outletName: $order->outlet_name, outletPublicId: $order->outlet->public_id, tenantName: $order->tenant_name, customerName: $pickupAddress->contact_name,
-            item: ['packageName' => $item->package_name, 'packageDescription' => $item->package_description, 'pricingType' => $item->pricing_type->value, 'unitPrice' => $item->unit_price, 'minimumQuantity' => $item->minimum_quantity, 'minimumWeightGrams' => $item->minimum_weight_grams, 'estimatedDurationMinutes' => $item->estimated_duration_minutes, 'quantity' => $item->quantity, 'estimatedWeightGrams' => $item->estimated_weight_grams, 'estimatedBillableWeightGrams' => $item->estimated_billable_weight_grams],
+            item: ['packageName' => $item->package_name, 'packageDescription' => $item->package_description, 'pricingType' => $item->pricing_type->value, 'unitPrice' => $item->unit_price, 'minimumQuantity' => $item->minimum_quantity, 'minimumWeightGrams' => $item->minimum_weight_grams, 'estimatedDurationMinutes' => $item->estimated_duration_minutes, 'quantity' => $item->quantity, 'estimatedWeightGrams' => $item->estimated_weight_grams, 'estimatedBillableWeightGrams' => $item->estimated_billable_weight_grams, 'actualWeightGrams' => $item->actual_weight_grams, 'billableWeightGrams' => $item->billable_weight_grams],
             addresses: $order->addresses->map(fn (OrderAddress $address): array => ['type' => $address->type->value, 'label' => $address->label, 'contactName' => $address->contact_name, 'contactPhone' => $address->contact_phone, 'address' => $address->address, 'city' => $address->city, 'area' => $address->area, 'latitude' => (float) $address->latitude, 'longitude' => (float) $address->longitude])->all(),
             statusHistory: $order->statusHistories->map(fn (OrderStatusHistory $history): array => ['from' => $history->from_status?->value, 'to' => $history->to_status->value, 'reason' => $history->reason, 'occurredAt' => $history->occurred_at->toIso8601String()])->all(),
             scheduleHistory: $order->scheduleHistories->map(fn (OrderScheduleHistory $history): array => ['type' => $history->schedule_type, 'oldStartsAt' => $history->old_starts_at->toIso8601String(), 'oldEndsAt' => $history->old_ends_at->toIso8601String(), 'newStartsAt' => $history->new_starts_at->toIso8601String(), 'newEndsAt' => $history->new_ends_at->toIso8601String(), 'reason' => $history->reason, 'occurredAt' => $history->occurred_at->toIso8601String()])->all(),

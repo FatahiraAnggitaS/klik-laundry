@@ -158,6 +158,8 @@ Untuk paket `fixed`, pembayaran dilakukan setelah order dibuat dan sebelum picku
 - Bukti penyelesaian berupa actor dan timestamp wajib; foto serta catatan singkat bersifat opsional dengan validasi file.
 - Ringkasan komisi earned dan paid per periode.
 
+Boundary implementasi M5: invitation, availability, offer, pickup task, weight confirmation, optional private proof, dan commission `earned` sudah tersedia. Delivery completion, commission `paid`, payout batch, notification durable/realtime, dan proof cleanup tetap milestone berikutnya.
+
 ### Super User
 
 - Dashboard kesehatan operasional: jumlah tenant per status, order per status, payment berhasil/pending/bermasalah, dan payout Tenant yang belum dibayar.
@@ -377,6 +379,8 @@ Untuk paket `fixed`, pembayaran dilakukan setelah order dibuat dan sebelum picku
 - Penyelesaian pickup/delivery wajib mencatat Driver dan timestamp. Foto/catatan bersifat opsional; foto disimpan privat dan hanya dapat diakses pihak yang berwenang.
 - Foto bukti task dan timbangan dihapus otomatis 90 hari setelah order selesai dan seluruh refund terkait selesai. Metadata actor, timestamp, dan nilai transaksi tetap dipertahankan.
 - Ketika Driver menyelesaikan delivery task yang valid, order langsung menjadi `completed`, komisi delivery dibuat secara idempotent, dan Customer menerima notifikasi. Tidak ada konfirmasi penerimaan tambahan dari Customer pada MVP.
+
+State task terminal `cancelled` digunakan saat task dibatalkan secara sah; histori tersebut tidak boleh dipresentasikan sebagai `pending` atau `completed`.
 
 ## Non-goals MVP
 

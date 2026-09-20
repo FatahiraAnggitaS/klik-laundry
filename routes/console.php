@@ -1,5 +1,6 @@
 <?php
 
+use App\Jobs\ExpireDriverOffersJob;
 use App\Jobs\MonitorOrderIndicatorsJob;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
@@ -12,5 +13,11 @@ Artisan::command('inspire', function () {
 Schedule::job(new MonitorOrderIndicatorsJob)
     ->name('monitor-order-indicators')
     ->everyFiveMinutes()
+    ->withoutOverlapping(10)
+    ->onOneServer();
+
+Schedule::job(new ExpireDriverOffersJob)
+    ->name('expire-driver-offers')
+    ->everyMinute()
     ->withoutOverlapping(10)
     ->onOneServer();

@@ -1,11 +1,15 @@
 <?php
 
+use App\Contracts\PrivateProofStorageInterface;
 use App\Contracts\TransactionManagerInterface;
 use App\Gateways\Identity\FortifySensitiveAuthenticationVerifier;
 use App\Gateways\Identity\SensitiveAuthenticationVerifierInterface;
+use App\Infrastructure\LaravelPrivateProofStorage;
 use App\Infrastructure\LaravelTransactionManager;
 use App\Repositories\Contracts\ActivityLogRepositoryInterface;
 use App\Repositories\Contracts\CustomerAddressRepositoryInterface;
+use App\Repositories\Contracts\DispatchRepositoryInterface;
+use App\Repositories\Contracts\DriverRepositoryInterface;
 use App\Repositories\Contracts\OrderRepositoryInterface;
 use App\Repositories\Contracts\OutletRepositoryInterface;
 use App\Repositories\Contracts\PackageRepositoryInterface;
@@ -15,6 +19,8 @@ use App\Repositories\Contracts\TenantRepositoryInterface;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Repositories\Eloquent\EloquentActivityLogRepository;
 use App\Repositories\Eloquent\EloquentCustomerAddressRepository;
+use App\Repositories\Eloquent\EloquentDispatchRepository;
+use App\Repositories\Eloquent\EloquentDriverRepository;
 use App\Repositories\Eloquent\EloquentOrderRepository;
 use App\Repositories\Eloquent\EloquentOutletRepository;
 use App\Repositories\Eloquent\EloquentPackageRepository;
@@ -84,6 +90,9 @@ it('resolves repository contracts to their infrastructure implementations', func
         ->and(app(OrderRepositoryInterface::class))->toBeInstanceOf(EloquentOrderRepository::class)
         ->and(app(PackageRepositoryInterface::class))->toBeInstanceOf(EloquentPackageRepository::class)
         ->and(app(CustomerAddressRepositoryInterface::class))->toBeInstanceOf(EloquentCustomerAddressRepository::class)
+        ->and(app(DriverRepositoryInterface::class))->toBeInstanceOf(EloquentDriverRepository::class)
+        ->and(app(DispatchRepositoryInterface::class))->toBeInstanceOf(EloquentDispatchRepository::class)
         ->and(app(TransactionManagerInterface::class))->toBeInstanceOf(LaravelTransactionManager::class)
+        ->and(app(PrivateProofStorageInterface::class))->toBeInstanceOf(LaravelPrivateProofStorage::class)
         ->and(app(SensitiveAuthenticationVerifierInterface::class))->toBeInstanceOf(FortifySensitiveAuthenticationVerifier::class);
 });

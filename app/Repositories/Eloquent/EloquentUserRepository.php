@@ -112,6 +112,7 @@ final class EloquentUserRepository implements UserRepositoryInterface
             'tenant_id' => $tenantId,
             'role' => $role,
             'status' => UserStatus::Active,
+            'auth_version' => 1,
             'role_slot' => $roleSlot,
             'name' => $data->name,
             'email' => $data->email,

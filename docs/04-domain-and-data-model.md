@@ -119,13 +119,19 @@ Fixed order menyimpan subtotal dan grand total final. Per-kg hanya menyimpan opt
 
 | Table | Column penting | Constraint/index penting |
 | --- | --- | --- |
+| `tenant_driver_settings` | Tenant ID, pickup/delivery commission nullable, change timestamp | unique Tenant; `null` memblokir offer, zero eksplisit valid |
+| `driver_invitations` | Tenant/inviter IDs, public ID, email/phone, token hash, expiry/accepted/revoked timestamps | satu pending invitation per Tenant/email melalui nullable unique key |
+| `driver_profiles` | User Driver/Tenant IDs, availability | unique User; Driver hanya satu Tenant |
 | `delivery_tasks` | Tenant/order/outlet IDs, type, assignee, status, commission snapshot, schedule dan lifecycle timestamps, proof/note | unique `(order_id, type)`; tenant-consistent FKs; index assignee/status |
 | `driver_task_offers` | Task/Driver IDs, status, offered/expires/responded timestamps | satu offer aktif per task; expiry 10 menit |
+| `driver_task_histories` | Task, from/to status, actor, reason/note, timestamp | append-only |
 | `driver_commissions` | Tenant/task/Driver IDs, amount snapshot, status, earned/paid timestamps | unique task; non-negative; index Driver/status/earned |
 | `driver_payouts` | Tenant/Driver IDs, reference, cutoff, total, method/reference/note, lifecycle timestamps | unique reference; total non-negative |
 | `driver_payout_items` | Payout/commission IDs, amount snapshot | commission hanya pada satu finalized payout |
 
 Availability Driver `available`/`unavailable` terpisah dari account status. Partial unique constraint atau enforcement transaction-safe memastikan satu Driver hanya mempunyai satu task `accepted`/`in_progress`.
+
+Task status adalah `pending`, `offered`, `accepted`, `in_progress`, `completed`, atau `cancelled`. `cancelled` terminal dipakai untuk pembatalan order/reassignment yang tidak boleh dipalsukan sebagai pending atau completed. M5 membuka pickup completion; delivery task memakai aggregate yang sama tetapi public completion ditolak sampai M7.
 
 Commission disnapshot saat task diberikan dan menjadi `earned` tepat sekali ketika task selesai. Batch mengambil seluruh commission eligible sampai cutoff; membership ditentukan Service, bukan request client.
 

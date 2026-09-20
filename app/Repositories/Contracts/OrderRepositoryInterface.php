@@ -43,5 +43,5 @@ interface OrderRepositoryInterface
     public function monitoringCandidates(): array;
 
     /** @param array<string, int|string|null> $context */
-    public function syncIndicator(int $orderId, OrderIndicatorType $type, bool $active, string $occurredAt, array $context = []): void;
+    public function syncIndicator(int $orderId, OrderIndicatorType $type, bool $active, string $occurredAt, array $context = []): bool;
 }

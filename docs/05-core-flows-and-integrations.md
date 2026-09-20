@@ -82,11 +82,11 @@ Implementasi M4 memakai unique idempotency key per Customer dan fingerprint payl
 ## 4. Pickup, offer Driver, timbang, dan delay
 
 1. `OfferDriverTaskService` hanya memilih Driver Tenant yang aktif, `available`, tidak memiliki task aktif, dan menerima commission snapshot.
-2. Satu task hanya memiliki satu active offer. `AcceptDriverTaskService` melakukan lock/conditional update; offer berakhir dalam 10 menit.
+2. Satu task hanya memiliki satu active offer. `RespondDriverOfferService` melakukan lock/conditional update; offer berakhir dalam 10 menit.
 3. Offer menampilkan outlet, slot, area, task type, commission, dan approximate distance tanpa contact lengkap.
 4. Setelah accept, Driver mendapat contact/alamat sampai task selesai.
 5. Driver menjalankan transition `accepted -> in_progress -> completed`; actor/timestamp wajib, note/foto opsional.
-6. Pickup completion membuat order `picked_up`; fixed yang sudah paid dapat menuju processing, per-kg menuju `awaiting_weight`.
+6. Pickup completion melewati order `picked_up`; per-kg menuju `awaiting_weight`, sedangkan fixed berhenti di `picked_up` sampai processing M7. Fixed pickup completion tetap mensyaratkan payment `paid` dari M6.
 7. `ConfirmLaundryWeightService` menyimpan actual gram, menerapkan minimum, membulatkan naik per 100 gram, menghitung total, dan membuat history.
 8. Setelah berat terkunci, per-kg menjadi `awaiting_payment` dan Customer memilih channel.
 
@@ -95,6 +95,8 @@ Foto timbangan/task berada pada private storage dengan authorized temporary acce
 Jika slot lewat tanpa Driver, monitoring Service memberi indicator `pickup_delayed` atau `delivery_delayed`; fulfillment state tidak berubah dan tidak ada auto cancel/refund. Tenant memilih slot baru dengan alasan dan Service mengirim notifikasi.
 
 Customer boleh reschedule sebelum Driver accept. Sesudah accept, hanya Tenant dapat reschedule dengan reason serta explicit cancel/reassign. Seluruh perubahan schedule diaudit.
+
+Implementasi M5 berhenti pada pickup dan weight confirmation. Delivery state engine/repository tersedia untuk menjaga kontrak aggregate, tetapi endpoint delivery completion belum dibuka agar completion Order dan commission dapat dilakukan atomic pada M7.
 
 ## 5. Integrasi Duitku
 

@@ -227,6 +227,8 @@ Folder adalah navigasi, bukan alasan membuat class kosong. Domain kecil boleh di
 
 Module berkomunikasi melalui public Service contract atau event setelah commit, bukan dengan Controller/Repository lintas module secara bebas.
 
+Implementasi Dispatch M5 memakai `DriverRepositoryInterface`, `DispatchRepositoryInterface`, dan `PrivateProofStorageInterface`. Controller/Form Request hanya memanggil Service; locking, nullable unique active keys, serta persistence task/offer/commission berada di Repository. Event operasional membawa scalar/public ID minimum tanpa PII dan di-dispatch after commit. Job expiry hanya memanggil Service.
+
 ## Multi-tenancy
 
 MVP memakai **shared database/shared schema**:

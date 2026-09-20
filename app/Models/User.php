@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
@@ -27,6 +28,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property int $auth_version
  * @property string|null $two_factor_secret
  * @property Carbon|null $two_factor_confirmed_at
+ * @property-read DriverProfile|null $driverProfile
  */
 #[Fillable([
     'public_id', 'tenant_id', 'role', 'status', 'status_reason', 'auth_version', 'role_slot',
@@ -48,6 +50,12 @@ final class User extends Authenticatable implements IdentityUser
     public function customerAddresses(): HasMany
     {
         return $this->hasMany(CustomerAddress::class, 'customer_id');
+    }
+
+    /** @return HasOne<DriverProfile, $this> */
+    public function driverProfile(): HasOne
+    {
+        return $this->hasOne(DriverProfile::class);
     }
 
     public function databaseId(): int

@@ -18,8 +18,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int|null $quantity
  * @property int|null $estimated_weight_grams
  * @property int|null $estimated_billable_weight_grams
+ * @property int|null $actual_weight_grams
+ * @property int|null $billable_weight_grams
  */
-#[Fillable(['order_id', 'package_id', 'package_name', 'package_description', 'pricing_type', 'unit_price', 'minimum_quantity', 'minimum_weight_grams', 'estimated_duration_minutes', 'quantity', 'estimated_weight_grams', 'estimated_billable_weight_grams'])]
+#[Fillable(['order_id', 'package_id', 'package_name', 'package_description', 'pricing_type', 'unit_price', 'minimum_quantity', 'minimum_weight_grams', 'estimated_duration_minutes', 'quantity', 'estimated_weight_grams', 'estimated_billable_weight_grams', 'actual_weight_grams', 'billable_weight_grams'])]
 final class OrderItem extends Model
 {
     /** @return BelongsTo<Order, $this> */
@@ -30,6 +32,6 @@ final class OrderItem extends Model
 
     protected function casts(): array
     {
-        return ['pricing_type' => PricingType::class, 'unit_price' => 'integer', 'minimum_quantity' => 'integer', 'minimum_weight_grams' => 'integer', 'estimated_duration_minutes' => 'integer', 'quantity' => 'integer', 'estimated_weight_grams' => 'integer', 'estimated_billable_weight_grams' => 'integer'];
+        return ['pricing_type' => PricingType::class, 'unit_price' => 'integer', 'minimum_quantity' => 'integer', 'minimum_weight_grams' => 'integer', 'estimated_duration_minutes' => 'integer', 'quantity' => 'integer', 'estimated_weight_grams' => 'integer', 'estimated_billable_weight_grams' => 'integer', 'actual_weight_grams' => 'integer', 'billable_weight_grams' => 'integer'];
     }
 }

@@ -141,6 +141,8 @@ M3 menambahkan verifikasi lifecycle outlet/package, seluruh blocker readiness, p
 
 M4 menambahkan proof untuk server-authoritative calculation, duplicate idempotency, snapshot immutability, Customer/Tenant isolation, PII masking order cancelled, lifecycle reschedule/cancel, monitoring indicator idempotent, serta blocker blackout/slot/master/closure yang sudah memiliki referensi Order.
 
+M5 menambahkan proof untuk invitation hash/expiry/single-use, Driver availability dan session revocation, offer expiry/reassign/cross-Tenant denial, nullable unique active-task guard, completion/commission idempotency, privacy-window contact, exact weight correction/lock, serta upload raster private dengan random key dan authorized temporary URL. PostgreSQL hosted CI tetap menjadi bukti portability dan race-oriented database constraint.
+
 Unit test Service boleh memakai fake Repository/Gateway untuk decision matrix. Race/transaction/constraint behavior wajib diuji lagi menggunakan database.
 
 ### Repository integration tests

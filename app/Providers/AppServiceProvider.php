@@ -2,14 +2,18 @@
 
 namespace App\Providers;
 
+use App\Contracts\PrivateProofStorageInterface;
 use App\Contracts\TransactionManagerInterface;
 use App\Gateways\Identity\FortifySensitiveAuthenticationVerifier;
 use App\Gateways\Identity\SensitiveAuthenticationVerifierInterface;
+use App\Infrastructure\LaravelPrivateProofStorage;
 use App\Infrastructure\LaravelTransactionManager;
 use App\Listeners\StampAuthenticationSession;
 use App\Policies\IdentityPolicy;
 use App\Repositories\Contracts\ActivityLogRepositoryInterface;
 use App\Repositories\Contracts\CustomerAddressRepositoryInterface;
+use App\Repositories\Contracts\DispatchRepositoryInterface;
+use App\Repositories\Contracts\DriverRepositoryInterface;
 use App\Repositories\Contracts\OrderRepositoryInterface;
 use App\Repositories\Contracts\OutletRepositoryInterface;
 use App\Repositories\Contracts\PackageRepositoryInterface;
@@ -19,6 +23,8 @@ use App\Repositories\Contracts\TenantRepositoryInterface;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Repositories\Eloquent\EloquentActivityLogRepository;
 use App\Repositories\Eloquent\EloquentCustomerAddressRepository;
+use App\Repositories\Eloquent\EloquentDispatchRepository;
+use App\Repositories\Eloquent\EloquentDriverRepository;
 use App\Repositories\Eloquent\EloquentOrderRepository;
 use App\Repositories\Eloquent\EloquentOutletRepository;
 use App\Repositories\Eloquent\EloquentPackageRepository;
@@ -50,7 +56,10 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(OrderRepositoryInterface::class, EloquentOrderRepository::class);
         $this->app->bind(PackageRepositoryInterface::class, EloquentPackageRepository::class);
         $this->app->bind(CustomerAddressRepositoryInterface::class, EloquentCustomerAddressRepository::class);
+        $this->app->bind(DriverRepositoryInterface::class, EloquentDriverRepository::class);
+        $this->app->bind(DispatchRepositoryInterface::class, EloquentDispatchRepository::class);
         $this->app->bind(TransactionManagerInterface::class, LaravelTransactionManager::class);
+        $this->app->bind(PrivateProofStorageInterface::class, LaravelPrivateProofStorage::class);
         $this->app->bind(SensitiveAuthenticationVerifierInterface::class, FortifySensitiveAuthenticationVerifier::class);
     }
 

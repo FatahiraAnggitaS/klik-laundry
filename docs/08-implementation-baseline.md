@@ -1,6 +1,6 @@
 # Implementation Baseline
 
-> Status aktual per 17 September 2026. Dokumen ini menjelaskan implementasi yang benar-benar tersedia dan tidak menggantikan product, domain, atau architecture contract.
+> Status aktual per 18 September 2026. Dokumen ini menjelaskan implementasi yang benar-benar tersedia dan tidak menggantikan product, domain, atau architecture contract.
 
 ## Status milestone
 
@@ -9,9 +9,10 @@
 - Milestone 2: **selesai — hosted CI hijau pada run #4 (commit `3af7fdb`)**. Identity, Tenant lifecycle, Super User, payout account, security middleware, audit, responsive UI, PostgreSQL 18, Redis 8, dan Gitleaks telah terverifikasi.
 - Milestone 3: **selesai — hosted CI hijau pada run #5 (commit `2b9366d`)**. Outlet, katalog, address book, discovery, scheduling preview, lifecycle/readiness, responsive UI, PostgreSQL 18/Redis 8, dan Gitleaks telah terverifikasi.
 - Milestone 4: **selesai — hosted CI hijau pada run #7 (commit `af34964`)**. Order fixed/per-kg, snapshot/idempotency, lifecycle, isolation, monitoring, responsive Inertia UI, PostgreSQL 18/Redis 8, dan Gitleaks telah terverifikasi.
-- Milestone 5 dan seterusnya: belum diimplementasikan.
+- Milestone 5: **in progress — implementasi lokal selesai, hosted CI belum diverifikasi**. Driver invitation/availability, pickup dispatch, privacy window, weight confirmation, private proof, commission snapshot, expiry job, dan responsive Inertia UI tersedia. Delivery completion sengaja tetap diblokir sampai Milestone 7.
+- Milestone 6 dan seterusnya: belum diimplementasikan.
 
-Driver invitation, actual weight, payment mutation, payout transaction, dan production integration belum tersedia. Payout hanya mencakup onboarding rekening dan payout hold, bukan pemindahan dana.
+Payment mutation, delivery completion, durable/realtime notification, proof-retention cleanup, Driver payout, dan production integration belum tersedia. Payout hanya mencakup onboarding rekening dan payout hold, bukan pemindahan dana.
 
 ## Runtime dan dependency aktual
 
@@ -50,9 +51,11 @@ Schema M3 menambahkan `outlets`, operating hours, pickup/delivery slots, blackou
 
 Schema M4 menambahkan Order aggregate, satu item, dua address snapshot, append-only status/schedule history, dan incident indicator. Unique Customer/idempotency key, request fingerprint, foreign key `restrict`, serta transaction boundary melindungi duplicate dan perubahan master. Timestamp disimpan UTC; validasi schedule memakai `Asia/Jakarta`.
 
+Schema M5 menambahkan Tenant commission settings, invitation token hash, Driver profile/availability, delivery task/offer/history, earned commission, dan append-only weight confirmation. Nullable unique active keys menjaga satu offer aktif per task, satu task accepted/in-progress per Driver, satu current weight confirmation per Order, serta kompatibilitas SQLite/PostgreSQL. `order_items` menyimpan actual dan billable grams final.
+
 ## Identity, Tenant, dan Super User
 
-Fortify menangani registration Customer, login/logout, reset/update password, email verification, password confirmation, TOTP, recovery codes, dan challenge. Passkeys dinonaktifkan. `/tenant/register` membuat Tenant pending/inactive dan owner; Driver tetap di luar scope hingga M5; Super User hanya dibuat melalui `php artisan super-user:provision` tanpa password argument/output.
+Fortify menangani registration Customer, login/logout, reset/update password, email verification, password confirmation, TOTP, recovery codes, dan challenge. Passkeys dinonaktifkan. `/tenant/register` membuat Tenant pending/inactive dan owner; Driver dibuat hanya dari invitation Tenant 48 jam yang tokennya disimpan sebagai hash; Super User hanya dibuat melalui `php artisan super-user:provision` tanpa password argument/output.
 
 Route terautentikasi memakai account-status + `auth_version`; Tenant owner dan Super User wajib email verified serta TOTP confirmed. Sensitive mutation memerlukan password+TOTP re-auth yang berumur maksimal 15 menit. Lifecycle dan mutation mengikuti `Form Request -> Controller -> Service -> Repository`, dibungkus transaction bersama append-only audit.
 
@@ -79,7 +82,7 @@ Dashboard preview dan wireflow Milestone 0 tetap memakai fixture. Dashboard meny
 
 ## Frontend
 
-Struktur frontend tetap memisahkan `pages`, `layouts`, reusable `components/ui`, domain composition, dan shared `types`. Halaman foundation responsive, keyboard-focusable, dan hanya menerima konfigurasi publik yang diperlukan. M3 menambahkan discovery/address/workspace; M4 menambahkan checkout, daftar/filter/detail Order, timeline, lifecycle form, dan printable receipt skeleton. Tidak ada credential, payment URL palsu, alamat lintas owner, atau internal exception message di Inertia props.
+Struktur frontend tetap memisahkan `pages`, `layouts`, reusable `components/ui`, domain composition, dan shared `types`. Halaman foundation responsive, keyboard-focusable, dan hanya menerima konfigurasi publik yang diperlukan. M3 menambahkan discovery/address/workspace; M4 menambahkan checkout, daftar/filter/detail Order, timeline, lifecycle form, dan printable receipt skeleton; M5 menambahkan acceptance invitation, Driver dashboard, serta Tenant driver/dispatch workspace. Offer tetap masked dan contact Customer baru dibuka selama task accepted/in-progress. Tidak ada credential, raw invitation token, payment URL palsu, alamat lintas owner, atau internal exception message di Inertia props.
 
 ## Quality gates
 

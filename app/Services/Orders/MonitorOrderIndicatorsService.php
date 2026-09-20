@@ -6,12 +6,18 @@ use App\Contracts\TransactionManagerInterface;
 use App\DTOs\Orders\OrderData;
 use App\Enums\FulfillmentStatus;
 use App\Enums\OrderIndicatorType;
+use App\Events\DispatchLifecycleEvent;
 use App\Repositories\Contracts\OrderRepositoryInterface;
 use Carbon\CarbonImmutable;
+use Illuminate\Contracts\Events\Dispatcher;
 
 final readonly class MonitorOrderIndicatorsService
 {
-    public function __construct(private OrderRepositoryInterface $orders, private TransactionManagerInterface $transactions) {}
+    public function __construct(
+        private OrderRepositoryInterface $orders,
+        private TransactionManagerInterface $transactions,
+        private Dispatcher $events,
+    ) {}
 
     public function handle(?CarbonImmutable $now = null): int
     {
@@ -20,7 +26,10 @@ final readonly class MonitorOrderIndicatorsService
         foreach ($this->orders->monitoringCandidates() as $order) {
             $this->transactions->run(function () use ($order, $now, &$count): void {
                 foreach ($this->states($order, $now) as $type => $active) {
-                    $this->orders->syncIndicator($order->id, OrderIndicatorType::from($type), $active, $now->utc()->toIso8601String(), ['status' => $order->fulfillmentStatus]);
+                    $changed = $this->orders->syncIndicator($order->id, OrderIndicatorType::from($type), $active, $now->utc()->toIso8601String(), ['status' => $order->fulfillmentStatus]);
+                    if ($changed && $active && in_array($type, [OrderIndicatorType::PickupDelayed->value, OrderIndicatorType::Delayed->value, OrderIndicatorType::DeliveryDelayed->value], true)) {
+                        $this->events->dispatch(new DispatchLifecycleEvent("order_indicator.{$type}", null, $order->publicId, $order->tenantId));
+                    }
                     if ($active) {
                         $count++;
                     }

@@ -15,6 +15,7 @@ use App\Enums\UserStatus;
 use App\Exceptions\Domain\DomainActionConflict;
 use App\Exceptions\Domain\DomainRecordNotFound;
 use App\Repositories\Contracts\ActivityLogRepositoryInterface;
+use App\Repositories\Contracts\DispatchRepositoryInterface;
 use App\Repositories\Contracts\OrderRepositoryInterface;
 use App\Repositories\Contracts\OutletRepositoryInterface;
 use App\Repositories\Contracts\TenantRepositoryInterface;
@@ -30,6 +31,7 @@ final readonly class ManageOrderLifecycleService
         private ValidatePickupScheduleService $schedule,
         private CalculateDistanceService $distance,
         private ActivityLogRepositoryInterface $activityLogs,
+        private DispatchRepositoryInterface $dispatch,
         private TransactionManagerInterface $transactions,
     ) {}
 
@@ -38,7 +40,10 @@ final readonly class ManageOrderLifecycleService
         $this->assertActor($actor, $reason);
         $this->transactions->run(function () use ($actor, $publicId, $reason): void {
             $order = $this->ownedLockedOrder($actor, $publicId);
-            $this->assertMutable($order);
+            $this->assertMutable($actor, $order, false);
+            if ($order->fulfillmentStatus === FulfillmentStatus::PickupAssigned->value) {
+                $this->dispatch->cancelForOrder($order->id, $actor->databaseId(), (string) $reason);
+            }
             $this->orders->cancel($order->id, $actor->databaseId(), $reason);
             $this->audit($actor, $order, 'order.cancelled', $reason, ['fulfillmentStatus' => $order->fulfillmentStatus], ['fulfillmentStatus' => FulfillmentStatus::Cancelled->value]);
         });
@@ -49,7 +54,7 @@ final readonly class ManageOrderLifecycleService
         $this->assertActor($actor, $reason);
         $this->transactions->run(function () use ($actor, $publicId, $slotPublicId, $date, $reason, $now): void {
             $order = $this->ownedLockedOrder($actor, $publicId);
-            $this->assertMutable($order);
+            $this->assertMutable($actor, $order, true);
             $outlet = $this->outlets->findOwned($order->tenantId, $order->outletPublicId) ?? throw new DomainRecordNotFound;
             foreach ($order->addresses as $address) {
                 if ($this->distance->kilometers($outlet->latitude, $outlet->longitude, (float) $address['latitude'], (float) $address['longitude']) * 1000 > $outlet->serviceRadiusMeters) {
@@ -82,10 +87,15 @@ final readonly class ManageOrderLifecycleService
         return $order;
     }
 
-    private function assertMutable(OrderData $order): void
+    private function assertMutable(IdentityUser $actor, OrderData $order, bool $rescheduling): void
     {
-        if (! in_array($order->fulfillmentStatus, [FulfillmentStatus::AwaitingPayment->value, FulfillmentStatus::AwaitingPickup->value], true)
-            || $order->paymentStatus === PaymentStatus::Paid->value) {
+        $statuses = [FulfillmentStatus::AwaitingPayment->value, FulfillmentStatus::AwaitingPickup->value];
+        if ($actor->role() === UserRole::TenantOwner) {
+            $statuses[] = FulfillmentStatus::PickupAssigned->value;
+        }
+        if (! in_array($order->fulfillmentStatus, $statuses, true)
+            || $order->paymentStatus === PaymentStatus::Paid->value
+            || ($rescheduling && $order->fulfillmentStatus === FulfillmentStatus::PickupAssigned->value)) {
             throw new DomainActionConflict('Order can no longer be changed.', 'Order hanya dapat diubah sebelum pickup diterima dan sebelum pembayaran berhasil.');
         }
     }

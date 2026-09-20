@@ -3,7 +3,7 @@ import type { AvailableSlot, Paginated } from '@/types/operations';
 export type FulfillmentStatus = 'awaiting_payment' | 'awaiting_pickup' | 'pickup_assigned' | 'picked_up' | 'awaiting_weight' | 'processing' | 'ready_for_delivery' | 'delivery_assigned' | 'out_for_delivery' | 'completed' | 'cancelled';
 export type PaymentStatus = 'unpaid' | 'pending' | 'paid' | 'failed' | 'expired';
 
-export interface OrderItemSnapshot { packageName: string; packageDescription: string | null; pricingType: 'fixed' | 'per_kg'; unitPrice: number; minimumQuantity: number | null; minimumWeightGrams: number | null; estimatedDurationMinutes: number; quantity: number | null; estimatedWeightGrams: number | null; estimatedBillableWeightGrams: number | null }
+export interface OrderItemSnapshot { packageName: string; packageDescription: string | null; pricingType: 'fixed' | 'per_kg'; unitPrice: number; minimumQuantity: number | null; minimumWeightGrams: number | null; estimatedDurationMinutes: number; quantity: number | null; estimatedWeightGrams: number | null; estimatedBillableWeightGrams: number | null; actualWeightGrams: number | null; billableWeightGrams: number | null }
 export interface OrderAddressSnapshot { type: 'pickup' | 'delivery'; label: string; contactName: string; contactPhone: string; address: string; city: string; area: string; latitude: number | null; longitude: number | null }
 export interface OrderHistoryItem { from: FulfillmentStatus | null; to: FulfillmentStatus; reason: string | null; occurredAt: string }
 export interface OrderScheduleHistoryItem { type: string; oldStartsAt: string; oldEndsAt: string; newStartsAt: string; newEndsAt: string; reason: string | null; occurredAt: string }

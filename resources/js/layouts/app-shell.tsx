@@ -62,7 +62,7 @@ function Sidebar({ activeRole, navigation, roles, onNavigate }: SidebarProps) {
                 <div className="flex items-center gap-3">
                     <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-accent text-xs font-black text-brand-950">AP</span>
                     <span className="min-w-0 flex-1">
-                        <span className="block truncate text-sm font-bold text-white">Alya Pratama</span>
+                        <span className="block truncate text-sm font-bold text-white">Anggita Saputri</span>
                         <span className="block truncate text-[11px] text-white/45">{activeRole.label}</span>
                     </span>
                     <AppIcon name="chevron-down" className="size-4 text-white/35" />
