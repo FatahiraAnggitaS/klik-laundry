@@ -28,6 +28,9 @@ use App\Http\Controllers\Outlets\OutletSlotController;
 use App\Http\Controllers\Outlets\SearchOutletsController;
 use App\Http\Controllers\Outlets\ShowOutletController;
 use App\Http\Controllers\Outlets\TenantOperationsController;
+use App\Http\Controllers\Payments\PaymentController;
+use App\Http\Controllers\Payments\PaymentSupportController;
+use App\Http\Controllers\Payments\TenantPaymentController;
 use App\Http\Controllers\SuperUser\CloseTenantController;
 use App\Http\Controllers\SuperUser\ListTenantApplicationsController;
 use App\Http\Controllers\SuperUser\ReactivateTenantController;
@@ -43,6 +46,7 @@ use App\Http\Controllers\Tenancy\ResubmitTenantApplicationController;
 use App\Http\Controllers\Tenancy\ShowTenantRegistrationController;
 use App\Http\Controllers\Tenancy\StoreTenantRegistrationController;
 use App\Http\Controllers\Tenancy\SubmitPayoutAccountController;
+use App\Http\Controllers\Webhooks\DuitkuCallbackController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', ShowDashboardPreviewController::class)
@@ -96,6 +100,10 @@ Route::middleware(['auth', 'identity.active'])->group(function (): void {
         Route::get('/orders/{order}/receipt', [OrderController::class, 'receipt'])->name('orders.receipt');
         Route::patch('/orders/{order}/pickup-schedule', [OrderController::class, 'reschedule'])->name('orders.reschedule');
         Route::post('/orders/{order}/cancellation', [OrderController::class, 'cancel'])->name('orders.cancel');
+        Route::get('/orders/{order}/payments/create', [PaymentController::class, 'create'])->name('payments.create');
+        Route::post('/orders/{order}/payments', [PaymentController::class, 'store'])->name('payments.store');
+        Route::get('/payments/{payment}', [PaymentController::class, 'show'])->name('payments.show');
+        Route::get('/payments/{payment}/receipt', [PaymentController::class, 'receipt'])->name('payments.receipt');
         Route::get('/workspace', ShowWorkspaceController::class)
             ->middleware('two-factor.required')
             ->name('workspace');
@@ -125,6 +133,7 @@ Route::middleware(['auth', 'identity.active'])->group(function (): void {
             Route::post('/orders/{order}/weight-confirmations', WeightConfirmationController::class)->middleware('throttle:20,1')->name('weight-confirmations.store');
             Route::get('/operations', TenantOperationsController::class)->name('operations');
             Route::get('/orders', [OrderController::class, 'tenantIndex'])->name('orders.index');
+            Route::get('/payments', [TenantPaymentController::class, 'index'])->name('payments.index');
             Route::get('/orders/{order}', [OrderController::class, 'tenantShow'])->name('orders.show');
             Route::get('/orders/{order}/receipt', [OrderController::class, 'receipt'])->name('orders.receipt');
             Route::patch('/orders/{order}/pickup-schedule', [OrderController::class, 'reschedule'])->name('orders.reschedule');
@@ -175,6 +184,8 @@ Route::middleware(['auth', 'identity.active'])->group(function (): void {
                 Route::patch('/payout-accounts/{account}/review', ReviewPayoutAccountController::class)->name('payout-accounts.review');
                 Route::post('/users/{user}/suspension', SuspendUserController::class)->name('users.suspend');
                 Route::post('/users/{user}/reactivation', ReactivateUserController::class)->name('users.reactivate');
+                Route::post('/payments/{payment}/inquiry', [PaymentSupportController::class, 'inquire'])->name('payments.inquire');
+                Route::post('/payment-channels', [PaymentSupportController::class, 'toggleChannel'])->name('payment-channels.toggle');
             });
         });
 
@@ -186,3 +197,7 @@ Route::middleware(['auth', 'identity.active'])->group(function (): void {
             ->name('super-user.platform-settings.show');
     });
 });
+
+Route::post('/webhooks/duitku', DuitkuCallbackController::class)
+    ->middleware('throttle:60,1')
+    ->name('webhooks.duitku');

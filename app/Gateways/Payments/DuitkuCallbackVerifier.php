@@ -18,7 +18,7 @@ final class DuitkuCallbackVerifier
         string $expectedMerchantCode,
         int $expectedAmount,
         string $expectedMerchantOrderId,
-        string $expectedProviderReference,
+        ?string $expectedProviderReference,
         string $apiKey,
     ): bool {
         foreach (['merchantCode', 'amount', 'merchantOrderId', 'reference', 'signature', 'resultCode'] as $key) {
@@ -38,7 +38,7 @@ final class DuitkuCallbackVerifier
             $merchantCode !== $expectedMerchantCode
             || $amount !== (string) $expectedAmount
             || $merchantOrderId !== $expectedMerchantOrderId
-            || $reference !== $expectedProviderReference
+            || ($expectedProviderReference !== null && $reference !== $expectedProviderReference)
             || ! in_array($resultCode, ['00', '01'], true)
         ) {
             return false;

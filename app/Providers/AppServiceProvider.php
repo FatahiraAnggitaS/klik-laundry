@@ -6,6 +6,8 @@ use App\Contracts\PrivateProofStorageInterface;
 use App\Contracts\TransactionManagerInterface;
 use App\Gateways\Identity\FortifySensitiveAuthenticationVerifier;
 use App\Gateways\Identity\SensitiveAuthenticationVerifierInterface;
+use App\Gateways\Payments\DuitkuGateway;
+use App\Gateways\Payments\PaymentGatewayInterface;
 use App\Infrastructure\LaravelPrivateProofStorage;
 use App\Infrastructure\LaravelTransactionManager;
 use App\Listeners\StampAuthenticationSession;
@@ -17,6 +19,7 @@ use App\Repositories\Contracts\DriverRepositoryInterface;
 use App\Repositories\Contracts\OrderRepositoryInterface;
 use App\Repositories\Contracts\OutletRepositoryInterface;
 use App\Repositories\Contracts\PackageRepositoryInterface;
+use App\Repositories\Contracts\PaymentRepositoryInterface;
 use App\Repositories\Contracts\PayoutAccountRepositoryInterface;
 use App\Repositories\Contracts\PlatformSettingRepositoryInterface;
 use App\Repositories\Contracts\TenantRepositoryInterface;
@@ -28,6 +31,7 @@ use App\Repositories\Eloquent\EloquentDriverRepository;
 use App\Repositories\Eloquent\EloquentOrderRepository;
 use App\Repositories\Eloquent\EloquentOutletRepository;
 use App\Repositories\Eloquent\EloquentPackageRepository;
+use App\Repositories\Eloquent\EloquentPaymentRepository;
 use App\Repositories\Eloquent\EloquentPayoutAccountRepository;
 use App\Repositories\Eloquent\EloquentPlatformSettingRepository;
 use App\Repositories\Eloquent\EloquentTenantRepository;
@@ -47,6 +51,14 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(
             PlatformSettingRepositoryInterface::class,
             EloquentPlatformSettingRepository::class,
+        );
+        $this->app->bind(
+            PaymentRepositoryInterface::class,
+            EloquentPaymentRepository::class,
+        );
+        $this->app->bind(
+            PaymentGatewayInterface::class,
+            DuitkuGateway::class,
         );
         $this->app->bind(UserRepositoryInterface::class, EloquentUserRepository::class);
         $this->app->bind(TenantRepositoryInterface::class, EloquentTenantRepository::class);

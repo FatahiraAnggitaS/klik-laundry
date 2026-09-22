@@ -1,6 +1,7 @@
 <?php
 
 use App\Jobs\ExpireDriverOffersJob;
+use App\Jobs\ExpirePaymentAttemptsJob;
 use App\Jobs\MonitorOrderIndicatorsJob;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
@@ -19,5 +20,11 @@ Schedule::job(new MonitorOrderIndicatorsJob)
 Schedule::job(new ExpireDriverOffersJob)
     ->name('expire-driver-offers')
     ->everyMinute()
+    ->withoutOverlapping(10)
+    ->onOneServer();
+
+Schedule::job(new ExpirePaymentAttemptsJob)
+    ->name('expire-payment-attempts')
+    ->everyFiveMinutes()
     ->withoutOverlapping(10)
     ->onOneServer();

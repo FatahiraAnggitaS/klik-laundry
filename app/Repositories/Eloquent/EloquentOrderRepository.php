@@ -7,6 +7,7 @@ use App\DTOs\Orders\OrderData;
 use App\Enums\FulfillmentStatus;
 use App\Enums\OrderAddressType;
 use App\Enums\OrderIndicatorType;
+use App\Enums\PaymentStatus;
 use App\Models\Order;
 use App\Models\OrderAddress;
 use App\Models\OrderIndicator;
@@ -91,6 +92,28 @@ final class EloquentOrderRepository implements OrderRepositoryInterface
         $order = Order::query()->where('public_id', $publicId)->lockForUpdate()->first();
 
         return $order === null ? null : $this->map($order->load($this->relations()));
+    }
+
+    public function lockCustomerOrder(int $customerId, string $publicId): ?OrderData
+    {
+        $order = Order::query()->where('customer_id', $customerId)->where('public_id', $publicId)->lockForUpdate()->first();
+
+        return $order === null ? null : $this->map($order->load($this->relations()));
+    }
+
+    public function applyPaidTransition(int $orderId, ?int $actorId, string $toFulfillmentStatus): OrderData
+    {
+        $order = Order::query()->findOrFail($orderId);
+        $from = $order->fulfillment_status->value;
+        $order->update(['payment_status' => PaymentStatus::Paid, 'fulfillment_status' => $toFulfillmentStatus]);
+        OrderStatusHistory::query()->create(['order_id' => $orderId, 'from_status' => $from, 'to_status' => $toFulfillmentStatus, 'actor_id' => $actorId, 'reason' => 'Pembayaran terverifikasi provider.', 'occurred_at' => now()]);
+
+        return $this->map($this->fresh($orderId));
+    }
+
+    public function syncPaymentStatus(int $orderId, string $status): void
+    {
+        Order::query()->whereKey($orderId)->update(['payment_status' => $status]);
     }
 
     public function paginateForCustomer(int $customerId, array $filters, int $perPage = 12): array

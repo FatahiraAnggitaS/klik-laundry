@@ -19,6 +19,12 @@ interface OrderRepositoryInterface
 
     public function lockByPublicId(string $publicId): ?OrderData;
 
+    public function lockCustomerOrder(int $customerId, string $publicId): ?OrderData;
+
+    public function applyPaidTransition(int $orderId, ?int $actorId, string $toFulfillmentStatus): OrderData;
+
+    public function syncPaymentStatus(int $orderId, string $status): void;
+
     /** @param array{fulfillment_status?: string|null, payment_status?: string|null, query?: string|null} $filters @return array{items: list<array<string, mixed>>, meta: array{currentPage: int, lastPage: int, perPage: int, total: int}} */
     public function paginateForCustomer(int $customerId, array $filters, int $perPage = 12): array;
 
