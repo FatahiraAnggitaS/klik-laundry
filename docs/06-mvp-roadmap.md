@@ -133,7 +133,7 @@ Exit criteria:
 
 ## Milestone 5 — Dispatch, weighing, dan commission
 
-Status implementasi: **in progress — menunggu hosted CI PostgreSQL 18/Redis 8 (commit `8a9b0a5`)**. Pickup flow, invitation, privacy window, weighing, private proof, dan commission telah tersedia lokal. Delivery completion tetap Milestone 7 agar task, order completion, dan commission selesai dalam transaction yang sama.
+Status implementasi: **in progress — menunggu hosted CI PostgreSQL 18/Redis 8 (commit `f52872b`)**. Pickup flow, invitation, privacy window, weighing, private proof, commission, dan logout dispatch workspaces telah tersedia lokal. Delivery completion tetap Milestone 7 agar task, order completion, dan commission selesai dalam transaction yang sama.
 
 Deliverables:
 
