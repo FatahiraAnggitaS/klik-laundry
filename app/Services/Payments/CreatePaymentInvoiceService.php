@@ -60,9 +60,9 @@ final readonly class CreatePaymentInvoiceService
             $existing = $this->payments->findPendingForOrder($order->id);
 
             if ($existing !== null) {
-                $expiresAt = CarbonImmutable::parse($existing->expiresAt->format('Y-m-d H:i:s'), 'Asia/Jakarta');
+                $expiresAt = CarbonImmutable::instance($existing->expiresAt)->utc();
 
-                if ($expiresAt > $now) {
+                if ($expiresAt > $now->utc()) {
                     throw new DomainActionConflict('Attempt aktif sudah ada.', 'Tagihan aktif sudah ada. Selesaikan pembayaran tersebut.');
                 }
 
@@ -71,29 +71,34 @@ final readonly class CreatePaymentInvoiceService
             }
 
             $merchantOrderId = 'KL-'.((string) Str::ulid());
-            $expiresAt = $now->addMinutes(60);
+            $expiresAt = $now->addMinutes(60)->utc();
             $attempt = $this->payments->createAttempt($order->tenantId, $order->id, $merchantOrderId, $channelCode, $order->grandTotal, $expiresAt);
             $this->orders->syncPaymentStatus($order->id, PaymentStatus::Pending->value);
 
-            return [$attempt, $order, $customer->emailAddress()];
+            return [$attempt, $order, $customer->displayName(), $customer->emailAddress()];
         });
 
-        [$attempt, $order, $customerEmail] = $prepared;
+        [$attempt, $order, $customerName, $customerEmail] = $prepared;
+        $returnUrl = config('services.duitku.return_url');
+        if (! is_string($returnUrl) || $returnUrl === '') {
+            $returnUrl = route('payments.return');
+        }
 
         try {
             $result = $this->gateway->createInvoice(new PaymentInvoiceRequest(
                 merchantOrderId: $attempt->merchantOrderId,
                 amount: $attempt->amount,
                 channelCode: $attempt->channelCode,
+                customerName: $customerName,
                 customerEmail: $customerEmail,
                 callbackUrl: (string) config('services.duitku.callback_url'),
-                returnUrl: (string) config('services.duitku.return_url'),
+                returnUrl: $returnUrl,
                 expiresAt: $attempt->expiresAt,
             ));
-        } catch (RequestException|ConnectionException|RuntimeException $exception) {
+        } catch (RequestException|ConnectionException|RuntimeException) {
             $this->payments->markUncertain($attempt->merchantOrderId);
 
-            throw new DomainActionConflict('Respons provider tidak pasti: '.$exception->getMessage(), 'Status pembayaran sedang diverifikasi. Jangan buat tagihan baru.');
+            throw new DomainActionConflict('Duitku invoice request did not produce a trusted result.', 'Status pembayaran sedang diverifikasi. Jangan buat tagihan baru.');
         }
 
         $this->payments->storeProviderResult($result->merchantOrderId, $result->providerReference, $result->paymentUrl);

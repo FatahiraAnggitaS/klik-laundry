@@ -10,6 +10,7 @@ use App\Models\PaymentChannel;
 use App\Models\PaymentEvent;
 use App\Repositories\Contracts\PaymentRepositoryInterface;
 use DateTimeInterface;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Str;
 
 final class EloquentPaymentRepository implements PaymentRepositoryInterface
@@ -20,6 +21,7 @@ final class EloquentPaymentRepository implements PaymentRepositoryInterface
             'public_id' => (string) Str::ulid(),
             'tenant_id' => $tenantId,
             'order_id' => $orderId,
+            'active_order_key' => 'order:'.$orderId,
             'merchant_order_id' => $merchantOrderId,
             'channel_code' => $channelCode,
             'amount' => $amount,
@@ -45,9 +47,41 @@ final class EloquentPaymentRepository implements PaymentRepositoryInterface
         return $payment === null ? null : $this->map($payment);
     }
 
+    public function findByMerchantOrderId(string $merchantOrderId): ?PaymentData
+    {
+        $payment = Payment::query()->where('merchant_order_id', $merchantOrderId)->first();
+
+        return $payment === null ? null : $this->map($payment);
+    }
+
+    public function findByPublicIdForSupport(string $publicId): ?PaymentData
+    {
+        $payment = Payment::query()->where('public_id', $publicId)->first();
+
+        return $payment === null ? null : $this->map($payment);
+    }
+
+    public function claimInquiry(string $merchantOrderId, DateTimeInterface $availableBefore, DateTimeInterface $startedAt): bool
+    {
+        return Payment::query()
+            ->where('merchant_order_id', $merchantOrderId)
+            ->where(function (Builder $query) use ($availableBefore): void {
+                $query->whereNull('last_inquired_at')->orWhere('last_inquired_at', '<=', $availableBefore);
+            })
+            ->update(['last_inquired_at' => $startedAt]) > 0;
+    }
+
     public function lockByPublicIdForCustomer(int $customerId, string $publicId): ?PaymentData
     {
         $payment = Payment::query()->where('public_id', $publicId)->whereHas('order', fn ($query) => $query->where('customer_id', $customerId))->lockForUpdate()->first();
+
+        return $payment === null ? null : $this->map($payment);
+    }
+
+    public function findByMerchantOrderIdForCustomer(int $customerId, string $merchantOrderId): ?PaymentData
+    {
+        $payment = Payment::query()->where('merchant_order_id', $merchantOrderId)
+            ->whereHas('order', fn (Builder $query) => $query->where('customer_id', $customerId))->first();
 
         return $payment === null ? null : $this->map($payment);
     }
@@ -69,8 +103,9 @@ final class EloquentPaymentRepository implements PaymentRepositoryInterface
 
     public function applyPaid(string $merchantOrderId, string $providerReference, ?int $feeAmount): bool
     {
-        return Payment::query()->where('merchant_order_id', $merchantOrderId)->where('status', '!=', PaymentStatus::Paid)->update([
+        return Payment::query()->where('merchant_order_id', $merchantOrderId)->where('status', PaymentStatus::Pending)->update([
             'status' => PaymentStatus::Paid,
+            'active_order_key' => null,
             'provider_reference' => $providerReference,
             'fee_amount' => $feeAmount,
             'reconciliation' => PaymentReconciliation::Matched,
@@ -83,6 +118,7 @@ final class EloquentPaymentRepository implements PaymentRepositoryInterface
     {
         return Payment::query()->where('merchant_order_id', $merchantOrderId)->where('status', PaymentStatus::Pending)->update([
             'status' => $status,
+            'active_order_key' => null,
             'terminal_at' => now(),
         ]) > 0;
     }
@@ -94,9 +130,9 @@ final class EloquentPaymentRepository implements PaymentRepositoryInterface
         ]);
     }
 
-    public function storeFee(string $merchantOrderId, int $feeAmount): void
+    public function storePaidFee(string $merchantOrderId, int $feeAmount): void
     {
-        Payment::query()->where('merchant_order_id', $merchantOrderId)->update([
+        Payment::query()->where('merchant_order_id', $merchantOrderId)->where('status', PaymentStatus::Paid)->update([
             'fee_amount' => $feeAmount,
             'reconciliation' => PaymentReconciliation::Matched,
         ]);
@@ -104,29 +140,25 @@ final class EloquentPaymentRepository implements PaymentRepositoryInterface
 
     public function recordEvent(?int $paymentId, string $fingerprint, string $providerStatus, ?string $providerReference, ?int $amount, bool $signatureOk): bool
     {
-        if (PaymentEvent::query()->where('fingerprint', $fingerprint)->exists()) {
-            return false;
-        }
+        $event = PaymentEvent::query()->createOrFirst(
+            ['fingerprint' => $fingerprint],
+            [
+                'payment_id' => $paymentId,
+                'provider_status' => $providerStatus,
+                'provider_reference' => $providerReference,
+                'amount' => $amount,
+                'signature_ok' => $signatureOk,
+                'processed_at' => now(),
+            ],
+        );
 
-        PaymentEvent::query()->create([
-            'payment_id' => $paymentId,
-            'fingerprint' => $fingerprint,
-            'provider_status' => $providerStatus,
-            'provider_reference' => $providerReference,
-            'amount' => $amount,
-            'signature_ok' => $signatureOk,
-            'processed_at' => now(),
-        ]);
-
-        return true;
+        return $event->wasRecentlyCreated;
     }
 
-    public function expireOverdue(DateTimeInterface $now): int
+    public function overdueMerchantOrderIds(DateTimeInterface $now): array
     {
-        return Payment::query()->where('status', PaymentStatus::Pending)->where('expires_at', '<=', $now)->update([
-            'status' => PaymentStatus::Expired,
-            'terminal_at' => $now,
-        ]);
+        return Payment::query()->where('status', PaymentStatus::Pending)->where('expires_at', '<=', $now)
+            ->orderBy('id')->limit(500)->pluck('merchant_order_id')->all();
     }
 
     public function activeChannels(): array
@@ -157,12 +189,62 @@ final class EloquentPaymentRepository implements PaymentRepositoryInterface
         ]);
     }
 
-    public function paginateForTenant(int $tenantId, int $perPage = 12): array
+    public function channels(): array
     {
-        $paginator = Payment::query()->where('tenant_id', $tenantId)->with('order')->latest('id')->paginate($perPage);
+        return PaymentChannel::query()->orderBy('category')->orderBy('label')->get()->map(fn (PaymentChannel $channel): array => [
+            'code' => $channel->channel_code,
+            'label' => $channel->label,
+            'category' => $channel->category,
+            'isActive' => $channel->is_active,
+            'verifiedAt' => $channel->verified_at?->toIso8601String(),
+        ])->all();
+    }
+
+    public function paginateForTenant(int $tenantId, array $filters = [], int $perPage = 12): array
+    {
+        $paginator = Payment::query()->where('tenant_id', $tenantId)->with('order')
+            ->when($filters['status'] ?? null, fn (Builder $query, string $status) => $query->where('status', $status))
+            ->when($filters['reconciliation'] ?? null, fn (Builder $query, string $state) => $query->where('reconciliation', $state))
+            ->when($filters['query'] ?? null, function (Builder $query, string $term): void {
+                $query->where(function (Builder $nested) use ($term): void {
+                    $nested->where('merchant_order_id', 'like', '%'.$term.'%')
+                        ->orWhereHas('order', fn (Builder $order) => $order->where('order_number', 'like', '%'.$term.'%'));
+                });
+            })
+            ->latest('id')->paginate($perPage)->withQueryString();
 
         return [
-            'items' => $paginator->getCollection()->map(fn (Payment $payment): array => $this->map($payment)->toArray())->all(),
+            'items' => $paginator->getCollection()->map(fn (Payment $payment): array => $this->map($payment)->toOperationalArray())->all(),
+            'meta' => [
+                'currentPage' => $paginator->currentPage(),
+                'lastPage' => $paginator->lastPage(),
+                'perPage' => $paginator->perPage(),
+                'total' => $paginator->total(),
+            ],
+        ];
+    }
+
+    public function paginateForSupport(array $filters, int $perPage = 12): array
+    {
+        $query = Payment::query()->with(['order', 'tenant:id,name'])
+            ->when($filters['status'] ?? null, fn (Builder $builder, string $status) => $builder->where('status', $status))
+            ->when($filters['reconciliation'] ?? null, fn (Builder $builder, string $state) => $builder->where('reconciliation', $state))
+            ->when($filters['query'] ?? null, function (Builder $builder, string $term): void {
+                $builder->where(function (Builder $nested) use ($term): void {
+                    $nested->where('merchant_order_id', 'like', '%'.$term.'%')
+                        ->orWhereHas('order', fn (Builder $order) => $order->where('order_number', 'like', '%'.$term.'%'));
+                });
+            })
+            ->latest('id');
+        $paginator = $query->paginate($perPage)->withQueryString();
+
+        return [
+            'items' => $paginator->getCollection()->map(function (Payment $payment): array {
+                return [
+                    ...$this->map($payment)->toOperationalArray(),
+                    'tenantName' => $payment->tenant->name,
+                ];
+            })->all(),
             'meta' => [
                 'currentPage' => $paginator->currentPage(),
                 'lastPage' => $paginator->lastPage(),

@@ -12,6 +12,8 @@ Lokalisasi MVP menggunakan Bahasa Indonesia, mata uang IDR, dan timezone bisnis 
 
 Target operasional awal adalah **minimal 10 tenant aktif**, bukan 10 concurrent users. Profil load test MVP menggunakan 10 Tenant, rata-rata dua outlet dan lima Driver per Tenant, total 500 order per hari, serta 100 client realtime bersamaan. Angka ini adalah skenario verifikasi, bukan hard limit produk.
 
+Per 22 September 2026, flow invoice/callback/reconciliation M6 tersedia untuk sandbox dan diuji memakai HTTP fake. Aktivasi production tetap di luar scope sampai seluruh blocker legal/provider Milestone 0 selesai dan live sandbox membuktikan create invoice, payment, callback HTTPS, expiry, inquiry, timeout, serta actual fee.
+
 ## Ringkasan keputusan final
 
 | Area | Keputusan MVP |

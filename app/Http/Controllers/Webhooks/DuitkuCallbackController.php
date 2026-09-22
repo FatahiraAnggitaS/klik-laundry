@@ -13,7 +13,9 @@ final class DuitkuCallbackController extends Controller
 
     public function __invoke(DuitkuCallbackRequest $request): JsonResponse
     {
-        $this->callback->handle($request->callbackPayload());
+        if ($request->hasValidTransport()) {
+            $this->callback->handle($request->callbackPayload());
+        }
 
         return response()->json(['received' => true]);
     }

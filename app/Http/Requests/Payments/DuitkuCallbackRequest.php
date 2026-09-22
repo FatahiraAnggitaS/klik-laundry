@@ -14,14 +14,16 @@ final class DuitkuCallbackRequest extends FormRequest
     /** @return array<string, list<mixed>> */
     public function rules(): array
     {
-        return [
-            'merchantCode' => ['required', 'string', 'max:32'],
-            'amount' => ['required', 'integer', 'min:1'],
-            'merchantOrderId' => ['required', 'string', 'max:64'],
-            'reference' => ['required', 'string', 'max:64'],
-            'signature' => ['required', 'string', 'max:128'],
-            'resultCode' => ['required', 'string', 'max:8'],
-        ];
+        return [];
+    }
+
+    public function hasValidTransport(): bool
+    {
+        $contentType = strtolower((string) $this->header('Content-Type'));
+        $contentLength = $this->header('Content-Length');
+
+        return str_starts_with($contentType, 'application/x-www-form-urlencoded')
+            && (! is_numeric($contentLength) || (int) $contentLength <= 16_384);
     }
 
     /** @return array<string, mixed> */

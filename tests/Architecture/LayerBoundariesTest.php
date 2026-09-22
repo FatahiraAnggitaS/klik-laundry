@@ -13,6 +13,7 @@ use App\Repositories\Contracts\DriverRepositoryInterface;
 use App\Repositories\Contracts\OrderRepositoryInterface;
 use App\Repositories\Contracts\OutletRepositoryInterface;
 use App\Repositories\Contracts\PackageRepositoryInterface;
+use App\Repositories\Contracts\PaymentRepositoryInterface;
 use App\Repositories\Contracts\PayoutAccountRepositoryInterface;
 use App\Repositories\Contracts\PlatformSettingRepositoryInterface;
 use App\Repositories\Contracts\TenantRepositoryInterface;
@@ -24,6 +25,7 @@ use App\Repositories\Eloquent\EloquentDriverRepository;
 use App\Repositories\Eloquent\EloquentOrderRepository;
 use App\Repositories\Eloquent\EloquentOutletRepository;
 use App\Repositories\Eloquent\EloquentPackageRepository;
+use App\Repositories\Eloquent\EloquentPaymentRepository;
 use App\Repositories\Eloquent\EloquentPayoutAccountRepository;
 use App\Repositories\Eloquent\EloquentPlatformSettingRepository;
 use App\Repositories\Eloquent\EloquentTenantRepository;
@@ -92,6 +94,7 @@ it('resolves repository contracts to their infrastructure implementations', func
         ->and(app(CustomerAddressRepositoryInterface::class))->toBeInstanceOf(EloquentCustomerAddressRepository::class)
         ->and(app(DriverRepositoryInterface::class))->toBeInstanceOf(EloquentDriverRepository::class)
         ->and(app(DispatchRepositoryInterface::class))->toBeInstanceOf(EloquentDispatchRepository::class)
+        ->and(app(PaymentRepositoryInterface::class))->toBeInstanceOf(EloquentPaymentRepository::class)
         ->and(app(TransactionManagerInterface::class))->toBeInstanceOf(LaravelTransactionManager::class)
         ->and(app(PrivateProofStorageInterface::class))->toBeInstanceOf(LaravelPrivateProofStorage::class)
         ->and(app(SensitiveAuthenticationVerifierInterface::class))->toBeInstanceOf(FortifySensitiveAuthenticationVerifier::class);

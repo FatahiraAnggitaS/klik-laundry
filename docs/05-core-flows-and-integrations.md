@@ -155,6 +155,8 @@ Endpoint callback publik mendapat CSRF exception spesifik. IP allowlist hanya de
 - Daily reconciliation memisahkan gross dan actual fee. Fee unknown tidak dianggap nol.
 - Super User tidak dapat menandai payment `paid` secara manual.
 
+Implementasi M6 menyediakan checkout Customer, receipt khusus payment `paid`, return URL read-only, daftar payment Tenant tanpa payment URL, serta reconciliation Super User. Inquiry memakai payment public ID, recent sensitive authentication, rate limit, dan verifikasi merchant order ID, amount, reference, status, serta fee sebelum mutation. Expiry dijalankan Job melalui Service transactional. Production tetap fail closed dengan `DUITKU_PRODUCTION_ENABLED=false`; live sandbox belum dijalankan.
+
 ## 6. Processing, delivery, dan completion
 
 - Hanya payment `paid` dari callback/inquiry tervalidasi yang mengizinkan `StartOrderProcessingService`.

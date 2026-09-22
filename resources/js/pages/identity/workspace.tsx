@@ -34,6 +34,7 @@ export default function Workspace({ activity, identity, payoutAccount, tenant }:
                     {identity.role === 'tenant_owner' && <>
                         <Link href="/tenant/drivers" className="inline-flex min-h-11 items-center rounded-xl border border-line bg-white px-4 text-sm font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-700">Driver & komisi</Link>
                         <Link href="/tenant/dispatch" className="inline-flex min-h-11 items-center rounded-xl border border-line bg-white px-4 text-sm font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-700">Dispatch pickup</Link>
+                        <Link href="/tenant/payments" className="inline-flex min-h-11 items-center rounded-xl border border-line bg-white px-4 text-sm font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-700">Pembayaran</Link>
                     </>}
                     {identity.role === 'driver' && <Link href="/driver/tasks" className="inline-flex min-h-11 items-center rounded-xl bg-brand-950 px-4 text-sm font-bold text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-700">Tugas Driver</Link>}
                 </nav>

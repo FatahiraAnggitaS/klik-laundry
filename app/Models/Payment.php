@@ -15,6 +15,7 @@ use Illuminate\Support\Carbon;
  * @property string $public_id
  * @property int $tenant_id
  * @property int $order_id
+ * @property string|null $active_order_key
  * @property string $merchant_order_id
  * @property string|null $provider_reference
  * @property string $channel_code
@@ -25,8 +26,9 @@ use Illuminate\Support\Carbon;
  * @property int|null $fee_amount
  * @property Carbon $expires_at
  * @property Carbon|null $paid_at
+ * @property Carbon|null $last_inquired_at
  */
-#[Fillable(['public_id', 'tenant_id', 'order_id', 'merchant_order_id', 'provider_reference', 'channel_code', 'amount', 'status', 'reconciliation', 'provider_payment_url', 'fee_amount', 'expires_at', 'paid_at', 'terminal_at'])]
+#[Fillable(['public_id', 'tenant_id', 'order_id', 'active_order_key', 'merchant_order_id', 'provider_reference', 'channel_code', 'amount', 'status', 'reconciliation', 'provider_payment_url', 'fee_amount', 'expires_at', 'paid_at', 'terminal_at', 'last_inquired_at'])]
 final class Payment extends Model
 {
     protected $guarded = ['*'];
@@ -59,6 +61,7 @@ final class Payment extends Model
             'expires_at' => 'datetime',
             'paid_at' => 'datetime',
             'terminal_at' => 'datetime',
+            'last_inquired_at' => 'datetime',
         ];
     }
 }

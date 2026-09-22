@@ -4,9 +4,11 @@ namespace App\Http\Controllers\Dispatch;
 
 use App\Enums\DriverTaskType;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Dispatch\DriverReasonRequest;
 use App\Http\Requests\Dispatch\OfferDriverTaskRequest;
 use App\Http\Requests\Dispatch\ReassignDriverTaskRequest;
 use App\Http\Requests\Dispatch\TenantDriverRequest;
+use App\Services\Dispatch\CancelDriverTaskService;
 use App\Services\Dispatch\GetDispatchDashboardService;
 use App\Services\Dispatch\OfferDriverTaskService;
 use App\Services\Dispatch\ReassignDriverTaskService;
@@ -33,5 +35,12 @@ final class DispatchController extends Controller
         $service->handle($request->identity(), $task, $request->string('driver_public_id')->toString(), $request->string('reason')->toString());
 
         return back()->with('status', 'Task di-reassign dan offer baru dibuat.');
+    }
+
+    public function cancel(DriverReasonRequest $request, string $task, CancelDriverTaskService $service): RedirectResponse
+    {
+        $service->handle($request->identity(), $task, $request->string('reason')->toString());
+
+        return back()->with('status', 'Task dan order dibatalkan agar order tidak tertinggal tanpa fulfillment.');
     }
 }

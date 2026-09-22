@@ -4,7 +4,7 @@ namespace App\Http\Requests\Payments;
 
 use App\Http\Requests\Identity\AuthenticatedIdentityRequest;
 
-final class InquirePaymentRequest extends AuthenticatedIdentityRequest
+final class UpdatePaymentMaintenanceRequest extends AuthenticatedIdentityRequest
 {
     public function authorize(): bool
     {
@@ -14,6 +14,9 @@ final class InquirePaymentRequest extends AuthenticatedIdentityRequest
     /** @return array<string, list<mixed>> */
     public function rules(): array
     {
-        return [];
+        return [
+            'enabled' => ['required', 'boolean'],
+            'reason' => ['required', 'string', 'min:5', 'max:1000'],
+        ];
     }
 }

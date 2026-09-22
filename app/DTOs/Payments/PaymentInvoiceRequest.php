@@ -10,6 +10,7 @@ final readonly class PaymentInvoiceRequest
         public string $merchantOrderId,
         public int $amount,
         public string $channelCode,
+        public string $customerName,
         public string $customerEmail,
         public string $callbackUrl,
         public string $returnUrl,

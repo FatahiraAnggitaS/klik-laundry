@@ -15,8 +15,8 @@ final class ToggleChannelRequest extends AuthenticatedIdentityRequest
     public function rules(): array
     {
         return [
-            'channel_code' => ['required', 'string', 'max:16'],
             'active' => ['required', 'boolean'],
+            'reason' => ['required', 'string', 'min:5', 'max:1000'],
         ];
     }
 }

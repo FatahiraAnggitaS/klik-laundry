@@ -208,20 +208,26 @@ final class EloquentDispatchRepository implements DispatchRepositoryInterface
         return DriverTaskOffer::query()->where('status', DriverOfferStatus::Offered)->where('expires_at', '<=', $now)->with(['task' => fn ($query) => $query->with($this->taskRelations())])->get()->map(fn (DriverTaskOffer $offer): DriverOfferData => $this->mapOffer($offer))->all();
     }
 
-    public function expireOffer(int $offerId, int $taskId): void
+    public function expireOffer(int $offerId, int $taskId): bool
     {
         $offer = DriverTaskOffer::query()->whereKey($offerId)->where('status', DriverOfferStatus::Offered)->lockForUpdate()->first();
         if ($offer === null) {
-            return;
+            return false;
         }
         $this->expireOrWithdraw($offer, DriverOfferStatus::Expired, null, 'Offer kedaluwarsa.');
+
+        return true;
     }
 
     public function paginateForTenant(int $tenantId, int $perPage = 12): array
     {
         $page = $this->taskQuery()->where('tenant_id', $tenantId)->latest('id')->paginate($perPage, ['*'], 'tasks')->withQueryString();
 
-        return ['items' => $page->getCollection()->map(fn (DeliveryTask $task): array => $this->mapTask($task)->toArray(true))->values()->all(), 'meta' => $this->meta($page)];
+        return ['items' => $page->getCollection()->map(function (DeliveryTask $task): array {
+            $includePii = in_array($task->status, [DriverTaskStatus::Accepted, DriverTaskStatus::InProgress], true);
+
+            return $this->mapTask($task)->toArray($includePii);
+        })->values()->all(), 'meta' => $this->meta($page)];
     }
 
     public function offersForDriver(int $driverId): array

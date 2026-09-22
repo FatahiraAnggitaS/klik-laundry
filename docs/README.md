@@ -1,6 +1,6 @@
 # Dokumentasi Laundry Multi-Tenant
 
-Dokumen ini adalah blueprint untuk MVP aplikasi laundry multi-tenant. Baseline keputusan divalidasi pada **15 September 2026**. Repository memiliki foundation Laravel/Inertia, prototype Milestone 0, vertical slice M2–M4 yang telah terverifikasi hosted CI, serta implementasi lokal Dispatch/Weighing/Commission M5 yang menunggu hosted CI per **18 September 2026**; versi aktual pada `composer.lock` dan `package-lock.json` tetap menjadi source of truth.
+Dokumen ini adalah blueprint untuk MVP aplikasi laundry multi-tenant. Baseline keputusan divalidasi pada **15 September 2026**. Repository memiliki foundation Laravel/Inertia, prototype Milestone 0, vertical slice M2–M4 yang telah terverifikasi hosted CI, implementasi M5 yang menunggu verifikasi hosted CI, serta vertical slice Duitku M6 yang terverifikasi lokal tetapi masih diblokir live sandbox per **22 September 2026**. Versi aktual pada `composer.lock` dan `package-lock.json` tetap menjadi source of truth.
 
 ## Daftar dokumen
 
@@ -27,7 +27,7 @@ Dokumen ini adalah blueprint untuk MVP aplikasi laundry multi-tenant. Baseline k
 - Geolokasi: koordinat outlet dan lokasi customer, lalu perhitungan jarak sederhana; PostGIS dan live GPS driver belum diperlukan.
 - Keuangan: laporan kas berbasis pembayaran sukses, fee gateway, dan komisi driver; belum berupa general ledger akuntansi.
 
-## Asumsi yang wajib divalidasi sebelum coding payment
+## Asumsi yang wajib divalidasi sebelum aktivasi payment production
 
 1. Merchant agreement Duitku mengizinkan model marketplace/multi-tenant yang direncanakan.
 2. Siapa merchant of record, siapa menanggung MDR/fee, dan kapan dana menjadi hak tenant.

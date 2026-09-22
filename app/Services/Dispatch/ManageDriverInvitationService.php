@@ -7,12 +7,15 @@ use App\Contracts\TransactionManagerInterface;
 use App\DTOs\Audit\ActivityLogData;
 use App\DTOs\Dispatch\DriverData;
 use App\DTOs\Dispatch\DriverInvitationData;
+use App\Enums\TenantOnboardingStatus;
+use App\Enums\TenantOperationalStatus;
 use App\Enums\UserRole;
 use App\Exceptions\Domain\DomainActionConflict;
 use App\Exceptions\Domain\DomainRecordNotFound;
 use App\Notifications\DriverInvitationNotification;
 use App\Repositories\Contracts\ActivityLogRepositoryInterface;
 use App\Repositories\Contracts\DriverRepositoryInterface;
+use App\Repositories\Contracts\TenantRepositoryInterface;
 use App\Services\Tenancy\TenantOperationsGuard;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Hashing\Hasher;
@@ -24,6 +27,7 @@ final readonly class ManageDriverInvitationService
 {
     public function __construct(
         private DriverRepositoryInterface $drivers,
+        private TenantRepositoryInterface $tenants,
         private TenantOperationsGuard $guard,
         private ActivityLogRepositoryInterface $activityLogs,
         private TransactionManagerInterface $transactions,
@@ -66,6 +70,12 @@ final readonly class ManageDriverInvitationService
         return $this->transactions->run(function () use ($publicId, $tokenHash, $name, $password): DriverData {
             $invitation = $this->drivers->lockInvitation($publicId, $tokenHash) ?? throw new DomainRecordNotFound;
             $this->assertUsable($invitation);
+            $tenant = $this->tenants->lockOwnedByTenantId($invitation->tenantId) ?? throw new DomainRecordNotFound;
+            if ($tenant->onboardingStatus !== TenantOnboardingStatus::Approved->value
+                || $tenant->operationalStatus !== TenantOperationalStatus::Active->value
+                || $tenant->closureRequested) {
+                throw new DomainActionConflict('Tenant is not eligible to accept Driver invitations.', 'Tenant tidak dapat menerima Driver baru saat ini.');
+            }
             if ($this->drivers->emailExists($invitation->email)) {
                 throw new DomainActionConflict('Invitation email already exists.', 'Email undangan sudah digunakan.');
             }

@@ -139,7 +139,7 @@ Commission disnapshot saat task diberikan dan menjadi `earned` tepat sekali keti
 
 | Table | Column penting | Constraint/index penting |
 | --- | --- | --- |
-| `payments` | Tenant/order IDs, public/merchant order IDs, provider/channel, amount/status, reconciliation status, provider reference/URL, expiry/result timestamps, actual fee | unique merchant order ID/provider reference; index order/status/paid |
+| `payments` | Tenant/order IDs, public/merchant order IDs, nullable active-order key, provider/channel, amount/status, reconciliation status, provider reference/URL, expiry/result timestamps, actual fee | unique merchant order ID/provider reference/active-order key; index order/status/paid |
 | `payment_events` | Payment ID?, event fingerprint, provider status/reference/amount, signature result, safe payload, processing timestamps | unique fingerprint; tanpa secret/PII tak perlu |
 | `refund_requests` | Tenant/order/payment IDs, status, immutable amount/reason, actor/timestamps, external reference | maksimal satu completed refund per payment |
 | `financial_adjustments` | Tenant/payment/refund IDs, type, signed amount, reason, actor/time, settlement state | append-only; index Tenant/state/date |
@@ -150,6 +150,12 @@ Commission disnapshot saat task diberikan dan menjadi `earned` tepat sekali keti
 Order payment status adalah `unpaid`, `pending`, `paid`, `failed`, dan `expired`. Ketidakpastian provider disimpan sebagai reconciliation state internal seperti `needs_inquiry`; UI menampilkan “sedang diverifikasi”, bukan status bisnis baru.
 
 Satu order dapat memiliki attempt baru setelah failure/expiry, tetapi hanya satu attempt aktif dan satu successful payment. Gunakan transaction, row lock, unique key, dan partial unique index bila sesuai. Callback duplicate/out-of-order tidak boleh menurunkan `paid` atau menggandakan side effect.
+
+### Schema dan flow Milestone 6 yang terimplementasi
+
+Migration korektif M6 menambahkan `active_order_key` nullable dan unique serta timestamp cooldown inquiry. Backfill hanya menandai attempt `pending` serta gagal aman bila menemukan lebih dari satu attempt aktif existing untuk order yang sama. Transition `paid`, `failed`, atau `expired` selalu membersihkan key; terminal `failed`/`expired` tidak dapat hidup kembali melalui callback terlambat.
+
+`payment_events` tetap append-only dan menyimpan fingerprint/status aman tanpa raw callback, signature, credential, payment URL, atau PII. Actual provider fee nullable sampai callback/inquiry tervalidasi menyediakannya. Status attempt, status pembayaran order, dan reconciliation dipertahankan terpisah.
 
 Refund tidak mengubah payment asli dari `paid`. Refund penuh yang selesai menghasilkan adjustment negatif. Jika payment sudah dipayout, adjustment dibawa ke payout berikutnya. Automated/partial provider refund di luar MVP.
 

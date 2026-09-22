@@ -51,6 +51,8 @@ Layer separation adalah control security: ia mencegah endpoint/job baru melewati
 - Maintenance mode menolak invoice baru tetapi tetap menerima callback/reconciliation lama.
 - Jangan log API key, signature, raw callback, payment URL, atau data provider yang tidak diperlukan.
 - HTTPS dan timeout eksplisit wajib; retry hanya untuk operasi yang dibuktikan aman.
+- Host endpoint dan payment URL memakai allowlist sesuai environment; production juga membutuhkan switch eksplisit yang default-nya mati.
+- Callback selalu memberi acknowledgement generik dan tidak mengungkap penyebab invalid; event aman tetap dicatat untuk reconciliation.
 
 ### Financial action, audit, dan fraud resistance
 
@@ -142,6 +144,8 @@ M3 menambahkan verifikasi lifecycle outlet/package, seluruh blocker readiness, p
 M4 menambahkan proof untuk server-authoritative calculation, duplicate idempotency, snapshot immutability, Customer/Tenant isolation, PII masking order cancelled, lifecycle reschedule/cancel, monitoring indicator idempotent, serta blocker blackout/slot/master/closure yang sudah memiliki referensi Order.
 
 M5 menambahkan proof untuk invitation hash/expiry/single-use, Driver availability dan session revocation, offer expiry/reassign/cross-Tenant denial, nullable unique active-task guard, completion/commission idempotency, privacy-window contact, exact weight correction/lock, serta upload raster private dengan random key dan authorized temporary URL. PostgreSQL hosted CI tetap menjadi bukti portability dan race-oriented database constraint.
+
+M6 menambahkan proof untuk invoice fixed/per-kg, server-authoritative amount, active-attempt unique guard, expiry sinkron, callback invalid/duplicate/out-of-order/terminal, browser return read-only, inquiry identity verification, production switch, maintenance/channel audit, dan payment URL redaction. HTTP fake bukan bukti live sandbox; callback HTTPS dan fee aktual tetap release blocker eksternal.
 
 Unit test Service boleh memakai fake Repository/Gateway untuk decision matrix. Race/transaction/constraint behavior wajib diuji lagi menggunakan database.
 

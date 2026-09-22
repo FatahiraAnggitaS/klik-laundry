@@ -17,8 +17,9 @@ final readonly class ExpireDriverOffersService
         $now ??= CarbonImmutable::now();
         foreach ($this->dispatch->expiredOffers($now->toIso8601String()) as $offer) {
             $this->transactions->run(function () use ($offer): void {
-                $this->dispatch->expireOffer($offer->id, $offer->taskId);
-                $this->events->dispatch(new DispatchLifecycleEvent('driver_task.offer_expired', $offer->task->publicId, $offer->task->orderPublicId, $offer->task->tenantId, $offer->driverId));
+                if ($this->dispatch->expireOffer($offer->id, $offer->taskId)) {
+                    $this->events->dispatch(new DispatchLifecycleEvent('driver_task.offer_expired', $offer->task->publicId, $offer->task->orderPublicId, $offer->task->tenantId, $offer->driverId));
+                }
             });
         }
     }

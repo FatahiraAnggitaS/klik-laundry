@@ -37,6 +37,7 @@ return [
 
     'duitku' => [
         'environment' => env('DUITKU_ENVIRONMENT', 'sandbox'),
+        'production_enabled' => (bool) env('DUITKU_PRODUCTION_ENABLED', false),
         'merchant_code' => env('DUITKU_MERCHANT_CODE'),
         'api_key' => env('DUITKU_API_KEY'),
         'callback_url' => env('DUITKU_CALLBACK_URL'),
@@ -45,6 +46,10 @@ return [
         'inquiry_url' => env('DUITKU_INQUIRY_URL', 'https://sandbox.duitku.com/webapi/api/merchant/transactionStatus'),
         'connect_timeout_seconds' => (int) env('DUITKU_CONNECT_TIMEOUT_SECONDS', 5),
         'timeout_seconds' => (int) env('DUITKU_TIMEOUT_SECONDS', 15),
+        'payment_url_hosts' => [
+            'sandbox' => 'app-sandbox.duitku.com',
+            'production' => 'app-prod.duitku.com',
+        ],
     ],
 
 ];

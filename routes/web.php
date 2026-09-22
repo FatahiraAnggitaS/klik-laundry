@@ -102,6 +102,7 @@ Route::middleware(['auth', 'identity.active'])->group(function (): void {
         Route::post('/orders/{order}/cancellation', [OrderController::class, 'cancel'])->name('orders.cancel');
         Route::get('/orders/{order}/payments/create', [PaymentController::class, 'create'])->name('payments.create');
         Route::post('/orders/{order}/payments', [PaymentController::class, 'store'])->name('payments.store');
+        Route::get('/payments/return', [PaymentController::class, 'handleReturn'])->name('payments.return');
         Route::get('/payments/{payment}', [PaymentController::class, 'show'])->name('payments.show');
         Route::get('/payments/{payment}/receipt', [PaymentController::class, 'receipt'])->name('payments.receipt');
         Route::get('/workspace', ShowWorkspaceController::class)
@@ -130,6 +131,7 @@ Route::middleware(['auth', 'identity.active'])->group(function (): void {
             Route::get('/dispatch', [DispatchController::class, 'index'])->name('dispatch.index');
             Route::post('/orders/{order}/driver-offers', [DispatchController::class, 'offer'])->name('driver-offers.store');
             Route::post('/tasks/{task}/reassignment', [DispatchController::class, 'reassign'])->name('tasks.reassign');
+            Route::post('/tasks/{task}/cancellation', [DispatchController::class, 'cancel'])->name('tasks.cancel');
             Route::post('/orders/{order}/weight-confirmations', WeightConfirmationController::class)->middleware('throttle:20,1')->name('weight-confirmations.store');
             Route::get('/operations', TenantOperationsController::class)->name('operations');
             Route::get('/orders', [OrderController::class, 'tenantIndex'])->name('orders.index');
@@ -184,8 +186,9 @@ Route::middleware(['auth', 'identity.active'])->group(function (): void {
                 Route::patch('/payout-accounts/{account}/review', ReviewPayoutAccountController::class)->name('payout-accounts.review');
                 Route::post('/users/{user}/suspension', SuspendUserController::class)->name('users.suspend');
                 Route::post('/users/{user}/reactivation', ReactivateUserController::class)->name('users.reactivate');
-                Route::post('/payments/{payment}/inquiry', [PaymentSupportController::class, 'inquire'])->name('payments.inquire');
-                Route::post('/payment-channels', [PaymentSupportController::class, 'toggleChannel'])->name('payment-channels.toggle');
+                Route::post('/payments/{payment}/inquiry', [PaymentSupportController::class, 'inquire'])->middleware('throttle:10,1')->name('payments.inquire');
+                Route::patch('/payment-channels/{channel}', [PaymentSupportController::class, 'toggleChannel'])->name('payment-channels.update');
+                Route::patch('/platform-settings/payment-maintenance', [ManagePlatformSettingsController::class, 'updatePaymentMaintenance'])->name('platform-settings.payment-maintenance.update');
             });
         });
 
@@ -195,6 +198,9 @@ Route::middleware(['auth', 'identity.active'])->group(function (): void {
         Route::get('/super-user/platform-settings', [ManagePlatformSettingsController::class, 'show'])
             ->middleware('two-factor.required')
             ->name('super-user.platform-settings.show');
+        Route::get('/super-user/payments', [PaymentSupportController::class, 'index'])
+            ->middleware('two-factor.required')
+            ->name('super-user.payments.index');
     });
 });
 

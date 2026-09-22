@@ -33,6 +33,8 @@ final class DuitkuGateway implements PaymentGatewayInterface
         $configuration = $this->configuration();
         $url = $configuration['createUrl'];
         $this->guardProviderUrl($url, self::HOSTS[$configuration['environment']]['create']);
+        $this->guardApplicationUrl($invoice->callbackUrl, true);
+        $this->guardApplicationUrl($invoice->returnUrl, false);
 
         $timestamp = (string) ((int) floor(microtime(true) * 1000));
         $startedAt = hrtime(true);
@@ -55,6 +57,7 @@ final class DuitkuGateway implements PaymentGatewayInterface
                 'merchantOrderId' => $invoice->merchantOrderId,
                 'productDetails' => 'Klik Laundry order payment',
                 'paymentMethod' => $invoice->channelCode,
+                'customerVaName' => mb_substr(trim($invoice->customerName), 0, 20),
                 'email' => $invoice->customerEmail,
                 'callbackUrl' => $invoice->callbackUrl,
                 'returnUrl' => $invoice->returnUrl,
@@ -73,6 +76,8 @@ final class DuitkuGateway implements PaymentGatewayInterface
         if ($payload['statusCode'] !== '00') {
             throw new RuntimeException('Create invoice Duitku ditolak provider.');
         }
+
+        $this->guardProviderUrl($payload['paymentUrl'], $configuration['paymentUrlHost']);
 
         return new PaymentInvoiceResult(
             merchantOrderId: $invoice->merchantOrderId,
@@ -108,15 +113,20 @@ final class DuitkuGateway implements PaymentGatewayInterface
         $latencyMilliseconds = $this->elapsedMilliseconds($startedAt);
         $payload = $this->validJson($response);
 
-        foreach (['reference', 'statusCode'] as $key) {
+        foreach (['merchantOrderId', 'reference', 'amount', 'statusCode'] as $key) {
             if (! isset($payload[$key]) || ! is_string($payload[$key]) || $payload[$key] === '') {
                 throw new RuntimeException('Respons inquiry Duitku tidak memiliki kontrak yang diharapkan.');
             }
         }
 
+        if (preg_match('/^\d+$/', $payload['amount']) !== 1) {
+            throw new RuntimeException('Nominal inquiry Duitku tidak valid.');
+        }
+
         return new PaymentInquiryResult(
-            merchantOrderId: $merchantOrderId,
+            merchantOrderId: $payload['merchantOrderId'],
             providerReference: $payload['reference'],
+            amount: (int) $payload['amount'],
             status: $this->normalizeInquiryStatus($payload['statusCode']),
             feeAmount: $this->normalizeFee($payload['fee'] ?? null),
             latencyMilliseconds: $latencyMilliseconds,
@@ -136,7 +146,7 @@ final class DuitkuGateway implements PaymentGatewayInterface
     }
 
     /**
-     * @return array{environment: string, merchantCode: string, apiKey: string, createUrl: string, inquiryUrl: string, connectTimeout: int, timeout: int}
+     * @return array{environment: string, merchantCode: string, apiKey: string, createUrl: string, inquiryUrl: string, paymentUrlHost: string, connectTimeout: int, timeout: int}
      */
     private function configuration(): array
     {
@@ -144,6 +154,9 @@ final class DuitkuGateway implements PaymentGatewayInterface
 
         if (! isset(self::HOSTS[$environment])) {
             throw new RuntimeException('Environment Duitku tidak dikenali.');
+        }
+        if ($environment === 'production' && config('services.duitku.production_enabled') !== true) {
+            throw new RuntimeException('Payment production Duitku belum diaktifkan.');
         }
 
         $merchantCode = config('services.duitku.merchant_code');
@@ -159,6 +172,7 @@ final class DuitkuGateway implements PaymentGatewayInterface
             'apiKey' => $apiKey,
             'createUrl' => (string) config('services.duitku.create_invoice_url'),
             'inquiryUrl' => (string) config('services.duitku.inquiry_url'),
+            'paymentUrlHost' => (string) config("services.duitku.payment_url_hosts.{$environment}"),
             'connectTimeout' => (int) config('services.duitku.connect_timeout_seconds', 5),
             'timeout' => (int) config('services.duitku.timeout_seconds', 15),
         ];
@@ -171,6 +185,20 @@ final class DuitkuGateway implements PaymentGatewayInterface
 
         if ($scheme !== 'https' || $host !== $expectedHost) {
             throw new RuntimeException('Gateway menolak endpoint provider yang tidak diizinkan.');
+        }
+    }
+
+    private function guardApplicationUrl(string $url, bool $publicHttpsRequired): void
+    {
+        $scheme = parse_url($url, PHP_URL_SCHEME);
+        $host = parse_url($url, PHP_URL_HOST);
+
+        if (! is_string($host) || $host === '' || ! in_array($scheme, $publicHttpsRequired ? ['https'] : ['http', 'https'], true)) {
+            throw new RuntimeException('URL callback atau return Duitku tidak valid.');
+        }
+
+        if ($publicHttpsRequired && in_array($host, ['localhost', '127.0.0.1', '::1'], true)) {
+            throw new RuntimeException('Callback Duitku harus memakai host HTTPS publik.');
         }
     }
 

@@ -7,6 +7,7 @@ final readonly class PaymentInquiryResult
     public function __construct(
         public string $merchantOrderId,
         public string $providerReference,
+        public int $amount,
         /** @var 'paid'|'pending'|'failed_or_expired'|'unknown' */
         public string $status,
         public ?int $feeAmount,

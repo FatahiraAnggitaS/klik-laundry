@@ -39,7 +39,7 @@ interface DispatchRepositoryInterface
     /** @return list<DriverOfferData> */
     public function expiredOffers(string $now): array;
 
-    public function expireOffer(int $offerId, int $taskId): void;
+    public function expireOffer(int $offerId, int $taskId): bool;
 
     /** @return array{items: list<array<string, mixed>>, meta: array{currentPage: int, lastPage: int, perPage: int, total: int}} */
     public function paginateForTenant(int $tenantId, int $perPage = 12): array;

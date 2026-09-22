@@ -27,7 +27,7 @@ final readonly class PaymentData
     ) {}
 
     /** @return array<string, mixed> */
-    public function toArray(): array
+    public function toCustomerArray(): array
     {
         return [
             'publicId' => $this->publicId,
@@ -45,5 +45,14 @@ final readonly class PaymentData
             'expiresAt' => $this->expiresAt->format(DateTimeInterface::ATOM),
             'paidAt' => $this->paidAt?->format(DateTimeInterface::ATOM),
         ];
+    }
+
+    /** @return array<string, mixed> */
+    public function toOperationalArray(): array
+    {
+        $data = $this->toCustomerArray();
+        unset($data['paymentUrl']);
+
+        return $data;
     }
 }

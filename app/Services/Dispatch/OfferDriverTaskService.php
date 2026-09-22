@@ -36,7 +36,7 @@ final readonly class OfferDriverTaskService
 
     public function handle(IdentityUser $actor, string $orderPublicId, string $driverPublicId, DriverTaskType $type = DriverTaskType::Pickup, ?CarbonImmutable $now = null): DriverOfferData
     {
-        $tenant = $this->guard->forRead($actor);
+        $tenant = $this->guard->forMutation($actor);
         $now ??= CarbonImmutable::now();
 
         return $this->transactions->run(function () use ($actor, $tenant, $orderPublicId, $driverPublicId, $type, $now): DriverOfferData {

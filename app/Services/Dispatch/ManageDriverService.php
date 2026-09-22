@@ -80,7 +80,7 @@ final readonly class ManageDriverService
                 throw new DomainActionConflict('Driver is not suspended.', 'Driver tidak sedang dinonaktifkan.');
             }
             $updated = $this->drivers->updateStatusAndRevokeSessions($driver->id, UserStatus::Active, $reason);
-            $this->drivers->updateAvailability($driver->id, DriverAvailability::Unavailable);
+            $updated = $this->drivers->updateAvailability($driver->id, DriverAvailability::Unavailable);
             $this->activityLogs->record(new ActivityLogData($tenant->id, $actor->databaseId(), 'driver.reactivated', 'user', $driver->publicId, $reason, ['status' => $driver->status], ['status' => $updated->status]));
 
             return $updated;

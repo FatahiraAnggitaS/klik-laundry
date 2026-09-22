@@ -44,11 +44,22 @@ final readonly class ProgressDriverTaskService
     public function complete(IdentityUser $actor, string $taskPublicId, ?string $note, ?UploadedFile $proof): DriverTaskData
     {
         $this->assertDriver($actor);
+        $existing = $this->dispatch->findTaskForDriver($actor->databaseId(), $taskPublicId);
+        if ($existing === null) {
+            throw new DomainRecordNotFound;
+        }
+        if ($existing->status === DriverTaskStatus::Completed->value) {
+            return $existing;
+        }
         $stored = $proof === null ? null : $this->proofs->store('dispatch/task-proofs', $proof);
         try {
             return $this->transactions->run(function () use ($actor, $taskPublicId, $note, $stored): DriverTaskData {
                 $task = $this->dispatch->findTaskForDriver($actor->databaseId(), $taskPublicId, true) ?? throw new DomainRecordNotFound;
                 if ($task->status === DriverTaskStatus::Completed->value) {
+                    if ($stored !== null) {
+                        $this->proofs->delete($stored['disk'], $stored['key']);
+                    }
+
                     return $task;
                 }
                 if ($task->type !== DriverTaskType::Pickup->value) {

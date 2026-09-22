@@ -26,7 +26,7 @@ final class EloquentDriverRepository implements DriverRepositoryInterface
 
     public function createInvitation(int $tenantId, int $actorId, string $email, string $phone, string $tokenHash, string $expiresAt): DriverInvitationData
     {
-        DriverInvitation::query()->where('email', $email)->whereNotNull('active_email_key')->update([
+        DriverInvitation::query()->where('tenant_id', $tenantId)->where('email', $email)->whereNotNull('active_email_key')->update([
             'active_email_key' => null,
             'revoked_at' => now(),
             'updated_at' => now(),
@@ -38,7 +38,7 @@ final class EloquentDriverRepository implements DriverRepositoryInterface
             'email' => $email,
             'phone' => $phone,
             'token_hash' => $tokenHash,
-            'active_email_key' => 'driver:'.$email,
+            'active_email_key' => sprintf('tenant:%d:driver:%s', $tenantId, $email),
             'invited_by' => $actorId,
             'expires_at' => $expiresAt,
         ]);

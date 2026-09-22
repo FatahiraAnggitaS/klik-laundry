@@ -281,6 +281,8 @@ sequenceDiagram
 
 Network call tidak boleh menahan database transaction. Untuk invoice, Service membuat local attempt secara transactional, memanggil Duitku Gateway setelah commit, lalu menyimpan hasil secara idempotent melalui transaction baru.
 
+Implementasi M6 menegakkan satu attempt aktif per order melalui nullable unique key yang portable untuk SQLite/PostgreSQL. Browser return hanya melakukan lookup milik Customer dan redirect; callback form POST tervalidasi menjadi satu-satunya jalur konfirmasi otomatis. Inquiry manual terbatas untuk Super User dengan recent sensitive authentication dan rate limit. Production gateway fail closed kecuali flag eksplisit aktif.
+
 ## Authorization matrix ringkas
 
 | Resource/action | Customer | Tenant owner | Driver | Super User |

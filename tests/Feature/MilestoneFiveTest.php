@@ -15,8 +15,12 @@ use App\Enums\PricingType;
 use App\Enums\ResourceStatus;
 use App\Enums\SlotType;
 use App\Enums\TenantOnboardingStatus;
+use App\Enums\TenantOperationalStatus;
 use App\Enums\UserRole;
+use App\Enums\UserStatus;
+use App\Events\DispatchLifecycleEvent;
 use App\Exceptions\Domain\DomainActionConflict;
+use App\Models\ActivityLog;
 use App\Models\DeliveryTask;
 use App\Models\DriverCommission;
 use App\Models\DriverInvitation;
@@ -35,8 +39,10 @@ use App\Repositories\Contracts\DriverRepositoryInterface;
 use App\Services\Catalog\ChangePackageStatusService;
 use App\Services\Catalog\ManagePackageService;
 use App\Services\Customers\ManageCustomerAddressService;
+use App\Services\Dispatch\CancelDriverTaskService;
 use App\Services\Dispatch\ConfirmLaundryWeightService;
 use App\Services\Dispatch\ExpireDriverOffersService;
+use App\Services\Dispatch\GetDispatchDashboardService;
 use App\Services\Dispatch\GetDriverTaskDashboardService;
 use App\Services\Dispatch\ManageDriverInvitationService;
 use App\Services\Dispatch\ManageDriverService;
@@ -54,6 +60,8 @@ use App\Services\Tenancy\SubmitPayoutAccountService;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
@@ -190,7 +198,9 @@ it('offers and accepts atomically while exposing pii only inside the active priv
         ->and(DriverTaskHistory::query()->where('task_id', $completed->id)->where('to_status', DriverTaskStatus::Completed)->count())->toBe(1)
         ->and(Order::query()->where('public_id', $context['order']->publicId)->value('fulfillment_status'))->toBe(FulfillmentStatus::AwaitingWeight);
     $history = app(GetDriverTaskDashboardService::class)->handle($context['driverUser']);
-    expect($history['tasks'][0]['contactPhone'])->toBeNull();
+    $tenantHistory = app(GetDispatchDashboardService::class)->handle($context['owner']);
+    expect($history['tasks'][0]['contactPhone'])->toBeNull()
+        ->and($tenantHistory['tasks']['items'][0]['contactPhone'])->toBeNull();
 });
 
 it('prevents a second active task and handles expiry and reassignment', function () {
@@ -246,6 +256,9 @@ it('stores proofs privately and rejects unauthorized proof access', function () 
     expect($stored->proof_key)->toStartWith('dispatch/task-proofs/')
         ->and($stored->proof_key)->not->toContain('proof.jpg');
     Storage::disk('local')->assertExists($stored->proof_key);
+    $beforeRetry = Storage::disk('local')->allFiles('dispatch/task-proofs');
+    app(ProgressDriverTaskService::class)->complete($context['driverUser'], $task->publicId, null, UploadedFile::fake()->image('retry.jpg', 640, 480));
+    expect(Storage::disk('local')->allFiles('dispatch/task-proofs'))->toBe($beforeRetry);
 
     $other = User::factory()->create();
     $this->actingAs($other)->withSession(['auth.version' => $other->auth_version])->get("/private-proofs/tasks/{$completed->publicId}")->assertNotFound();
@@ -262,4 +275,100 @@ it('renders isolated tenant and driver inertia workspaces', function () {
         ->get('/tenant/dispatch')->assertInertia(fn (Assert $page) => $page->component('tenant/dispatch')->has('tasks.items', 1));
     $this->actingAs($context['driverUser'])->withSession(['auth.version' => $context['driverUser']->auth_version])
         ->get('/driver/tasks')->assertInertia(fn (Assert $page) => $page->component('driver/tasks')->has('offers', 1)->where('offers.0.task.contactPhone', null));
+});
+
+it('scopes active invitation replacement to the owning tenant', function () {
+    $context = m5Context();
+    $secondIdentity = app(RegisterTenantService::class)->handle(new TenantRegistrationData(
+        'Laundry Lain', 'Pemilik Lain', 'owner-lain@example.test', '081200000001', 'StrongPassword123',
+        'Outlet Lain', 'Jl. Lain 1', 'Bandung', 'Dago', '-6.8915', '107.6107',
+    ));
+    $secondTenant = Tenant::query()->where('name', 'Laundry Lain')->firstOrFail();
+    $repository = app(DriverRepositoryInterface::class);
+    $first = $repository->createInvitation($context['tenant']->id, $context['owner']->id, 'shared-driver@example.test', '081200000002', hash('sha256', 'first-token'), now()->addHours(48)->toIso8601String());
+    $repository->createInvitation($secondTenant->id, $secondIdentity->databaseId(), 'shared-driver@example.test', '081200000003', hash('sha256', 'second-token'), now()->addHours(48)->toIso8601String());
+
+    expect(DriverInvitation::query()->where('public_id', $first->publicId)->value('revoked_at'))->toBeNull()
+        ->and(DriverInvitation::query()->where('email', 'shared-driver@example.test')->whereNotNull('active_email_key')->count())->toBe(2);
+});
+
+it('rejects new dispatch and invitation acceptance after tenant suspension', function () {
+    $context = m5Context();
+    $token = Str::random(64);
+    $invitation = app(DriverRepositoryInterface::class)->createInvitation($context['tenant']->id, $context['owner']->id, 'blocked-driver@example.test', '081200000004', hash('sha256', $token), now()->addHours(48)->toIso8601String());
+    Tenant::query()->whereKey($context['tenant']->id)->update(['operational_status' => TenantOperationalStatus::Suspended]);
+
+    expect(fn () => m5Offer($context))->toThrow(DomainActionConflict::class)
+        ->and(fn () => app(ManageDriverInvitationService::class)->accept($invitation->publicId, hash('sha256', $token), 'Driver Blocked', 'StrongPassword123'))->toThrow(DomainActionConflict::class)
+        ->and(User::query()->where('email', 'blocked-driver@example.test')->exists())->toBeFalse();
+});
+
+it('cancels a dispatch task and its order atomically', function () {
+    $context = m5Context();
+    $offer = m5Offer($context);
+
+    app(CancelDriverTaskService::class)->handle($context['owner'], $offer->task->publicId, 'Customer meminta pembatalan.');
+
+    expect(DeliveryTask::query()->whereKey($offer->taskId)->value('status'))->toBe(DriverTaskStatus::Cancelled)
+        ->and(DriverTaskOffer::query()->whereKey($offer->id)->value('status'))->toBe(DriverOfferStatus::Withdrawn)
+        ->and(Order::query()->where('public_id', $context['order']->publicId)->value('fulfillment_status'))->toBe(FulfillmentStatus::Cancelled);
+});
+
+it('emits the offer expiry event only for the winning transition', function () {
+    $context = m5Context();
+    $offer = m5Offer($context);
+    Event::fake([DispatchLifecycleEvent::class]);
+    $afterExpiry = CarbonImmutable::parse($offer->expiresAt)->addSecond();
+
+    app(ExpireDriverOffersService::class)->handle($afterExpiry);
+    app(ExpireDriverOffersService::class)->handle($afterExpiry);
+
+    Event::assertDispatchedTimes(DispatchLifecycleEvent::class, 1);
+});
+
+it('revokes sessions and outstanding offers when a Driver is deactivated', function () {
+    $context = m5Context();
+    $offer = m5Offer($context);
+    DB::table('sessions')->insert(['id' => 'driver-session', 'user_id' => $context['driver']->id, 'payload' => 'safe-test-payload', 'last_activity' => time()]);
+    $beforeVersion = $context['driverUser']->auth_version;
+
+    app(ManageDriverService::class)->deactivate($context['owner'], $context['driver']->publicId, 'Driver berhenti sementara.');
+
+    expect(User::query()->whereKey($context['driver']->id)->value('status'))->toBe(UserStatus::Suspended)
+        ->and(User::query()->whereKey($context['driver']->id)->value('auth_version'))->toBe($beforeVersion + 1)
+        ->and(DB::table('sessions')->where('user_id', $context['driver']->id)->exists())->toBeFalse()
+        ->and(DriverTaskOffer::query()->whereKey($offer->id)->value('status'))->toBe(DriverOfferStatus::Withdrawn)
+        ->and(DeliveryTask::query()->whereKey($offer->taskId)->value('status'))->toBe(DriverTaskStatus::Pending);
+
+    $reactivated = app(ManageDriverService::class)->reactivate($context['owner'], $context['driver']->publicId, 'Driver kembali bekerja.');
+    expect($reactivated->availability)->toBe(DriverAvailability::Unavailable->value);
+});
+
+it('rejects invalid private proof uploads before task completion', function () {
+    Storage::fake('local');
+    $context = m5Context();
+    $offer = m5Offer($context);
+    $task = app(RespondDriverOfferService::class)->handle($context['driverUser'], $offer->publicId, true, CarbonImmutable::parse('2026-09-18 08:05', 'Asia/Jakarta'));
+    app(ProgressDriverTaskService::class)->start($context['driverUser'], $task->publicId);
+
+    $this->actingAs($context['driverUser'])->withSession(['auth.version' => $context['driverUser']->auth_version])
+        ->post("/driver/tasks/{$task->publicId}/complete", ['proof' => UploadedFile::fake()->create('proof.svg', 50, 'image/svg+xml')])
+        ->assertSessionHasErrors('proof');
+    $this->actingAs($context['driverUser'])->withSession(['auth.version' => $context['driverUser']->auth_version])
+        ->post("/driver/tasks/{$task->publicId}/complete", ['proof' => UploadedFile::fake()->image('oversize.png', 10, 10)->size(6000)])
+        ->assertSessionHasErrors('proof');
+
+    expect(DeliveryTask::query()->whereKey($task->id)->value('status'))->toBe(DriverTaskStatus::InProgress)
+        ->and(Storage::disk('local')->allFiles('dispatch/task-proofs'))->toBe([]);
+});
+
+it('keeps customer contact and coordinates out of dispatch audit metadata', function () {
+    $context = m5Context();
+    m5Offer($context);
+
+    $audit = ActivityLog::query()->where('tenant_id', $context['tenant']->id)->get()->toJson();
+    expect($audit)->not->toContain('081111111111')
+        ->not->toContain('Jl. Dekat Outlet')
+        ->not->toContain('-6.8915')
+        ->not->toContain('107.6107');
 });

@@ -40,4 +40,21 @@ final class EloquentPlatformSettingRepository implements PlatformSettingReposito
             updatedAt: $setting->updated_at,
         );
     }
+
+    public function updatePaymentMaintenance(bool $enabled, int $actorId): PlatformSettingsData
+    {
+        $setting = PlatformSetting::query()->findOrFail(PlatformSetting::GLOBAL_KEY);
+        $setting->forceFill([
+            'payment_maintenance_enabled' => $enabled,
+            'updated_by_user_id' => $actorId,
+            'version' => $setting->version + 1,
+        ])->save();
+
+        return new PlatformSettingsData(
+            maxServiceRadiusKm: $setting->max_service_radius_km,
+            paymentMaintenanceEnabled: $setting->payment_maintenance_enabled,
+            version: $setting->version,
+            updatedAt: $setting->updated_at,
+        );
+    }
 }

@@ -27,7 +27,8 @@ final readonly class ProcessDuitkuCallbackService
         $resultCode = isset($payload['resultCode']) && is_scalar($payload['resultCode']) ? (string) $payload['resultCode'] : null;
         $amount = isset($payload['amount']) && is_numeric($payload['amount']) ? (int) $payload['amount'] : null;
 
-        $fingerprint = hash('sha256', json_encode([$merchantOrderId, $reference, $resultCode, $amount], JSON_THROW_ON_ERROR));
+        $signature = isset($payload['signature']) && is_scalar($payload['signature']) ? (string) $payload['signature'] : null;
+        $fingerprint = hash('sha256', json_encode([$merchantOrderId, $reference, $resultCode, $amount, $signature], JSON_THROW_ON_ERROR));
 
         if ($merchantOrderId === null || $merchantOrderId === '' || $amount === null) {
             $this->payments->recordEvent(null, $fingerprint, $resultCode ?? 'unknown', $reference, $amount, false);
@@ -62,9 +63,9 @@ final readonly class ProcessDuitkuCallbackService
             }
 
             if ($resultCode === '00') {
-                $this->applyPaid->handle($merchantOrderId, $reference ?? $payment->providerReference ?? $merchantOrderId, null);
+                $applied = $this->applyPaid->handle($merchantOrderId, $reference ?? $payment->providerReference ?? $merchantOrderId, null);
 
-                return 'paid';
+                return $applied ? 'paid' : 'ignored';
             }
 
             if ($resultCode === '01') {

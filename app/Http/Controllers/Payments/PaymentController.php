@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Payments;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Payments\CreatePaymentInvoiceRequest;
+use App\Http\Requests\Payments\PaymentReturnRequest;
 use App\Http\Requests\Payments\ShowPaymentRequest;
 use App\Services\Payments\CreatePaymentInvoiceService;
 use App\Services\Payments\GetPaymentCheckoutService;
@@ -37,6 +38,14 @@ final class PaymentController extends Controller
 
     public function receipt(ShowPaymentRequest $request, string $payment): Response
     {
-        return Inertia::render('payments/receipt', $this->checkout->forPayment($request->identity(), $payment));
+        return Inertia::render('payments/receipt', $this->checkout->receipt($request->identity(), $payment));
+    }
+
+    public function handleReturn(PaymentReturnRequest $request): RedirectResponse
+    {
+        $payment = $this->checkout->resolveReturn($request->identity(), $request->string('merchantOrderId')->toString());
+
+        return redirect()->route('payments.show', $payment->publicId)
+            ->with('status', 'Status pembayaran ditampilkan dari data server. Konfirmasi tetap menunggu callback Duitku.');
     }
 }
