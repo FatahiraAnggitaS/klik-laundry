@@ -133,7 +133,7 @@ Exit criteria:
 
 ## Milestone 5 — Dispatch, weighing, dan commission
 
-Status implementasi per 22 September 2026: **in progress — blocker lokal telah diperbaiki, menunggu hosted CI PostgreSQL 18/Redis 8**. Pickup flow, invitation, Tenant-scoped revocation, lifecycle guard, privacy window, weighing, private proof, cancellation, commission, dan logout dispatch workspaces tersedia. Delivery completion tetap Milestone 7 agar task, order completion, dan commission selesai dalam transaction yang sama.
+Status implementasi per 22 September 2026: **selesai — hosted CI hijau pada run #10 (commit `618b7f7`)**. Pickup flow, invitation, Tenant-scoped revocation, lifecycle guard, privacy window, weighing, private proof, cancellation, commission, dan logout dispatch workspaces tersedia. Delivery completion tetap Milestone 7 agar task, order completion, dan commission selesai dalam transaction yang sama.
 
 Deliverables:
 
@@ -153,7 +153,7 @@ Exit criteria:
 
 ## Milestone 6 — Duitku payment
 
-Status implementasi per 22 September 2026: **in progress — external sandbox blocker**. Vertical slice invoice, callback, expiry, return, receipt, Tenant payment list, Super User reconciliation/inquiry, channel allowlist, dan maintenance mode tersedia serta lulus test lokal. Live sandbox belum dijalankan karena credential dan callback HTTPS publik belum tersedia; production tetap dinonaktifkan.
+Status implementasi per 22 September 2026: **in progress — external sandbox blocker**. Vertical slice invoice, callback, expiry, return, receipt, Tenant payment list, Super User reconciliation/inquiry, channel allowlist, dan maintenance mode tersedia serta lulus hosted CI run #10. Live sandbox belum dijalankan karena credential dan callback HTTPS publik belum tersedia; production tetap dinonaktifkan.
 
 Deliverables:
 

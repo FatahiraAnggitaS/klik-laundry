@@ -9,8 +9,8 @@
 - Milestone 2: **selesai — hosted CI hijau pada run #4 (commit `3af7fdb`)**. Identity, Tenant lifecycle, Super User, payout account, security middleware, audit, responsive UI, PostgreSQL 18, Redis 8, dan Gitleaks telah terverifikasi.
 - Milestone 3: **selesai — hosted CI hijau pada run #5 (commit `2b9366d`)**. Outlet, katalog, address book, discovery, scheduling preview, lifecycle/readiness, responsive UI, PostgreSQL 18/Redis 8, dan Gitleaks telah terverifikasi.
 - Milestone 4: **selesai — hosted CI hijau pada run #7 (commit `af34964`)**. Order fixed/per-kg, snapshot/idempotency, lifecycle, isolation, monitoring, responsive Inertia UI, PostgreSQL 18/Redis 8, dan Gitleaks telah terverifikasi.
-- Milestone 5: **in progress — blocker lokal selesai, hosted CI belum diverifikasi**. Driver invitation/availability, Tenant-scoped invitation, pickup dispatch, privacy window, transactional cancellation, weight confirmation, private proof, commission snapshot, expiry job, dan responsive Inertia UI tersedia. Delivery completion sengaja tetap diblokir sampai Milestone 7.
-- Milestone 6: **in progress — external sandbox blocker**. Invoice Duitku, active-attempt guard, callback idempotent, expiry, browser return read-only, receipt, Tenant payment list, Super User reconciliation/inquiry, channel control, maintenance mode, dan production fail-closed tersedia. Live sandbox belum dijalankan.
+- Milestone 5: **selesai — hosted CI hijau pada run #10 (commit `618b7f7`)**. Driver invitation/availability, Tenant-scoped invitation, pickup dispatch, privacy window, transactional cancellation, weight confirmation, private proof, commission snapshot, expiry job, dan responsive Inertia UI tersedia. Delivery completion sengaja tetap diblokir sampai Milestone 7.
+- Milestone 6: **in progress — external sandbox blocker; hosted CI run #10 hijau**. Invoice Duitku, active-attempt guard, callback idempotent, expiry, browser return read-only, receipt, Tenant payment list, Super User reconciliation/inquiry, channel control, maintenance mode, dan production fail-closed tersedia. Live sandbox belum dijalankan.
 - Milestone 7 dan seterusnya: belum diimplementasikan.
 
 Delivery completion, durable/realtime notification, proof-retention cleanup, refund, Driver payout, Tenant payout transaction, dan production integration belum tersedia. Payout saat ini hanya mencakup onboarding rekening dan payout hold, bukan pemindahan dana.
@@ -112,7 +112,9 @@ Verifikasi lokal M3 mencakup 84 Pest test/1.069 assertion, migration forward/rol
 
 Verifikasi lokal M4 mencakup 93 Pest test/1.184 assertion, migration round-trip SQLite, snapshot/idempotency/isolation/query-count regression, Larastan tanpa error, Pint, ESLint, TypeScript, production build, Composer/npm audit, dan `git diff --check`. Actionlint, dependency audit, Gitleaks full-history, PostgreSQL 18, serta Redis 8 lulus pada hosted CI.
 
-Verifikasi lokal gabungan M5/M6 per 22 September 2026 mencakup 131 Pest test/1.697 assertion, migration round-trip SQLite, lifecycle/privacy/cancellation M5, invoice/callback/inquiry/expiry M6, Larastan tanpa error, Pint, ESLint, TypeScript, production build, Composer/npm audit, dan `git diff --check`. `actionlint`, Gitleaks full-history, PostgreSQL 18, serta Redis 8 menunggu hosted CI. Live Duitku sandbox berstatus `blocked/not executed` dan HTTP fake tidak dihitung sebagai bukti provider.
+Verifikasi lokal gabungan M5/M6 per 22 September 2026 mencakup 131 Pest test/1.697 assertion, migration round-trip SQLite, lifecycle/privacy/cancellation M5, invoice/callback/inquiry/expiry M6, Larastan tanpa error, Pint, ESLint, TypeScript, production build, Composer/npm audit, Gitleaks 8.30.1, dan `git diff --check`. Live Duitku sandbox berstatus `blocked/not executed` dan HTTP fake tidak dihitung sebagai bukti provider.
+
+[Hosted CI run #10](https://github.com/FatahiraAnggitaS/klik-laundry/actions/runs/35745849646) untuk commit `618b7f7` lulus pada job quality dan secrets: PostgreSQL 18 migration/test, Redis 8 smoke, Larastan, Pint, ESLint, TypeScript, production build, dependency audit, actionlint, dan Gitleaks full-history.
 
 [Hosted CI run #7](https://github.com/FatahiraAnggitaS/klik-laundry/actions/runs/35245827541) untuk implementation commit M4 `af34964` lulus pada job quality dan secrets.
 
@@ -122,7 +124,7 @@ Verifikasi lokal gabungan M5/M6 per 22 September 2026 mencakup 131 Pest test/1.6
 
 Hosted run pertama pada commit `9c5d770` membuktikan job quality lulus penuh pada PostgreSQL 18 dan Redis 8. Job secret awal gagal pada contoh credential palsu di dokumentasi skill. Contoh kemudian di-redact dan satu fingerprint historis ditambahkan. [Hosted run #2](https://github.com/FatahiraAnggitaS/klik-laundry/actions/runs/35100746075) lulus penuh dan memenuhi exit criteria Milestone 1.
 
-`.gitleaksignore` hanya memuat satu fingerprint historis untuk contoh credential palsu pada dokumentasi skill; contoh aktif sudah diganti menjadi `[REDACTED]`. Tidak ada allowlist path atau rule global.
+`.gitleaksignore` hanya memuat dua fingerprint historis spesifik: contoh credential palsu pada dokumentasi skill yang sudah di-redact dan prose schema M5 yang menyebut field token hash tanpa nilainya. Tidak ada allowlist path atau rule global.
 
 ## Menjalankan project lokal
 
