@@ -38,12 +38,12 @@ Dokumen ini mengunci bahasa domain dan rule lintas milestone. Logical storage te
 | Reconciliation | `not_required`, `needs_inquiry`, `matched`, `mismatch` |
 | Driver availability | `available`, `unavailable` |
 | Task offer | `offered`, `accepted`, `rejected`, `expired`, `withdrawn` |
-| Delivery task | `pending`, `offered`, `accepted`, `in_progress`, `completed` |
+| Delivery task | `pending`, `offered`, `accepted`, `in_progress`, `completed`, `cancelled` |
 | Driver commission | `earned`, `paid` |
 | Refund | `submitted`, `approved`, `rejected`, `completed` |
 | Tenant/Driver payout | `pending_transfer`, `finalized`, `voided` |
 
-`completed`, `cancelled`, `paid`, refund `completed/rejected`, dan payout `finalized/voided` adalah terminal untuk record yang sama. Koreksi setelah final menggunakan history/adjustment baru, bukan edit diam-diam.
+Task `completed/cancelled`, payment attempt `paid/failed/expired`, refund `completed/rejected`, dan payout `finalized/voided` adalah terminal untuk record yang sama. Koreksi setelah final menggunakan history/adjustment atau attempt baru, bukan edit diam-diam.
 
 ## Calculation contract
 
@@ -123,7 +123,7 @@ Super User tidak memiliki transition fulfillment generik. Tenant dan Super User 
 | Context | Transition | Actor | Guard |
 | --- | --- | --- | --- |
 | Offer | `offered -> accepted/rejected/expired/withdrawn` | Driver/System/Tenant | Satu offer aktif; expiry 10 menit |
-| Task | `pending -> offered -> accepted -> in_progress -> completed` | Tenant/Driver | Satu active task per Driver |
+| Task | `pending -> offered -> accepted -> in_progress -> completed` atau eligible state `-> cancelled` | Tenant/Driver | Satu active task per Driver; cancellation transactional dan beralasan |
 | Commission | create `earned -> paid` | Completion service/Tenant | Unique per task; payout batch immutable |
 | Refund | `submitted -> approved -> completed` | Tenant/Super User | Full amount, deadline 3x24 jam, reason/re-auth/audit |
 | Refund | `submitted -> rejected` | Super User | Reason/re-auth/audit |
@@ -133,7 +133,8 @@ Super User tidak memiliki transition fulfillment generik. Tenant dan Super User 
 ## Forbidden transitions dan invariants
 
 - Client tidak menentukan actor identity, Tenant, Customer, total, fee, weight result, batch membership, atau status.
-- Tidak ada `unpaid/failed/expired -> paid` dari redirect browser, JS callback, Tenant, atau Super User.
+- Tidak ada `failed/expired -> paid` pada attempt yang sama, termasuk dari callback/inquiry terlambat; order yang masih payable harus memakai attempt baru.
+- Redirect browser, JS callback, Tenant, dan Super User tidak pernah menjadi authority untuk status `paid`.
 - `paid` tidak pernah turun; refund tidak mengubah payment asli.
 - Order tidak masuk `processing` tanpa paid yang diverifikasi provider.
 - Per-kg total tidak berubah setelah invoice dibuat.

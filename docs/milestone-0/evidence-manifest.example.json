@@ -1,0 +1,101 @@
+{
+    "decisions": {
+        "DEC-001": {
+            "status": "approved",
+            "approverRoles": ["Business", "Duitku"],
+            "reviewedAt": "YYYY-MM-DD",
+            "evidenceReference": "replace-with-external-reference"
+        },
+        "DEC-002": {
+            "status": "approved",
+            "approverRoles": ["Business", "Legal", "Duitku"],
+            "reviewedAt": "YYYY-MM-DD",
+            "evidenceReference": "replace-with-external-reference"
+        },
+        "DEC-003": {
+            "status": "approved",
+            "approverRoles": ["Business", "Finance"],
+            "reviewedAt": "YYYY-MM-DD",
+            "evidenceReference": "replace-with-external-reference"
+        },
+        "DEC-004": {
+            "status": "approved",
+            "approverRoles": ["Business", "Finance"],
+            "reviewedAt": "YYYY-MM-DD",
+            "evidenceReference": "replace-with-external-reference"
+        },
+        "DEC-005": {
+            "status": "approved",
+            "approverRoles": ["Business", "Finance", "Legal"],
+            "reviewedAt": "YYYY-MM-DD",
+            "evidenceReference": "replace-with-external-reference"
+        },
+        "DEC-006": {
+            "status": "approved",
+            "approverRoles": ["Business", "Finance"],
+            "reviewedAt": "YYYY-MM-DD",
+            "evidenceReference": "replace-with-external-reference"
+        },
+        "DEC-007": {
+            "status": "approved",
+            "approverRoles": ["Business", "Legal", "Finance"],
+            "reviewedAt": "YYYY-MM-DD",
+            "evidenceReference": "replace-with-external-reference"
+        },
+        "DEC-008": {
+            "status": "approved",
+            "approverRoles": ["Product", "Operations"],
+            "reviewedAt": "YYYY-MM-DD",
+            "evidenceReference": "replace-with-external-reference"
+        },
+        "DEC-009": {
+            "status": "approved",
+            "approverRoles": ["Product", "Legal/Privacy"],
+            "reviewedAt": "YYYY-MM-DD",
+            "evidenceReference": "replace-with-external-reference"
+        },
+        "DEC-010": {
+            "status": "approved",
+            "approverRoles": ["Legal/Privacy", "Operations"],
+            "reviewedAt": "YYYY-MM-DD",
+            "evidenceReference": "replace-with-external-reference"
+        },
+        "DEC-011": {
+            "status": "approved",
+            "approverRoles": ["Legal", "Finance"],
+            "reviewedAt": "YYYY-MM-DD",
+            "evidenceReference": "replace-with-external-reference"
+        },
+        "DEC-012": {
+            "status": "approved",
+            "approverRoles": ["Product", "Engineering"],
+            "reviewedAt": "YYYY-MM-DD",
+            "evidenceReference": "replace-with-external-reference"
+        },
+        "DEC-013": {
+            "status": "verified",
+            "approverRoles": ["Security", "Duitku"],
+            "reviewedAt": "YYYY-MM-DD",
+            "evidenceReference": "replace-with-external-reference"
+        },
+        "DEC-014": {
+            "status": "verified",
+            "approverRoles": ["Engineering", "Security"],
+            "reviewedAt": "YYYY-MM-DD",
+            "evidenceReference": "replace-with-external-reference"
+        }
+    },
+    "retention": {
+        "financialRecordsPeriod": "replace-with-approved-period",
+        "piiPeriod": "replace-with-approved-period",
+        "lawfulBasisReference": "replace-with-external-reference",
+        "deletionRule": "replace-with-approved-rule",
+        "anonymizationRule": "replace-with-approved-rule"
+    },
+    "staging": {
+        "reference": "replace-with-external-reference",
+        "operatorRole": "replace-with-operator-role",
+        "callbackUrl": "https://replace-with-public-host.example.invalid/webhooks/duitku",
+        "returnUrl": "https://replace-with-public-host.example.invalid/payments/return"
+    }
+}

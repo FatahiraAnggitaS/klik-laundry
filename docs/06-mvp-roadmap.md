@@ -35,7 +35,7 @@ Ikuti bagian non-goals pada [`01-product-scope.md`](01-product-scope.md): native
 
 ## Milestone 0 — Risk validation dan domain contract
 
-> Status per 16 September 2026: **in progress — external blockers**. Domain contract, threat model, wireflow responsive, dan sandbox harness tersedia di [`milestone-0/`](milestone-0/). Live sandbox callback serta sign-off bisnis/legal/Duitku belum tersedia sehingga exit criteria belum dinyatakan selesai.
+> Status per 22 September 2026: **in progress — external blockers**. Domain contract telah disinkronkan dengan M5/M6; threat model, wireflow responsive, evidence-manifest preflight, dan sandbox harness tersedia di [`milestone-0/`](milestone-0/). Live sandbox serta manifest sign-off bisnis/legal/Duitku belum tersedia pada workspace sehingga exit criteria belum dinyatakan selesai.
 
 Deliverables:
 

@@ -1,8 +1,8 @@
 # Milestone 0 — Risk Validation dan Domain Contract
 
-> Status per 16 September 2026: **in progress — external blockers**.
+> Status per 22 September 2026: **in progress — external blockers**.
 
-Milestone ini mengunci kontrak internal yang dapat diputuskan tanpa persistence dan menyediakan alat untuk menguji asumsi provider. Milestone belum memenuhi exit criteria karena belum ada credential Duitku sandbox, callback HTTPS publik, atau sign-off bisnis/legal.
+Milestone ini mengunci kontrak internal dan menyediakan alat untuk menguji asumsi provider melalui payment M6 nyata. Milestone belum memenuhi exit criteria karena private evidence manifest belum tersedia pada workspace dan live sandbox belum dijalankan. Status tidak boleh dinaikkan berdasarkan placeholder, mock, atau HTTP fake.
 
 ## Artefak
 
@@ -14,6 +14,7 @@ Milestone ini mengunci kontrak internal yang dapat diputuskan tanpa persistence 
 | [`wireflows.md`](wireflows.md) | Screen flow responsive untuk Customer, Tenant owner, Driver, dan Super User |
 | [`threat-model.md`](threat-model.md) | Threat, impact, mitigation, verification, dan residual risk |
 | [`duitku-sandbox-spike.md`](duitku-sandbox-spike.md) | Runbook serta evidence template sandbox yang aman |
+| [`evidence-manifest.example.json`](evidence-manifest.example.json) | Template input private untuk sign-off, retention, dan staging preflight |
 
 Prototype interaktif tersedia pada `/milestone-0/wireflows/{role}` untuk `customer`, `tenant_owner`, `driver`, dan `super_user`. Semua data merupakan fixture presentasi dan tidak menggunakan database.
 

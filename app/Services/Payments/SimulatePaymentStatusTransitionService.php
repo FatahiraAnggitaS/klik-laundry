@@ -8,15 +8,7 @@ final class SimulatePaymentStatusTransitionService
 {
     public function apply(SandboxPaymentStatus $current, SandboxPaymentStatus $incoming): SandboxPaymentStatus
     {
-        if ($current === SandboxPaymentStatus::Paid || $current === $incoming) {
-            return $current;
-        }
-
-        if ($incoming === SandboxPaymentStatus::Paid) {
-            return SandboxPaymentStatus::Paid;
-        }
-
-        if ($current !== SandboxPaymentStatus::Pending) {
+        if ($current !== SandboxPaymentStatus::Pending || $current === $incoming) {
             return $current;
         }
 
