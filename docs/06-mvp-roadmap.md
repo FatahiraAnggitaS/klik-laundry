@@ -174,7 +174,7 @@ Exit criteria:
 
 ## Milestone 7 — Processing, realtime, dan completion
 
-Status implementasi: **implementation complete — local gates; release blocked**. Vertical slice tersedia, tetapi status release tetap diblokir sampai hosted PostgreSQL/Redis CI hijau serta blocker eksternal M0/M6 terselesaikan. Production payment tetap nonaktif.
+Status implementasi: **implementation complete — release blocked**. Vertical slice dan hosted PostgreSQL 18/Redis 8 CI lulus pada run #13 untuk commit `1376eb8`. Release tetap diblokir sampai blocker eksternal M0/M6 terselesaikan. Production payment tetap nonaktif.
 
 Deliverables:
 
