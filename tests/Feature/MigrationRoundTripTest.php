@@ -49,7 +49,11 @@ it('migrates forward and rolls back on an isolated sqlite database', function ()
             ->and(Schema::connection('m2_roundtrip')->hasTable('payments'))->toBeTrue()
             ->and(Schema::connection('m2_roundtrip')->hasTable('payment_events'))->toBeTrue()
             ->and(Schema::connection('m2_roundtrip')->hasColumn('payments', 'active_order_key'))->toBeTrue()
-            ->and(Schema::connection('m2_roundtrip')->hasColumn('payments', 'last_inquired_at'))->toBeTrue();
+            ->and(Schema::connection('m2_roundtrip')->hasColumn('payments', 'last_inquired_at'))->toBeTrue()
+            ->and(Schema::connection('m2_roundtrip')->hasTable('notifications'))->toBeTrue()
+            ->and(Schema::connection('m2_roundtrip')->hasColumns('orders', ['processing_started_at', 'estimated_ready_at']))->toBeTrue()
+            ->and(Schema::connection('m2_roundtrip')->hasColumns('delivery_tasks', ['proof_expires_at', 'proof_access_revoked_at']))->toBeTrue()
+            ->and(Schema::connection('m2_roundtrip')->hasColumns('weight_confirmations', ['proof_expires_at', 'proof_access_revoked_at']))->toBeTrue();
 
         expect(Artisan::call('migrate:reset', ['--database' => 'm2_roundtrip', '--force' => true]))->toBe(0)
             ->and(Schema::connection('m2_roundtrip')->hasTable('tenants'))->toBeFalse()

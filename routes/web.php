@@ -19,6 +19,7 @@ use App\Http\Controllers\Identity\ShowSensitiveAuthenticationController;
 use App\Http\Controllers\Identity\ShowWorkspaceController;
 use App\Http\Controllers\Identity\UpdateProfileController;
 use App\Http\Controllers\MilestoneZero\ShowWireflowPreviewController;
+use App\Http\Controllers\Notifications\NotificationController;
 use App\Http\Controllers\Orders\OrderController;
 use App\Http\Controllers\Outlets\ChangeOutletStatusController;
 use App\Http\Controllers\Outlets\OperatingHoursController;
@@ -84,6 +85,9 @@ Route::middleware('guest')->group(function (): void {
 });
 
 Route::middleware(['auth', 'identity.active'])->group(function (): void {
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::patch('/notifications/{notification}/read', [NotificationController::class, 'read'])->name('notifications.read');
+    Route::post('/notifications/read-all', [NotificationController::class, 'readAll'])->name('notifications.read-all');
     Route::get('/identity/security', ShowSecuritySettingsController::class)->name('identity.security');
     Route::patch('/identity/profile', UpdateProfileController::class)->name('identity.profile.update');
 
@@ -100,6 +104,7 @@ Route::middleware(['auth', 'identity.active'])->group(function (): void {
         Route::get('/orders/{order}/receipt', [OrderController::class, 'receipt'])->name('orders.receipt');
         Route::patch('/orders/{order}/pickup-schedule', [OrderController::class, 'reschedule'])->name('orders.reschedule');
         Route::post('/orders/{order}/cancellation', [OrderController::class, 'cancel'])->name('orders.cancel');
+        Route::patch('/orders/{order}/delivery-schedule', [OrderController::class, 'scheduleDelivery'])->name('orders.delivery-schedule.update');
         Route::get('/orders/{order}/payments/create', [PaymentController::class, 'create'])->name('payments.create');
         Route::post('/orders/{order}/payments', [PaymentController::class, 'store'])->name('payments.store');
         Route::get('/payments/return', [PaymentController::class, 'handleReturn'])->name('payments.return');
@@ -140,6 +145,8 @@ Route::middleware(['auth', 'identity.active'])->group(function (): void {
             Route::get('/orders/{order}/receipt', [OrderController::class, 'receipt'])->name('orders.receipt');
             Route::patch('/orders/{order}/pickup-schedule', [OrderController::class, 'reschedule'])->name('orders.reschedule');
             Route::post('/orders/{order}/cancellation', [OrderController::class, 'cancel'])->name('orders.cancel');
+            Route::post('/orders/{order}/ready-for-delivery', [OrderController::class, 'markReady'])->name('orders.ready-for-delivery');
+            Route::patch('/orders/{order}/delivery-schedule', [OrderController::class, 'scheduleDelivery'])->name('orders.delivery-schedule.update');
             Route::post('/outlets', [OutletController::class, 'store'])->name('outlets.store');
             Route::put('/outlets/{outlet}', [OutletController::class, 'update'])->name('outlets.update');
             Route::delete('/outlets/{outlet}', [OutletController::class, 'destroy'])->name('outlets.destroy');

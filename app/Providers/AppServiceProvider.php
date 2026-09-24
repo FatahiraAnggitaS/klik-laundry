@@ -4,18 +4,21 @@ namespace App\Providers;
 
 use App\Contracts\PrivateProofStorageInterface;
 use App\Contracts\TransactionManagerInterface;
+use App\Events\DispatchLifecycleEvent;
 use App\Gateways\Identity\FortifySensitiveAuthenticationVerifier;
 use App\Gateways\Identity\SensitiveAuthenticationVerifierInterface;
 use App\Gateways\Payments\DuitkuGateway;
 use App\Gateways\Payments\PaymentGatewayInterface;
 use App\Infrastructure\LaravelPrivateProofStorage;
 use App\Infrastructure\LaravelTransactionManager;
+use App\Listeners\PersistAndBroadcastLifecycleNotification;
 use App\Listeners\StampAuthenticationSession;
 use App\Policies\IdentityPolicy;
 use App\Repositories\Contracts\ActivityLogRepositoryInterface;
 use App\Repositories\Contracts\CustomerAddressRepositoryInterface;
 use App\Repositories\Contracts\DispatchRepositoryInterface;
 use App\Repositories\Contracts\DriverRepositoryInterface;
+use App\Repositories\Contracts\NotificationRepositoryInterface;
 use App\Repositories\Contracts\OrderRepositoryInterface;
 use App\Repositories\Contracts\OutletRepositoryInterface;
 use App\Repositories\Contracts\PackageRepositoryInterface;
@@ -28,6 +31,7 @@ use App\Repositories\Eloquent\EloquentActivityLogRepository;
 use App\Repositories\Eloquent\EloquentCustomerAddressRepository;
 use App\Repositories\Eloquent\EloquentDispatchRepository;
 use App\Repositories\Eloquent\EloquentDriverRepository;
+use App\Repositories\Eloquent\EloquentNotificationRepository;
 use App\Repositories\Eloquent\EloquentOrderRepository;
 use App\Repositories\Eloquent\EloquentOutletRepository;
 use App\Repositories\Eloquent\EloquentPackageRepository;
@@ -66,6 +70,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(ActivityLogRepositoryInterface::class, EloquentActivityLogRepository::class);
         $this->app->bind(OutletRepositoryInterface::class, EloquentOutletRepository::class);
         $this->app->bind(OrderRepositoryInterface::class, EloquentOrderRepository::class);
+        $this->app->bind(NotificationRepositoryInterface::class, EloquentNotificationRepository::class);
         $this->app->bind(PackageRepositoryInterface::class, EloquentPackageRepository::class);
         $this->app->bind(CustomerAddressRepositoryInterface::class, EloquentCustomerAddressRepository::class);
         $this->app->bind(DriverRepositoryInterface::class, EloquentDriverRepository::class);
@@ -83,5 +88,6 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('manage-own-tenant', [IdentityPolicy::class, 'manageOwnTenant']);
         Gate::define('manage-platform', [IdentityPolicy::class, 'managePlatform']);
         Event::listen(Login::class, StampAuthenticationSession::class);
+        Event::listen(DispatchLifecycleEvent::class, PersistAndBroadcastLifecycleNotification::class);
     }
 }

@@ -105,8 +105,39 @@ final class EloquentOrderRepository implements OrderRepositoryInterface
     {
         $order = Order::query()->findOrFail($orderId);
         $from = $order->fulfillment_status->value;
-        $order->update(['payment_status' => PaymentStatus::Paid, 'fulfillment_status' => $toFulfillmentStatus]);
+        $attributes = ['payment_status' => PaymentStatus::Paid, 'fulfillment_status' => $toFulfillmentStatus];
+        if ($toFulfillmentStatus === FulfillmentStatus::Processing->value) {
+            $attributes['processing_started_at'] = now();
+            $attributes['estimated_ready_at'] = now()->addMinutes((int) $order->item()->value('estimated_duration_minutes'));
+        }
+        $order->update($attributes);
         OrderStatusHistory::query()->create(['order_id' => $orderId, 'from_status' => $from, 'to_status' => $toFulfillmentStatus, 'actor_id' => $actorId, 'reason' => 'Pembayaran terverifikasi provider.', 'occurred_at' => now()]);
+
+        return $this->map($this->fresh($orderId));
+    }
+
+    public function markReadyForDelivery(int $orderId, int $actorId): OrderData
+    {
+        $order = Order::query()->findOrFail($orderId);
+        $from = $order->fulfillment_status;
+        $order->update(['fulfillment_status' => FulfillmentStatus::ReadyForDelivery, 'ready_at' => now()]);
+        OrderStatusHistory::query()->create(['order_id' => $orderId, 'from_status' => $from, 'to_status' => FulfillmentStatus::ReadyForDelivery, 'actor_id' => $actorId, 'reason' => 'Laundry dinyatakan siap delivery.', 'occurred_at' => now()]);
+
+        return $this->map($this->fresh($orderId));
+    }
+
+    public function scheduleDelivery(int $orderId, int $slotId, string $startsAt, string $endsAt, int $actorId, ?string $reason): OrderData
+    {
+        $order = Order::query()->findOrFail($orderId);
+        OrderScheduleHistory::query()->create([
+            'order_id' => $orderId, 'schedule_type' => 'delivery',
+            'old_slot_id' => $order->delivery_slot_id ?? $slotId,
+            'old_starts_at' => $order->delivery_starts_at ?? $startsAt,
+            'old_ends_at' => $order->delivery_ends_at ?? $endsAt,
+            'new_slot_id' => $slotId, 'new_starts_at' => $startsAt, 'new_ends_at' => $endsAt,
+            'actor_id' => $actorId, 'reason' => $reason, 'occurred_at' => now(),
+        ]);
+        $order->update(['delivery_slot_id' => $slotId, 'delivery_starts_at' => $startsAt, 'delivery_ends_at' => $endsAt]);
 
         return $this->map($this->fresh($orderId));
     }
@@ -260,7 +291,7 @@ final class EloquentOrderRepository implements OrderRepositoryInterface
             deliveryStartsAt: $order->delivery_starts_at?->toIso8601String(), deliveryEndsAt: $order->delivery_ends_at?->toIso8601String(),
             itemsSubtotal: $order->items_subtotal, estimatedItemsSubtotal: $order->estimated_items_subtotal,
             pickupFee: (int) $order->pickup_fee, deliveryFee: (int) $order->delivery_fee, grandTotal: $order->grand_total, estimatedGrandTotal: $order->estimated_grand_total,
-            estimatedReadyAt: $order->estimated_ready_at?->toIso8601String(), readyAt: $order->ready_at?->toIso8601String(), completedAt: $order->completed_at?->toIso8601String(), cancelledAt: $order->cancelled_at?->toIso8601String(), cancellationReason: $order->cancellation_reason,
+            estimatedReadyAt: $order->estimated_ready_at?->toIso8601String(), processingStartedAt: $order->processing_started_at?->toIso8601String(), readyAt: $order->ready_at?->toIso8601String(), completedAt: $order->completed_at?->toIso8601String(), cancelledAt: $order->cancelled_at?->toIso8601String(), cancellationReason: $order->cancellation_reason,
             outletName: $order->outlet_name, outletPublicId: $order->outlet->public_id, tenantName: $order->tenant_name, customerName: $pickupAddress->contact_name,
             item: ['packageName' => $item->package_name, 'packageDescription' => $item->package_description, 'pricingType' => $item->pricing_type->value, 'unitPrice' => $item->unit_price, 'minimumQuantity' => $item->minimum_quantity, 'minimumWeightGrams' => $item->minimum_weight_grams, 'estimatedDurationMinutes' => $item->estimated_duration_minutes, 'quantity' => $item->quantity, 'estimatedWeightGrams' => $item->estimated_weight_grams, 'estimatedBillableWeightGrams' => $item->estimated_billable_weight_grams, 'actualWeightGrams' => $item->actual_weight_grams, 'billableWeightGrams' => $item->billable_weight_grams],
             addresses: $order->addresses->map(fn (OrderAddress $address): array => ['type' => $address->type->value, 'label' => $address->label, 'contactName' => $address->contact_name, 'contactPhone' => $address->contact_phone, 'address' => $address->address, 'city' => $address->city, 'area' => $address->area, 'latitude' => (float) $address->latitude, 'longitude' => (float) $address->longitude])->all(),

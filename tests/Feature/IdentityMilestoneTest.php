@@ -1,15 +1,20 @@
 <?php
 
+use App\Enums\TenantOnboardingStatus;
+use App\Enums\TenantOperationalStatus;
 use App\Enums\UserRole;
 use App\Enums\UserStatus;
 use App\Models\ActivityLog;
+use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Str;
 use Laravel\Fortify\Fortify;
 use PragmaRX\Google2FA\Google2FA;
 
@@ -78,6 +83,47 @@ it('supports login logout and email verification', function () {
     expect($user->refresh()->hasVerifiedEmail())->toBeTrue();
 
     $this->post('/logout')->assertRedirect('/');
+    $this->assertGuest();
+});
+
+it('keeps a tenant owner remembered until explicit logout', function () {
+    $tenant = Tenant::query()->create([
+        'public_id' => (string) Str::ulid(),
+        'name' => 'Laundry Persisten',
+        'slug' => 'laundry-persisten',
+        'phone' => '081234567890',
+        'onboarding_status' => TenantOnboardingStatus::Approved,
+        'operational_status' => TenantOperationalStatus::Active,
+        'initial_outlet_name' => 'Outlet Persisten',
+        'initial_outlet_address' => 'Jl. Aman 1',
+        'initial_outlet_city' => 'Bandung',
+        'initial_outlet_area' => 'Coblong',
+        'initial_outlet_latitude' => '-6.8915000',
+        'initial_outlet_longitude' => '107.6107000',
+    ]);
+    $owner = User::factory()->create([
+        'tenant_id' => $tenant->id,
+        'role' => UserRole::TenantOwner,
+        'role_slot' => 'tenant:'.$tenant->id.':owner',
+        'email' => 'owner-persisten@example.test',
+        'password' => Hash::make('StrongPassword123'),
+        'remember_token' => null,
+    ]);
+
+    $response = $this->post('/login', [
+        'email' => $owner->email,
+        'password' => 'StrongPassword123',
+        'remember' => false,
+    ])->assertRedirect('/workspace');
+
+    expect($owner->refresh()->remember_token)->not->toBeNull();
+    $recallerName = Auth::guard('web')->getRecallerName();
+    $response->assertCookie($recallerName);
+    $recaller = $response->getCookie($recallerName, false);
+
+    $this->withUnencryptedCookie($recallerName, (string) $recaller?->getValue())
+        ->post('/logout')->assertRedirect('/')
+        ->assertCookieExpired($recallerName);
     $this->assertGuest();
 });
 

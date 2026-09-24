@@ -44,6 +44,18 @@ final readonly class TenantOperationsGuard
         return $tenant;
     }
 
+    public function forExistingWork(IdentityUser $actor): TenantApplicationData
+    {
+        $tenant = $this->tenant($actor);
+
+        if ($tenant->onboardingStatus !== TenantOnboardingStatus::Approved->value
+            || in_array($tenant->operationalStatus, [TenantOperationalStatus::Inactive->value, TenantOperationalStatus::Closed->value], true)) {
+            throw new DomainRecordNotFound;
+        }
+
+        return $tenant;
+    }
+
     private function tenant(IdentityUser $actor): TenantApplicationData
     {
         if ($actor->role() !== UserRole::TenantOwner || $actor->status() !== UserStatus::Active || $actor->tenantId() === null) {

@@ -227,8 +227,11 @@ it('moves a per-kg order to processing after weight confirmation and provider pa
     $attempt = m6Invoice($context);
     $result = app(ProcessDuitkuCallbackService::class)->handle(m6CallbackPayload($attempt->merchantOrderId, 54_000, '00', 'REF-TEST-1'));
 
+    $storedOrder = Order::query()->where('public_id', $context['order']->publicId)->firstOrFail();
     expect($result)->toBe('paid')
-        ->and(Order::query()->where('public_id', $context['order']->publicId)->value('fulfillment_status'))->toBe(FulfillmentStatus::Processing);
+        ->and($storedOrder->fulfillment_status)->toBe(FulfillmentStatus::Processing)
+        ->and($storedOrder->processing_started_at)->not->toBeNull()
+        ->and($storedOrder->estimated_ready_at)->not->toBeNull();
 });
 
 it('rejects tampered callbacks without mutating payment state', function () {

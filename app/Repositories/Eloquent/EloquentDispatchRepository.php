@@ -68,6 +68,14 @@ final class EloquentDispatchRepository implements DispatchRepositoryInterface
         return $task === null ? null : $this->mapTask($task->load($this->taskRelations()));
     }
 
+    public function findTaskForOrder(int $orderId, DriverTaskType $type, bool $lock = false): ?DriverTaskData
+    {
+        $query = DeliveryTask::query()->where('order_id', $orderId)->where('type', $type);
+        $task = $lock ? $query->lockForUpdate()->first() : $query->first();
+
+        return $task === null ? null : $this->mapTask($task->load($this->taskRelations()));
+    }
+
     public function createOffer(int $taskId, int $driverId, string $expiresAt, ?int $actorId): DriverOfferData
     {
         $task = DeliveryTask::query()->findOrFail($taskId);
@@ -137,11 +145,14 @@ final class EloquentDispatchRepository implements DispatchRepositoryInterface
         $from = $task->status;
         $task->update(['status' => DriverTaskStatus::InProgress, 'started_at' => now()]);
         DriverTaskHistory::query()->create(['task_id' => $taskId, 'from_status' => $from, 'to_status' => DriverTaskStatus::InProgress, 'actor_id' => $driverId, 'occurred_at' => now()]);
+        if ($task->type === DriverTaskType::Delivery) {
+            $this->transitionOrder(Order::query()->findOrFail($task->order_id), FulfillmentStatus::OutForDelivery, $driverId);
+        }
 
         return $this->mapTask($this->freshTask($taskId));
     }
 
-    public function completePickupTask(int $taskId, int $driverId, ?string $note, ?array $proof): DriverTaskData
+    public function completeTask(int $taskId, int $driverId, ?string $note, ?array $proof): DriverTaskData
     {
         $task = DeliveryTask::query()->findOrFail($taskId);
         if ($task->status === DriverTaskStatus::Completed) {
@@ -159,13 +170,39 @@ final class EloquentDispatchRepository implements DispatchRepositoryInterface
             ['public_id' => (string) Str::ulid(), 'tenant_id' => $task->tenant_id, 'driver_id' => $driverId, 'amount' => $task->commission_amount, 'status' => DriverCommissionStatus::Earned, 'earned_at' => now()],
         );
 
-        $order = Order::query()->findOrFail($task->order_id);
-        $this->transitionOrder($order, FulfillmentStatus::PickedUp, $driverId);
-        if ($order->pricing_type->value === 'per_kg') {
-            $this->transitionOrder($order->refresh(), FulfillmentStatus::AwaitingWeight, $driverId);
+        $order = Order::query()->with('item')->findOrFail($task->order_id);
+        if ($task->type === DriverTaskType::Delivery) {
+            $completedAt = now();
+            $this->transitionOrder($order, FulfillmentStatus::Completed, $driverId);
+            $order->update(['completed_at' => $completedAt]);
+            $expiresAt = $completedAt->copy()->addDays(90);
+            DeliveryTask::query()->where('order_id', $order->id)->whereNotNull('proof_key')->update(['proof_expires_at' => $expiresAt, 'updated_at' => now()]);
+            WeightConfirmation::query()->where('order_id', $order->id)->whereNotNull('proof_key')->update(['proof_expires_at' => $expiresAt, 'updated_at' => now()]);
+        } else {
+            $this->transitionOrder($order, FulfillmentStatus::PickedUp, $driverId);
+            if ($order->pricing_type->value === 'per_kg') {
+                $this->transitionOrder($order->refresh(), FulfillmentStatus::AwaitingWeight, $driverId);
+            } else {
+                $processingAt = now();
+                $fresh = $order->refresh();
+                $fresh->update([
+                    'processing_started_at' => $processingAt,
+                    'estimated_ready_at' => $processingAt->copy()->addMinutes((int) $order->item->estimated_duration_minutes),
+                ]);
+                $this->transitionOrder($fresh->refresh(), FulfillmentStatus::Processing, $driverId);
+            }
         }
 
         return $this->mapTask($this->freshTask($taskId));
+    }
+
+    public function updateDeliverySchedule(int $orderId, string $startsAt, string $endsAt): void
+    {
+        DeliveryTask::query()->where('order_id', $orderId)->where('type', DriverTaskType::Delivery)->update([
+            'scheduled_starts_at' => $startsAt,
+            'scheduled_ends_at' => $endsAt,
+            'updated_at' => now(),
+        ]);
     }
 
     public function resetForReassignment(int $taskId, int $actorId, string $reason): DriverTaskData
@@ -281,21 +318,34 @@ final class EloquentDispatchRepository implements DispatchRepositoryInterface
     {
         $task = DeliveryTask::query()->where('tenant_id', $tenantId)->where('public_id', $taskPublicId)->whereNotNull('proof_key')->first();
 
-        return $task === null ? null : ['disk' => (string) $task->proof_disk, 'key' => (string) $task->proof_key];
+        return $task === null ? null : $this->proofData($task);
     }
 
     public function driverTaskProof(int $driverId, string $taskPublicId): ?array
     {
         $task = DeliveryTask::query()->where('assignee_id', $driverId)->where('public_id', $taskPublicId)->whereNotNull('proof_key')->first();
 
-        return $task === null ? null : ['disk' => (string) $task->proof_disk, 'key' => (string) $task->proof_key];
+        return $task === null ? null : $this->proofData($task);
     }
 
     public function weightProof(int $tenantId, string $orderPublicId): ?array
     {
         $weight = WeightConfirmation::query()->whereHas('order', fn (Builder $query) => $query->where('tenant_id', $tenantId)->where('public_id', $orderPublicId))->whereNotNull('current_order_key')->whereNotNull('proof_key')->first();
 
-        return $weight === null ? null : ['disk' => (string) $weight->proof_disk, 'key' => (string) $weight->proof_key];
+        return $weight === null ? null : [
+            'disk' => (string) $weight->proof_disk,
+            'key' => (string) $weight->proof_key,
+            'expiresAt' => $weight->proof_expires_at?->toIso8601String(),
+            'revokedAt' => $weight->proof_access_revoked_at?->toIso8601String(),
+        ];
+    }
+
+    public function revokeExpiredProofAccess(string $now): int
+    {
+        $taskCount = DeliveryTask::query()->whereNotNull('proof_key')->whereNull('proof_access_revoked_at')->where('proof_expires_at', '<=', $now)->update(['proof_access_revoked_at' => $now, 'updated_at' => now()]);
+        $weightCount = WeightConfirmation::query()->whereNotNull('proof_key')->whereNull('proof_access_revoked_at')->where('proof_expires_at', '<=', $now)->update(['proof_access_revoked_at' => $now, 'updated_at' => now()]);
+
+        return $taskCount + $weightCount;
     }
 
     private function expireOrWithdraw(DriverTaskOffer $offer, DriverOfferStatus $status, ?int $actorId, string $reason): void
@@ -367,6 +417,17 @@ final class EloquentDispatchRepository implements DispatchRepositoryInterface
     private function mapWeight(WeightConfirmation $weight): WeightConfirmationData
     {
         return new WeightConfirmationData($weight->public_id, $weight->actual_grams, $weight->minimum_grams, $weight->billable_grams, $weight->items_subtotal, $weight->grand_total, $weight->proof_key !== null, $weight->confirmed_at->toIso8601String());
+    }
+
+    /** @return array{disk: string, key: string, expiresAt: string|null, revokedAt: string|null} */
+    private function proofData(DeliveryTask $task): array
+    {
+        return [
+            'disk' => (string) $task->proof_disk,
+            'key' => (string) $task->proof_key,
+            'expiresAt' => $task->proof_expires_at?->toIso8601String(),
+            'revokedAt' => $task->proof_access_revoked_at?->toIso8601String(),
+        ];
     }
 
     /** @param LengthAwarePaginator<int, DeliveryTask> $page @return array{currentPage: int, lastPage: int, perPage: int, total: int} */

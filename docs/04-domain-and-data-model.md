@@ -97,13 +97,13 @@ SQLite local tidak menyediakan fungsi trigonometri secara konsisten. Repository 
 
 | Table | Column penting | Constraint/index penting |
 | --- | --- | --- |
-| `orders` | Tenant/outlet/Customer IDs, public/order number, fulfillment/payment status, pickup/delivery ranges, indicator, money, weight, target, completion/cancellation | unique identifiers; FKs; index Customer/Tenant/outlet/status/date |
+| `orders` | Tenant/outlet/Customer IDs, public/order number, fulfillment/payment status, pickup/delivery ranges, indicator, money, weight, processing/target/readiness, completion/cancellation | unique identifiers; FKs; index Customer/Tenant/outlet/status/date |
 | `order_items` | Order/package ID, package/pricing snapshot, unit price, integer quantity, minimum/actual/billable weight, subtotal | unique `order_id` karena satu paket |
 | `order_addresses` | Order ID, pickup/delivery type, contact/address/city/area snapshot, lat/lng | unique `(order_id, type)` |
 | `order_status_histories` | Order ID, from/to status, actor, reason/note, timestamp | append-only; index order/time |
 | `order_schedule_histories` | Order ID, slot/range lama dan baru, actor, alasan, timestamp | append-only; index order/time |
 | `order_indicators` | Order ID, type, active key, context aman, detected/resolved timestamp | satu indicator aktif per order/type |
-| `weight_confirmations` | Order ID, actual/minimum/billable grams, rounding, totals, actor/time, optional proof key, current/superseded marker | partial unique untuk satu current confirmation; koreksi tetap diaudit |
+| `weight_confirmations` | Order ID, actual/minimum/billable grams, rounding, totals, actor/time, optional proof key, access-expiry/revocation, current/superseded marker | partial unique untuk satu current confirmation; koreksi tetap diaudit |
 
 Money breakdown minimum adalah `items_subtotal`, `pickup_fee`, `delivery_fee`, dan `grand_total`. Fixed package memakai integer quantity. Per-kg memakai `max(actual, minimum)` lalu dibulatkan naik per 100 gram; harga per kg wajib habis dibagi 10 agar hasil setiap 100 gram tetap integer rupiah. Service menetapkan formula dan hasil.
 
@@ -122,7 +122,7 @@ Fixed order menyimpan subtotal dan grand total final. Per-kg hanya menyimpan opt
 | `tenant_driver_settings` | Tenant ID, pickup/delivery commission nullable, change timestamp | unique Tenant; `null` memblokir offer, zero eksplisit valid |
 | `driver_invitations` | Tenant/inviter IDs, public ID, email/phone, token hash, expiry/accepted/revoked timestamps | satu pending invitation per Tenant/email melalui nullable unique key |
 | `driver_profiles` | User Driver/Tenant IDs, availability | unique User; Driver hanya satu Tenant |
-| `delivery_tasks` | Tenant/order/outlet IDs, type, assignee, status, commission snapshot, schedule dan lifecycle timestamps, proof/note | unique `(order_id, type)`; tenant-consistent FKs; index assignee/status |
+| `delivery_tasks` | Tenant/order/outlet IDs, type, assignee, status, commission snapshot, schedule/lifecycle timestamps, proof/note, proof access-expiry/revocation | unique `(order_id, type)`; tenant-consistent FKs; index assignee/status |
 | `driver_task_offers` | Task/Driver IDs, status, offered/expires/responded timestamps | satu offer aktif per task; expiry 10 menit |
 | `driver_task_histories` | Task, from/to status, actor, reason/note, timestamp | append-only |
 | `driver_commissions` | Tenant/task/Driver IDs, amount snapshot, status, earned/paid timestamps | unique task; non-negative; index Driver/status/earned |
@@ -131,7 +131,7 @@ Fixed order menyimpan subtotal dan grand total final. Per-kg hanya menyimpan opt
 
 Availability Driver `available`/`unavailable` terpisah dari account status. Partial unique constraint atau enforcement transaction-safe memastikan satu Driver hanya mempunyai satu task `accepted`/`in_progress`.
 
-Task status adalah `pending`, `offered`, `accepted`, `in_progress`, `completed`, atau `cancelled`. `cancelled` terminal dipakai untuk pembatalan order/reassignment yang tidak boleh dipalsukan sebagai pending atau completed. M5 membuka pickup completion; delivery task memakai aggregate yang sama tetapi public completion ditolak sampai M7.
+Task status adalah `pending`, `offered`, `accepted`, `in_progress`, `completed`, atau `cancelled`. `cancelled` terminal dipakai untuk pembatalan order yang tidak boleh dipalsukan sebagai pending atau completed. M7 membuka delivery completion; task, commission `earned`, order `completed`, history, privacy revocation, dan proof-retention timestamp ditulis dalam transaction yang sama.
 
 Commission disnapshot saat task diberikan dan menjadi `earned` tepat sekali ketika task selesai. Batch mengambil seluruh commission eligible sampai cutoff; membership ditentukan Service, bukan request client.
 
@@ -165,7 +165,7 @@ Payment eligible untuk payout jika order `completed` lebih dari 3×24 jam, payme
 
 | Table | Column penting | Constraint/index penting |
 | --- | --- | --- |
-| `notifications` | schema database notification Laravel dengan payload minimal | index recipient/read/created |
+| `notifications` | schema database notification Laravel dengan payload minimal dan dedupe key | unique dedupe key; index recipient/read/created |
 | `activity_logs` | Tenant?, actor, action, subject, reason, safe before/after metadata, timestamp | append-only; index subject/actor/Tenant/time |
 | `pii_access_logs` | Super User, order/Customer target, reason, grant/expiry/access timestamps | append-only dan order-specific |
 

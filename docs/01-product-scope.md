@@ -160,7 +160,7 @@ Untuk paket `fixed`, pembayaran dilakukan setelah order dibuat dan sebelum picku
 - Bukti penyelesaian berupa actor dan timestamp wajib; foto serta catatan singkat bersifat opsional dengan validasi file.
 - Ringkasan komisi earned dan paid per periode.
 
-Boundary implementasi M5: invitation, availability, offer, pickup task, weight confirmation, optional private proof, dan commission `earned` sudah tersedia. Delivery completion, commission `paid`, payout batch, notification durable/realtime, dan proof cleanup tetap milestone berikutnya.
+Boundary implementasi M7: invitation, availability, pickup/delivery task, weight confirmation, optional private proof, commission `earned`, delivery completion atomic, serta notification durable/realtime sudah tersedia. Commission `paid`, payout batch, refund guard, dan physical proof cleanup tetap milestone berikutnya; M7 hanya mencabut akses proof setelah masa retensi.
 
 ### Super User
 

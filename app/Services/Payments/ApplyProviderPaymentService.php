@@ -6,8 +6,10 @@ use App\Contracts\TransactionManagerInterface;
 use App\Enums\FulfillmentStatus;
 use App\Enums\PaymentStatus;
 use App\Enums\PricingType;
+use App\Events\DispatchLifecycleEvent;
 use App\Repositories\Contracts\OrderRepositoryInterface;
 use App\Repositories\Contracts\PaymentRepositoryInterface;
+use Illuminate\Contracts\Events\Dispatcher;
 
 final readonly class ApplyProviderPaymentService
 {
@@ -15,6 +17,7 @@ final readonly class ApplyProviderPaymentService
         private OrderRepositoryInterface $orders,
         private PaymentRepositoryInterface $payments,
         private TransactionManagerInterface $transactions,
+        private Dispatcher $events,
     ) {}
 
     public function handle(string $merchantOrderId, string $providerReference, ?int $feeAmount): bool
@@ -61,6 +64,10 @@ final readonly class ApplyProviderPaymentService
                 : FulfillmentStatus::Processing->value;
 
             $this->orders->applyPaidTransition($order->id, null, $target);
+            $this->events->dispatch(new DispatchLifecycleEvent('payment.paid', null, $order->publicId, $order->tenantId, customerId: $order->customerId));
+            if ($target === FulfillmentStatus::Processing->value) {
+                $this->events->dispatch(new DispatchLifecycleEvent('order.processing', null, $order->publicId, $order->tenantId, customerId: $order->customerId));
+            }
 
             return true;
         });

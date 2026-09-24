@@ -309,6 +309,8 @@ Semua keputusan ditegakkan backend. Menyembunyikan tombol di React hanya bagian 
 - Kegagalan queue/broadcast tidak membatalkan transaksi domain yang sudah committed.
 - Tracking MVP hanya status dan timeline; koordinat perjalanan Driver tidak dikumpulkan.
 
+Implementasi M7 memakai satu private channel per public user ID dengan authorization session `web`. Reverb memakai origin allowlist, client-originated events dinonaktifkan, dan broadcast event menerapkan rescue semantics; database notification tetap durable serta dideduplikasi per domain event/recipient.
+
 Rujukan implementasi: [Laravel broadcasting](https://laravel.com/docs/13.x/broadcasting), [queued listeners](https://laravel.com/docs/13.x/events#queued-event-listeners), dan [database transactions](https://laravel.com/docs/13.x/database#database-transactions).
 
 ## Deployment topology MVP

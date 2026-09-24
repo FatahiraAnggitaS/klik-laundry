@@ -27,7 +27,7 @@ final readonly class MonitorOrderIndicatorsService
             $this->transactions->run(function () use ($order, $now, &$count): void {
                 foreach ($this->states($order, $now) as $type => $active) {
                     $changed = $this->orders->syncIndicator($order->id, OrderIndicatorType::from($type), $active, $now->utc()->toIso8601String(), ['status' => $order->fulfillmentStatus]);
-                    if ($changed && $active && in_array($type, [OrderIndicatorType::PickupDelayed->value, OrderIndicatorType::Delayed->value, OrderIndicatorType::DeliveryDelayed->value], true)) {
+                    if ($changed && $active) {
                         $this->events->dispatch(new DispatchLifecycleEvent("order_indicator.{$type}", null, $order->publicId, $order->tenantId));
                     }
                     if ($active) {
@@ -45,7 +45,9 @@ final readonly class MonitorOrderIndicatorsService
     {
         $pickupDelayed = $order->fulfillmentStatus === FulfillmentStatus::AwaitingPickup->value && CarbonImmutable::parse($order->pickupEndsAt)->lessThan($now);
         $delayed = $order->fulfillmentStatus === FulfillmentStatus::Processing->value && $order->estimatedReadyAt !== null && CarbonImmutable::parse($order->estimatedReadyAt)->lessThan($now);
-        $deliveryDelayed = $order->fulfillmentStatus === FulfillmentStatus::ReadyForDelivery->value && $order->deliveryEndsAt !== null && CarbonImmutable::parse($order->deliveryEndsAt)->lessThan($now);
+        $deliveryDelayed = in_array($order->fulfillmentStatus, [FulfillmentStatus::ReadyForDelivery->value, FulfillmentStatus::DeliveryAssigned->value, FulfillmentStatus::OutForDelivery->value], true)
+            && $order->deliveryEndsAt !== null
+            && CarbonImmutable::parse($order->deliveryEndsAt)->lessThan($now);
         $awaitingCustomer = $order->fulfillmentStatus === FulfillmentStatus::ReadyForDelivery->value && $order->deliveryStartsAt === null && $order->readyAt !== null && CarbonImmutable::parse($order->readyAt)->addDays(7)->lessThanOrEqualTo($now);
 
         return [OrderIndicatorType::PickupDelayed->value => $pickupDelayed, OrderIndicatorType::Delayed->value => $delayed, OrderIndicatorType::DeliveryDelayed->value => $deliveryDelayed, OrderIndicatorType::AwaitingCustomer->value => $awaitingCustomer];

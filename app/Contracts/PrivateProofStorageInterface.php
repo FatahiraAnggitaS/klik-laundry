@@ -2,6 +2,7 @@
 
 namespace App\Contracts;
 
+use DateTimeInterface;
 use Illuminate\Http\UploadedFile;
 
 interface PrivateProofStorageInterface
@@ -11,5 +12,5 @@ interface PrivateProofStorageInterface
 
     public function delete(string $disk, string $key): void;
 
-    public function temporaryUrl(string $disk, string $key, int $minutes = 5): string;
+    public function temporaryUrl(string $disk, string $key, ?DateTimeInterface $expiresAt = null): string;
 }

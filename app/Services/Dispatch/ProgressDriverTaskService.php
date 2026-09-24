@@ -8,6 +8,7 @@ use App\Contracts\TransactionManagerInterface;
 use App\DTOs\Dispatch\DriverTaskData;
 use App\Enums\DriverTaskStatus;
 use App\Enums\DriverTaskType;
+use App\Enums\FulfillmentStatus;
 use App\Enums\PaymentStatus;
 use App\Enums\UserRole;
 use App\Enums\UserStatus;
@@ -37,7 +38,19 @@ final readonly class ProgressDriverTaskService
                 throw new DomainActionConflict('Task cannot be started.', 'Task tidak dapat dimulai dari status saat ini.');
             }
 
-            return $this->dispatch->startTask($task->id, $actor->databaseId());
+            $expectedOrderStatus = $task->type === DriverTaskType::Pickup->value
+                ? FulfillmentStatus::PickupAssigned->value
+                : FulfillmentStatus::DeliveryAssigned->value;
+            if ($task->orderStatus !== $expectedOrderStatus) {
+                throw new DomainActionConflict('Order is not ready for this task.', 'Status order tidak sesuai dengan task Driver.');
+            }
+
+            $started = $this->dispatch->startTask($task->id, $actor->databaseId());
+            if ($task->type === DriverTaskType::Delivery->value) {
+                $this->events->dispatch(new DispatchLifecycleEvent('order.out_for_delivery', $started->publicId, $started->orderPublicId, $started->tenantId, $actor->databaseId()));
+            }
+
+            return $started;
         });
     }
 
@@ -62,17 +75,24 @@ final readonly class ProgressDriverTaskService
 
                     return $task;
                 }
-                if ($task->type !== DriverTaskType::Pickup->value) {
-                    throw new DomainActionConflict('Delivery completion belongs to Milestone 7.', 'Penyelesaian delivery tersedia setelah flow completion M7 aktif.');
-                }
                 if ($task->status !== DriverTaskStatus::InProgress->value) {
                     throw new DomainActionConflict('Task is not in progress.', 'Task harus dimulai sebelum diselesaikan.');
                 }
                 if ($task->pricingType === 'fixed' && $task->paymentStatus !== PaymentStatus::Paid->value) {
                     throw new DomainActionConflict('Fixed order has not been paid.', 'Order fixed belum memiliki pembayaran terverifikasi.');
                 }
-                $completed = $this->dispatch->completePickupTask($task->id, $actor->databaseId(), $note, $stored);
-                $this->events->dispatch(new DispatchLifecycleEvent('driver_task.completed', $completed->publicId, $completed->orderPublicId, $completed->tenantId, $actor->databaseId()));
+                $expectedOrderStatus = $task->type === DriverTaskType::Pickup->value
+                    ? FulfillmentStatus::PickupAssigned->value
+                    : FulfillmentStatus::OutForDelivery->value;
+                if ($task->orderStatus !== $expectedOrderStatus) {
+                    throw new DomainActionConflict('Order is not ready for completion.', 'Status order tidak sesuai untuk penyelesaian task.');
+                }
+                $completed = $this->dispatch->completeTask($task->id, $actor->databaseId(), $note, $stored);
+                $event = $task->type === DriverTaskType::Delivery->value ? 'order.completed' : 'driver_task.completed';
+                $this->events->dispatch(new DispatchLifecycleEvent($event, $completed->publicId, $completed->orderPublicId, $completed->tenantId, $actor->databaseId()));
+                if ($task->type === DriverTaskType::Pickup->value && $task->pricingType === 'fixed') {
+                    $this->events->dispatch(new DispatchLifecycleEvent('order.processing', $completed->publicId, $completed->orderPublicId, $completed->tenantId));
+                }
 
                 return $completed;
             });

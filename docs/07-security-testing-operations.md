@@ -18,6 +18,7 @@
 ### Authentication, 2FA, dan session
 
 - Gunakan Laravel session authentication, CSRF, secure/HTTP-only/SameSite cookie, dan session rotation.
+- Tenant owner otomatis memakai remember-cookie agar tetap login setelah session idle berakhir sampai memilih logout. Session tetap dipakai untuk CSRF dan rotasi; suspend, close, reset password, atau perubahan security tetap mencabut akses.
 - Email verification wajib sebelum Customer order dan sebelum actor operasional aktif.
 - TOTP 2FA serta recovery code wajib bagi Tenant owner dan satu Super User.
 - Customer/Driver tidak memakai 2FA pada MVP; login/reset/invitation tetap rate-limited.
@@ -146,6 +147,8 @@ M4 menambahkan proof untuk server-authoritative calculation, duplicate idempoten
 M5 menambahkan proof untuk invitation hash/expiry/single-use, Driver availability dan session revocation, offer expiry/reassign/cross-Tenant denial, nullable unique active-task guard, completion/commission idempotency, privacy-window contact, exact weight correction/lock, serta upload raster private dengan random key dan authorized temporary URL. PostgreSQL hosted CI tetap menjadi bukti portability dan race-oriented database constraint.
 
 M6 menambahkan proof untuk invoice fixed/per-kg, server-authoritative amount, active-attempt unique guard, expiry sinkron, callback invalid/duplicate/out-of-order/terminal, browser return read-only, inquiry identity verification, production switch, maintenance/channel audit, dan payment URL redaction. HTTP fake bukan bukti live sandbox; callback HTTPS dan fee aktual tetap release blocker eksternal.
+
+M7 menambahkan proof untuk payment-to-processing gate, estimasi completion, readiness/delivery scheduling boundary, Tenant suspended/closing yang hanya menyelesaikan pekerjaan existing, atomic delivery completion/commission, indicator idempotent, private channel authorization, notification deduplication/redaction, polling fallback, serta proof access revocation tanpa physical deletion sebelum refund guard M8 tersedia. Reverb menolak client event dan memakai origin allowlist; kegagalan broadcast tidak membatalkan domain transaction yang sudah committed.
 
 Unit test Service boleh memakai fake Repository/Gateway untuk decision matrix. Race/transaction/constraint behavior wajib diuji lagi menggunakan database.
 

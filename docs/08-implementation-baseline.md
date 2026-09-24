@@ -1,6 +1,6 @@
 # Implementation Baseline
 
-> Status aktual per 22 September 2026. Dokumen ini menjelaskan implementasi yang benar-benar tersedia dan tidak menggantikan product, domain, atau architecture contract.
+> Status aktual per 24 September 2026. Dokumen ini menjelaskan implementasi yang benar-benar tersedia dan tidak menggantikan product, domain, atau architecture contract.
 
 ## Status milestone
 
@@ -11,19 +11,22 @@
 - Milestone 4: **selesai — hosted CI hijau pada run #7 (commit `af34964`)**. Order fixed/per-kg, snapshot/idempotency, lifecycle, isolation, monitoring, responsive Inertia UI, PostgreSQL 18/Redis 8, dan Gitleaks telah terverifikasi.
 - Milestone 5: **selesai — hosted CI hijau pada run #10 (commit `618b7f7`)**. Driver invitation/availability, Tenant-scoped invitation, pickup dispatch, privacy window, transactional cancellation, weight confirmation, private proof, commission snapshot, expiry job, dan responsive Inertia UI tersedia. Delivery completion sengaja tetap diblokir sampai Milestone 7.
 - Milestone 6: **in progress — external sandbox blocker; hosted CI run #10 hijau**. Invoice Duitku, active-attempt guard, callback idempotent, expiry, browser return read-only, receipt, Tenant payment list, Super User reconciliation/inquiry, channel control, maintenance mode, dan production fail-closed tersedia. Live sandbox belum dijalankan.
-- Milestone 7 dan seterusnya: belum diimplementasikan.
+- Milestone 7: **implementation complete — local gates; release blocked**. Processing/readiness, Customer dan coordinated Tenant delivery scheduling, delivery dispatch/completion atomic, durable notification, Reverb/Echo private channel, polling fallback, dan proof access revocation tersedia. Hosted PostgreSQL/Redis CI belum dicatat; release juga tetap bergantung pada blocker eksternal M0/M6.
+- Milestone 8 dan seterusnya: belum diimplementasikan.
 
-Delivery completion, durable/realtime notification, proof-retention cleanup, refund, Driver payout, Tenant payout transaction, dan production integration belum tersedia. Payout saat ini hanya mencakup onboarding rekening dan payout hold, bukan pemindahan dana.
+Refund, Driver payout, Tenant payout transaction, physical proof deletion, dan production payment integration belum tersedia. Payout saat ini hanya mencakup onboarding rekening dan payout hold, bukan pemindahan dana. M7 menjadwalkan dan mencabut akses proof setelah 90 hari, tetapi file baru boleh dihapus pada M9 setelah refund guard M8 tersedia.
 
 ## Runtime dan dependency aktual
 
 | Area | Versi terpasang/target |
 | --- | --- |
 | PHP lokal | 8.4.25 |
-| Laravel | 13.31.0 |
+| Laravel | 13.33.0 |
+| Laravel Reverb | 1.12.0 |
 | Laravel Fortify | 1.39.0 |
 | Inertia Laravel adapter | 3.0.0 |
 | Inertia React adapter | 3.0.3 |
+| Laravel Echo / Pusher JS | 2.5.0 / 8.6.0 |
 | React | 19.0.8 |
 | TypeScript | 6.0.3 |
 | Tailwind CSS | 4.3.3 |
@@ -56,6 +59,8 @@ Schema M5 menambahkan Tenant commission settings, invitation token hash, Driver 
 
 Schema M6 memakai tabel payment attempt dan append-only event yang sudah disiapkan baseline, lalu menambahkan nullable unique `active_order_key` serta timestamp cooldown inquiry. Migration melakukan duplicate check sebelum backfill pending attempt dan reversible pada SQLite/PostgreSQL. Attempt terminal membersihkan active key; failed/expired tidak dapat berubah menjadi paid.
 
+Schema M7 menambahkan durable `notifications` dengan dedupe key, `processing_started_at`, serta expiry/revocation akses proof pada task dan weight confirmation. Migration membackfill processing/proof timestamp secara non-destruktif, reversible, dan tidak menghapus object proof saat akses kedaluwarsa.
+
 ## Identity, Tenant, dan Super User
 
 Fortify menangani registration Customer, login/logout, reset/update password, email verification, password confirmation, TOTP, recovery codes, dan challenge. Passkeys dinonaktifkan. `/tenant/register` membuat Tenant pending/inactive dan owner; Driver dibuat hanya dari invitation Tenant 48 jam yang tokennya disimpan sebagai hash; Super User hanya dibuat melalui `php artisan super-user:provision` tanpa password argument/output.
@@ -85,7 +90,7 @@ Dashboard preview dan wireflow Milestone 0 tetap memakai fixture. Dashboard meny
 
 ## Frontend
 
-Struktur frontend tetap memisahkan `pages`, `layouts`, reusable `components/ui`, domain composition, dan shared `types`. Halaman foundation responsive, keyboard-focusable, dan hanya menerima konfigurasi publik yang diperlukan. M3 menambahkan discovery/address/workspace; M4 menambahkan checkout, daftar/filter/detail Order, timeline, lifecycle form, dan printable receipt skeleton; M5 menambahkan acceptance invitation, Driver dashboard, serta Tenant driver/dispatch workspace. M6 menambahkan checkout/status/receipt payment, daftar Tenant read-only, reconciliation Super User, serta control channel/maintenance. Payment URL hanya dikirim kepada Customer pemilik selama relevan; props operasional tidak menerimanya.
+Struktur frontend tetap memisahkan `pages`, `layouts`, reusable `components/ui`, domain composition, dan shared `types`. Halaman foundation responsive, keyboard-focusable, dan hanya menerima konfigurasi publik yang diperlukan. M3 menambahkan discovery/address/workspace; M4 menambahkan checkout, daftar/filter/detail Order, timeline, lifecycle form, dan printable receipt skeleton; M5 menambahkan acceptance invitation, Driver dashboard, serta Tenant driver/dispatch workspace. M6 menambahkan checkout/status/receipt payment, daftar Tenant read-only, reconciliation Super User, serta control channel/maintenance. M7 menambahkan readiness/delivery action, notification center/unread badge, Echo partial reload, dan polling fallback. Payment URL hanya dikirim kepada Customer pemilik selama relevan; props operasional tidak menerimanya.
 
 ## Quality gates
 
@@ -113,6 +118,8 @@ Verifikasi lokal M3 mencakup 84 Pest test/1.069 assertion, migration forward/rol
 Verifikasi lokal M4 mencakup 93 Pest test/1.184 assertion, migration round-trip SQLite, snapshot/idempotency/isolation/query-count regression, Larastan tanpa error, Pint, ESLint, TypeScript, production build, Composer/npm audit, dan `git diff --check`. Actionlint, dependency audit, Gitleaks full-history, PostgreSQL 18, serta Redis 8 lulus pada hosted CI.
 
 Verifikasi lokal gabungan M5/M6 per 22 September 2026 mencakup 131 Pest test/1.697 assertion, migration round-trip SQLite, lifecycle/privacy/cancellation M5, invoice/callback/inquiry/expiry M6, Larastan tanpa error, Pint, ESLint, TypeScript, production build, Composer/npm audit, Gitleaks 8.30.1, dan `git diff --check`. Live Duitku sandbox berstatus `blocked/not executed` dan HTTP fake tidak dihitung sebagai bukti provider.
+
+Verifikasi lokal M7 per 24 September 2026 mencakup 145 Pest test/1.837 assertion, migration round-trip dan local forward migration SQLite, processing/delivery/notification/privacy/retention regression, Larastan tanpa error, Pint, ESLint, TypeScript, production build, Composer/npm audit, safe secret-pattern review, dan `git diff --check`. Actionlint, Gitleaks full-history, PostgreSQL 18, Redis 8, serta Reverb deployment smoke menunggu hosted CI/staging.
 
 [Hosted CI run #10](https://github.com/FatahiraAnggitaS/klik-laundry/actions/runs/35745849646) untuk commit `618b7f7` lulus pada job quality dan secrets: PostgreSQL 18 migration/test, Redis 8 smoke, Larastan, Pint, ESLint, TypeScript, production build, dependency audit, actionlint, dan Gitleaks full-history.
 

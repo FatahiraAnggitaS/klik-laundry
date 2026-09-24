@@ -5,11 +5,13 @@ namespace App\Http\Controllers\Orders;
 use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Orders\CreateOrderRequest;
+use App\Http\Requests\Orders\DeliveryScheduleRequest;
 use App\Http\Requests\Orders\OrderActionRequest;
 use App\Http\Requests\Orders\OrderQueryRequest;
 use App\Http\Requests\Orders\RescheduleOrderRequest;
 use App\Services\Orders\CreateOrderService;
 use App\Services\Orders\GetOrdersService;
+use App\Services\Orders\ManageDeliveryLifecycleService;
 use App\Services\Orders\ManageOrderLifecycleService;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
@@ -71,5 +73,26 @@ final class OrderController extends Controller
         abort_unless($request->identity()->role() === UserRole::TenantOwner, 403);
 
         return $this->show($request, $order);
+    }
+
+    public function markReady(OrderQueryRequest $request, string $order, ManageDeliveryLifecycleService $service): RedirectResponse
+    {
+        abort_unless($request->identity()->role() === UserRole::TenantOwner, 403);
+        $service->markReady($request->identity(), $order);
+
+        return back()->with('status', 'Laundry siap. Customer dapat memilih jadwal delivery.');
+    }
+
+    public function scheduleDelivery(DeliveryScheduleRequest $request, string $order, ManageDeliveryLifecycleService $service): RedirectResponse
+    {
+        $service->schedule(
+            $request->identity(),
+            $order,
+            $request->string('delivery_slot_public_id')->toString(),
+            $request->string('delivery_date')->toString(),
+            $request->validated('reason'),
+        );
+
+        return back()->with('status', 'Jadwal delivery berhasil diperbarui.');
     }
 }

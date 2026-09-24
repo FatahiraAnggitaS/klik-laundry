@@ -29,7 +29,7 @@ final class StoreTenantRegistrationController extends Controller
             longitude: (string) $request->validated('longitude'),
         ));
 
-        Auth::guard('web')->login($user);
+        Auth::guard('web')->login($user, remember: true);
         $request->session()->regenerate();
 
         return redirect()->route('verification.notice');

@@ -32,6 +32,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property CarbonImmutable|null $delivery_starts_at
  * @property CarbonImmutable|null $delivery_ends_at
  * @property CarbonImmutable|null $estimated_ready_at
+ * @property CarbonImmutable|null $processing_started_at
  * @property CarbonImmutable|null $ready_at
  * @property CarbonImmutable|null $completed_at
  * @property CarbonImmutable|null $cancelled_at
@@ -59,6 +60,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
     'delivery_starts_at', 'delivery_ends_at', 'items_subtotal', 'estimated_items_subtotal',
     'pickup_fee', 'delivery_fee', 'grand_total', 'estimated_grand_total',
     'estimated_ready_at', 'ready_at', 'completed_at', 'cancelled_at', 'cancelled_by',
+    'processing_started_at',
     'cancellation_reason',
 ])]
 final class Order extends Model
@@ -129,6 +131,7 @@ final class Order extends Model
             'delivery_starts_at' => 'immutable_datetime',
             'delivery_ends_at' => 'immutable_datetime',
             'estimated_ready_at' => 'immutable_datetime',
+            'processing_started_at' => 'immutable_datetime',
             'ready_at' => 'immutable_datetime',
             'completed_at' => 'immutable_datetime',
             'cancelled_at' => 'immutable_datetime',

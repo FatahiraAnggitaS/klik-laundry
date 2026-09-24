@@ -41,14 +41,25 @@ final readonly class GetOrdersService
         $includePii = $actor->role() === UserRole::Customer || $this->tenantMaySeePii($order);
 
         $outlet = $this->outlets->findOwned($order->tenantId, $order->outletPublicId);
-        $availableSlots = $outlet === null ? [] : array_values(array_filter($this->schedule->handle($outlet), fn (array $slot): bool => $slot['type'] === 'pickup'));
+        $allSlots = $outlet === null ? [] : $this->schedule->handle($outlet);
+        $availableSlots = array_values(array_filter($allSlots, fn (array $slot): bool => $slot['type'] === 'pickup'));
+        $deliveryCutoff = $order->readyAt === null ? null : CarbonImmutable::parse($order->readyAt)->addDays(7);
+        $availableDeliverySlots = array_values(array_filter($allSlots, fn (array $slot): bool => $slot['type'] === 'delivery'
+            && ($deliveryCutoff === null || $actor->role() === UserRole::TenantOwner || CarbonImmutable::parse($slot['startsAt'])->lessThanOrEqualTo($deliveryCutoff))));
+        $canScheduleDelivery = $order->fulfillmentStatus === FulfillmentStatus::ReadyForDelivery->value
+            && ($actor->role() === UserRole::Customer
+                ? $deliveryCutoff?->greaterThanOrEqualTo(now()) === true
+                : ($order->deliveryStartsAt !== null || $deliveryCutoff?->lessThanOrEqualTo(now()) === true));
 
         return [
             'order' => $order->toArray($includePii),
             'viewer' => $actor->role()->value,
             'receipt' => $receipt,
             'availablePickupSlots' => $availableSlots,
+            'availableDeliverySlots' => $availableDeliverySlots,
             'canMutate' => in_array($order->fulfillmentStatus, [FulfillmentStatus::AwaitingPayment->value, FulfillmentStatus::AwaitingPickup->value], true) && $order->paymentStatus !== 'paid',
+            'canMarkReady' => $actor->role() === UserRole::TenantOwner && $order->fulfillmentStatus === FulfillmentStatus::Processing->value && $order->paymentStatus === 'paid',
+            'canScheduleDelivery' => $canScheduleDelivery,
         ];
     }
 

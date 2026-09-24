@@ -22,7 +22,10 @@ final readonly class GetDispatchDashboardService
             'tasks' => $this->dispatch->paginateForTenant($tenant->id),
             'drivers' => $this->drivers->paginateDrivers($tenant->id, 100)['items'],
             'settings' => $this->drivers->settings($tenant->id)->toArray(),
-            'eligibleOrders' => $this->orders->paginateForTenant($tenant->id, ['fulfillment_status' => 'awaiting_pickup'], 100)['items'],
+            'eligibleOrders' => [
+                ...$this->orders->paginateForTenant($tenant->id, ['fulfillment_status' => 'awaiting_pickup'], 100)['items'],
+                ...$this->orders->paginateForTenant($tenant->id, ['fulfillment_status' => 'ready_for_delivery'], 100)['items'],
+            ],
         ];
     }
 }

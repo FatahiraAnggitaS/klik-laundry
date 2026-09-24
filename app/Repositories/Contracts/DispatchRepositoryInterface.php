@@ -28,7 +28,11 @@ interface DispatchRepositoryInterface
 
     public function startTask(int $taskId, int $driverId): DriverTaskData;
 
-    public function completePickupTask(int $taskId, int $driverId, ?string $note, ?array $proof): DriverTaskData;
+    public function completeTask(int $taskId, int $driverId, ?string $note, ?array $proof): DriverTaskData;
+
+    public function findTaskForOrder(int $orderId, DriverTaskType $type, bool $lock = false): ?DriverTaskData;
+
+    public function updateDeliverySchedule(int $orderId, string $startsAt, string $endsAt): void;
 
     public function resetForReassignment(int $taskId, int $actorId, string $reason): DriverTaskData;
 
@@ -54,12 +58,14 @@ interface DispatchRepositoryInterface
 
     public function confirmWeight(OrderData $order, int $actorId, int $actualGrams, int $billableGrams, int $itemsSubtotal, int $grandTotal, ?string $reason, ?array $proof): WeightConfirmationData;
 
-    /** @return array{disk: string, key: string}|null */
+    /** @return array{disk: string, key: string, expiresAt: string|null, revokedAt: string|null}|null */
     public function taskProof(int $tenantId, string $taskPublicId): ?array;
 
-    /** @return array{disk: string, key: string}|null */
+    /** @return array{disk: string, key: string, expiresAt: string|null, revokedAt: string|null}|null */
     public function driverTaskProof(int $driverId, string $taskPublicId): ?array;
 
-    /** @return array{disk: string, key: string}|null */
+    /** @return array{disk: string, key: string, expiresAt: string|null, revokedAt: string|null}|null */
     public function weightProof(int $tenantId, string $orderPublicId): ?array;
+
+    public function revokeExpiredProofAccess(string $now): int;
 }

@@ -174,6 +174,8 @@ Exit criteria:
 
 ## Milestone 7 — Processing, realtime, dan completion
 
+Status implementasi: **implementation complete — local gates; release blocked**. Vertical slice tersedia, tetapi status release tetap diblokir sampai hosted PostgreSQL/Redis CI hijau serta blocker eksternal M0/M6 terselesaikan. Production payment tetap nonaktif.
+
 Deliverables:
 
 - Payment gate menuju processing, estimated completion, delayed indicator, dan readiness.

@@ -23,6 +23,10 @@ interface OrderRepositoryInterface
 
     public function applyPaidTransition(int $orderId, ?int $actorId, string $toFulfillmentStatus): OrderData;
 
+    public function markReadyForDelivery(int $orderId, int $actorId): OrderData;
+
+    public function scheduleDelivery(int $orderId, int $slotId, string $startsAt, string $endsAt, int $actorId, ?string $reason): OrderData;
+
     public function syncPaymentStatus(int $orderId, string $status): void;
 
     /** @param array{fulfillment_status?: string|null, payment_status?: string|null, query?: string|null} $filters @return array{items: list<array<string, mixed>>, meta: array{currentPage: int, lastPage: int, perPage: int, total: int}} */

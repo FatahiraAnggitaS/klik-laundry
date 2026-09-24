@@ -3,6 +3,7 @@
 namespace App\Infrastructure;
 
 use App\Contracts\PrivateProofStorageInterface;
+use DateTimeInterface;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -29,8 +30,8 @@ final class LaravelPrivateProofStorage implements PrivateProofStorageInterface
         Storage::disk($disk)->delete($key);
     }
 
-    public function temporaryUrl(string $disk, string $key, int $minutes = 5): string
+    public function temporaryUrl(string $disk, string $key, ?DateTimeInterface $expiresAt = null): string
     {
-        return Storage::disk($disk)->temporaryUrl($key, now()->addMinutes($minutes));
+        return Storage::disk($disk)->temporaryUrl($key, $expiresAt ?? now()->addMinutes(5));
     }
 }

@@ -3,6 +3,7 @@
 use App\Jobs\ExpireDriverOffersJob;
 use App\Jobs\ExpirePaymentAttemptsJob;
 use App\Jobs\MonitorOrderIndicatorsJob;
+use App\Jobs\RevokeExpiredProofAccessJob;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
@@ -27,4 +28,10 @@ Schedule::job(new ExpirePaymentAttemptsJob)
     ->name('expire-payment-attempts')
     ->everyFiveMinutes()
     ->withoutOverlapping(10)
+    ->onOneServer();
+
+Schedule::job(new RevokeExpiredProofAccessJob)
+    ->name('revoke-expired-proof-access')
+    ->dailyAt('02:30')
+    ->withoutOverlapping(30)
     ->onOneServer();

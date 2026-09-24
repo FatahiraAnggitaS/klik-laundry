@@ -86,7 +86,7 @@ Implementasi M4 memakai unique idempotency key per Customer dan fingerprint payl
 3. Offer menampilkan outlet, slot, area, task type, commission, dan approximate distance tanpa contact lengkap.
 4. Setelah accept, Driver mendapat contact/alamat sampai task selesai.
 5. Driver menjalankan transition `accepted -> in_progress -> completed`; actor/timestamp wajib, note/foto opsional.
-6. Pickup completion melewati order `picked_up`; per-kg menuju `awaiting_weight`, sedangkan fixed berhenti di `picked_up` sampai processing M7. Fixed pickup completion tetap mensyaratkan payment `paid` dari M6.
+6. Pickup completion melewati order `picked_up`; per-kg menuju `awaiting_weight`, sedangkan fixed yang sudah `paid` langsung menuju `processing` dengan estimasi selesai dari snapshot durasi paket.
 7. `ConfirmLaundryWeightService` menyimpan actual gram, menerapkan minimum, membulatkan naik per 100 gram, menghitung total, dan membuat history.
 8. Setelah berat terkunci, per-kg menjadi `awaiting_payment` dan Customer memilih channel.
 
@@ -96,7 +96,7 @@ Jika slot lewat tanpa Driver, monitoring Service memberi indicator `pickup_delay
 
 Customer boleh reschedule sebelum Driver accept. Sesudah accept, hanya Tenant dapat reschedule dengan reason serta explicit cancel/reassign. Seluruh perubahan schedule diaudit.
 
-Implementasi M5 berhenti pada pickup dan weight confirmation. Delivery state engine/repository tersedia untuk menjaga kontrak aggregate, tetapi endpoint delivery completion belum dibuka agar completion Order dan commission dapat dilakukan atomic pada M7.
+Implementasi M7 membuka delivery scheduling, dispatch, start, dan completion. Delivery completion menyelesaikan task, menghasilkan commission satu kali, menutup order, mencabut PII Driver, dan menetapkan masa akses proof 90 hari secara atomic.
 
 ## 5. Integrasi Duitku
 

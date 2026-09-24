@@ -54,6 +54,6 @@ final class DriverTaskController extends Controller
     {
         $service->complete($request->identity(), $task, $request->string('note')->toString() ?: null, $request->file('proof'));
 
-        return back()->with('status', 'Pickup selesai dan komisi tercatat.');
+        return back()->with('status', 'Task selesai dan komisi tercatat.');
     }
 }
