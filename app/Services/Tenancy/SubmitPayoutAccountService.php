@@ -14,6 +14,7 @@ use App\Exceptions\Domain\DomainRecordNotFound;
 use App\Repositories\Contracts\ActivityLogRepositoryInterface;
 use App\Repositories\Contracts\OutletRepositoryInterface;
 use App\Repositories\Contracts\PayoutAccountRepositoryInterface;
+use App\Repositories\Contracts\TenantPayoutRepositoryInterface;
 use App\Repositories\Contracts\TenantRepositoryInterface;
 
 final readonly class SubmitPayoutAccountService
@@ -22,6 +23,7 @@ final readonly class SubmitPayoutAccountService
         private TenantRepositoryInterface $tenants,
         private PayoutAccountRepositoryInterface $accounts,
         private OutletRepositoryInterface $outlets,
+        private TenantPayoutRepositoryInterface $tenantPayouts,
         private ActivityLogRepositoryInterface $activityLogs,
         private TransactionManagerInterface $transactions,
     ) {}
@@ -51,6 +53,7 @@ final readonly class SubmitPayoutAccountService
             }
 
             $previous = $this->accounts->lockCurrentForTenant($tenantId);
+            $voidedPayouts = $this->tenantPayouts->voidPendingForAccountChange($tenantId, $actor->databaseId());
             $this->accounts->supersedeCurrent($tenantId);
             $deactivatedOutlets = $this->outlets->deactivateAllForTenant($tenantId);
             $account = $this->accounts->create(
@@ -72,6 +75,7 @@ final readonly class SubmitPayoutAccountService
                 after: [
                     'verificationStatus' => $account->verificationStatus,
                     'deactivatedOutlets' => $deactivatedOutlets,
+                    'voidedPendingPayouts' => count($voidedPayouts),
                 ],
             ));
         });

@@ -229,6 +229,8 @@ Module berkomunikasi melalui public Service contract atau event setelah commit, 
 
 Implementasi Dispatch M5 memakai `DriverRepositoryInterface`, `DispatchRepositoryInterface`, dan `PrivateProofStorageInterface`. Controller/Form Request hanya memanggil Service; locking, nullable unique active keys, serta persistence task/offer/commission berada di Repository. Event operasional membawa scalar/public ID minimum tanpa PII dan di-dispatch after commit. Job expiry hanya memanggil Service.
 
+Implementasi Finance/Refund M8 memakai repository contract terpisah untuk report, refund, Tenant payout, dan Driver payout. Service menghitung eligibility, memilih seluruh source sampai cutoff, serta membuka transaction/row lock; client tidak pernah mengirim daftar payment, adjustment, atau commission. Nullable unique claim key melindungi membership batch pending dan finalized secara portable pada SQLite/PostgreSQL. Controller hanya membentuk Inertia atau streamed CSV response dari hasil Service.
+
 ## Multi-tenancy
 
 MVP memakai **shared database/shared schema**:

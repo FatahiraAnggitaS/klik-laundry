@@ -150,6 +150,8 @@ M6 menambahkan proof untuk invoice fixed/per-kg, server-authoritative amount, ac
 
 M7 menambahkan proof untuk payment-to-processing gate, estimasi completion, readiness/delivery scheduling boundary, Tenant suspended/closing yang hanya menyelesaikan pekerjaan existing, atomic delivery completion/commission, indicator idempotent, private channel authorization, notification deduplication/redaction, polling fallback, serta proof access revocation tanpa physical deletion sebelum refund guard M8 tersedia. Reverb menolak client event dan memakai origin allowlist; kegagalan broadcast tidak membatalkan domain transaction yang sudah committed.
 
+M8 menambahkan proof untuk refund amount/deadline/transition, negative adjustment tepat sekali, payment dan commission monotonic, payout membership server-selected, nullable unique claim key, encrypted account snapshot, payout hold, auto-void saat rekening berubah, unknown-fee report, isolation finance, serta CSV 90 hari/5.000 baris dengan formula-injection protection dan masked export. Finalisasi/void payout dan review refund tetap memakai sensitive re-authentication dan append-only audit.
+
 Unit test Service boleh memakai fake Repository/Gateway untuk decision matrix. Race/transaction/constraint behavior wajib diuji lagi menggunakan database.
 
 ### Repository integration tests

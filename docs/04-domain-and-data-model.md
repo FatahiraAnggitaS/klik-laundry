@@ -161,6 +161,14 @@ Refund tidak mengubah payment asli dari `paid`. Refund penuh yang selesai mengha
 
 Payment eligible untuk payout jika order `completed` lebih dari 3×24 jam, payment tetap `paid`, fee aktual direkonsiliasi, dan tidak ada refund aktif. Batch mengambil seluruh payment eligible Tenant sampai cutoff. Net tidak positif tidak dapat difinalisasi sebagai transfer normal.
 
+### Schema dan flow Milestone 8 yang terimplementasi
+
+M8 menambahkan refund request, append-only financial adjustment, Tenant payout beserta payment/adjustment membership, serta Driver payout beserta commission membership. Nullable unique active/finalized source key mencegah satu source masuk dua batch concurrent dan melepaskan claim ketika batch di-void. Satu batch pending dibatasi per Tenant atau Driver.
+
+Refund amount selalu disnapshot dari payment `paid`; completion mempertahankan payment `paid` dan komisi Driver, lalu membuat tepat satu adjustment negatif. Tenant payout menyimpan gross, actual fee, adjustment, net, serta snapshot rekening terenkripsi. Perubahan rekening otomatis me-void batch pending dan melepaskan source. Finalized payout immutable; koreksi berikutnya memakai adjustment/audit.
+
+Rollback migration M8 hanya tersedia sebelum record finansial tercipta. Jika refund, adjustment, atau payout sudah ada, rollback gagal aman untuk mencegah hilangnya histori finansial.
+
 ## Notification, audit, dan privacy
 
 | Table | Column penting | Constraint/index penting |

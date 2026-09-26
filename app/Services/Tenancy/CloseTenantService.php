@@ -11,7 +11,10 @@ use App\Enums\UserStatus;
 use App\Exceptions\Domain\DomainActionConflict;
 use App\Exceptions\Domain\DomainRecordNotFound;
 use App\Repositories\Contracts\ActivityLogRepositoryInterface;
+use App\Repositories\Contracts\DriverPayoutRepositoryInterface;
 use App\Repositories\Contracts\OrderRepositoryInterface;
+use App\Repositories\Contracts\RefundRepositoryInterface;
+use App\Repositories\Contracts\TenantPayoutRepositoryInterface;
 use App\Repositories\Contracts\TenantRepositoryInterface;
 use App\Repositories\Contracts\UserRepositoryInterface;
 
@@ -21,6 +24,9 @@ final readonly class CloseTenantService
         private TenantRepositoryInterface $tenants,
         private UserRepositoryInterface $users,
         private OrderRepositoryInterface $orders,
+        private RefundRepositoryInterface $refunds,
+        private TenantPayoutRepositoryInterface $tenantPayouts,
+        private DriverPayoutRepositoryInterface $driverPayouts,
         private ActivityLogRepositoryInterface $activityLogs,
         private TransactionManagerInterface $transactions,
     ) {}
@@ -39,6 +45,11 @@ final readonly class CloseTenantService
             }
             if ($this->orders->hasNonTerminalForTenant($tenant->id)) {
                 throw new DomainActionConflict('Tenant still has non-terminal orders.', 'Tenant masih memiliki order yang belum selesai.');
+            }
+            if ($this->refunds->hasOpenObligations($tenant->id)
+                || $this->tenantPayouts->hasOpenObligations($tenant->id)
+                || $this->driverPayouts->hasOpenObligations($tenant->id)) {
+                throw new DomainActionConflict('Tenant still has financial obligations.', 'Tenant masih memiliki refund, payout, adjustment, payment, atau komisi yang belum diselesaikan.');
             }
 
             $this->tenants->close($tenant->id, $actor->databaseId(), $reason);

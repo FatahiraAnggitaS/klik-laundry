@@ -11,6 +11,10 @@ use App\Http\Controllers\Dispatch\DriverTaskController;
 use App\Http\Controllers\Dispatch\PrivateProofController;
 use App\Http\Controllers\Dispatch\TenantDriverController;
 use App\Http\Controllers\Dispatch\WeightConfirmationController;
+use App\Http\Controllers\Finance\DriverPayoutController;
+use App\Http\Controllers\Finance\FinanceController;
+use App\Http\Controllers\Finance\RefundController;
+use App\Http\Controllers\Finance\TenantPayoutController;
 use App\Http\Controllers\Foundation\ManagePlatformSettingsController;
 use App\Http\Controllers\Foundation\ShowPlatformSettingsController;
 use App\Http\Controllers\Identity\ConfirmSensitiveAuthenticationController;
@@ -110,12 +114,19 @@ Route::middleware(['auth', 'identity.active'])->group(function (): void {
         Route::get('/payments/return', [PaymentController::class, 'handleReturn'])->name('payments.return');
         Route::get('/payments/{payment}', [PaymentController::class, 'show'])->name('payments.show');
         Route::get('/payments/{payment}/receipt', [PaymentController::class, 'receipt'])->name('payments.receipt');
+        Route::middleware('two-factor.required')->group(function (): void {
+            Route::get('/finance/refunds/{refund}', [RefundController::class, 'show'])->name('finance.refunds.show');
+            Route::get('/finance/tenant-payouts/{payout}', [TenantPayoutController::class, 'show'])->name('finance.tenant-payouts.show');
+            Route::get('/finance/driver-payouts/{payout}', [DriverPayoutController::class, 'show'])->name('finance.driver-payouts.show');
+        });
         Route::get('/workspace', ShowWorkspaceController::class)
             ->middleware('two-factor.required')
             ->name('workspace');
 
         Route::prefix('driver')->name('driver.')->group(function (): void {
             Route::get('/tasks', [DriverTaskController::class, 'index'])->name('tasks.index');
+            Route::get('/finance', [FinanceController::class, 'driver'])->name('finance.index');
+            Route::get('/finance/export', [FinanceController::class, 'driverExport'])->name('finance.export');
             Route::patch('/availability', [DriverTaskController::class, 'availability'])->name('availability.update');
             Route::post('/offers/{offer}/accept', [DriverTaskController::class, 'accept'])->name('offers.accept');
             Route::post('/offers/{offer}/reject', [DriverTaskController::class, 'reject'])->name('offers.reject');
@@ -141,6 +152,10 @@ Route::middleware(['auth', 'identity.active'])->group(function (): void {
             Route::get('/operations', TenantOperationsController::class)->name('operations');
             Route::get('/orders', [OrderController::class, 'tenantIndex'])->name('orders.index');
             Route::get('/payments', [TenantPaymentController::class, 'index'])->name('payments.index');
+            Route::get('/finance', [FinanceController::class, 'tenant'])->name('finance.index');
+            Route::get('/finance/export', [FinanceController::class, 'tenantExport'])->name('finance.export');
+            Route::post('/refunds', [RefundController::class, 'store'])->name('refunds.store');
+            Route::post('/driver-payouts', [DriverPayoutController::class, 'store'])->name('driver-payouts.store');
             Route::get('/orders/{order}', [OrderController::class, 'tenantShow'])->name('orders.show');
             Route::get('/orders/{order}/receipt', [OrderController::class, 'receipt'])->name('orders.receipt');
             Route::patch('/orders/{order}/pickup-schedule', [OrderController::class, 'reschedule'])->name('orders.reschedule');
@@ -181,6 +196,8 @@ Route::middleware(['auth', 'identity.active'])->group(function (): void {
         Route::middleware(['two-factor.required', 'sensitive.confirmed'])->group(function (): void {
             Route::post('/tenant/closure-requests', RequestTenantClosureController::class)->name('tenant.closure-request.store');
             Route::put('/tenant/payout-account', SubmitPayoutAccountController::class)->name('tenant.payout-account.update');
+            Route::post('/tenant/driver-payouts/{payout}/finalization', [DriverPayoutController::class, 'finalize'])->name('tenant.driver-payouts.finalize');
+            Route::post('/tenant/driver-payouts/{payout}/void', [DriverPayoutController::class, 'void'])->name('tenant.driver-payouts.void');
 
             Route::prefix('super-user')->name('super-user.')->group(function (): void {
                 Route::patch('/platform-settings/service-radius', [ManagePlatformSettingsController::class, 'update'])->name('platform-settings.radius.update');
@@ -196,6 +213,10 @@ Route::middleware(['auth', 'identity.active'])->group(function (): void {
                 Route::post('/payments/{payment}/inquiry', [PaymentSupportController::class, 'inquire'])->middleware('throttle:10,1')->name('payments.inquire');
                 Route::patch('/payment-channels/{channel}', [PaymentSupportController::class, 'toggleChannel'])->name('payment-channels.update');
                 Route::patch('/platform-settings/payment-maintenance', [ManagePlatformSettingsController::class, 'updatePaymentMaintenance'])->name('platform-settings.payment-maintenance.update');
+                Route::post('/refunds/{refund}/review', [RefundController::class, 'review'])->name('refunds.review');
+                Route::post('/refunds/{refund}/completion', [RefundController::class, 'complete'])->name('refunds.complete');
+                Route::post('/tenant-payouts/{payout}/finalization', [TenantPayoutController::class, 'finalize'])->name('tenant-payouts.finalize');
+                Route::post('/tenant-payouts/{payout}/void', [TenantPayoutController::class, 'void'])->name('tenant-payouts.void');
             });
         });
 
@@ -208,6 +229,12 @@ Route::middleware(['auth', 'identity.active'])->group(function (): void {
         Route::get('/super-user/payments', [PaymentSupportController::class, 'index'])
             ->middleware('two-factor.required')
             ->name('super-user.payments.index');
+        Route::get('/super-user/finance', [FinanceController::class, 'support'])
+            ->middleware('two-factor.required')->name('super-user.finance.index');
+        Route::get('/super-user/finance/export', [FinanceController::class, 'supportExport'])
+            ->middleware('two-factor.required')->name('super-user.finance.export');
+        Route::post('/super-user/tenant-payouts', [TenantPayoutController::class, 'store'])
+            ->middleware('two-factor.required')->name('super-user.tenant-payouts.store');
     });
 });
 

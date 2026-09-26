@@ -193,6 +193,8 @@ Exit criteria:
 
 ## Milestone 8 — Finance, refund, dan reporting
 
+Status implementasi per 26 September 2026: **implementation complete locally — hosted CI pending; release blocked**. Finance report, refund, Tenant/Driver payout, streamed CSV, dashboard rekonsiliasi, dan financial closure guard tersedia. Release tetap menunggu blocker eksternal M0/M6.
+
 Deliverables:
 
 - Tenant report untuk gross, actual fee, net after fee, commission, adjustment, dan net operational.

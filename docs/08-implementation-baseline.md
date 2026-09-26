@@ -12,9 +12,10 @@
 - Milestone 5: **selesai — hosted CI hijau pada run #10 (commit `618b7f7`)**. Driver invitation/availability, Tenant-scoped invitation, pickup dispatch, privacy window, transactional cancellation, weight confirmation, private proof, commission snapshot, expiry job, dan responsive Inertia UI tersedia. Delivery completion sengaja tetap diblokir sampai Milestone 7.
 - Milestone 6: **in progress — external sandbox blocker; hosted CI run #10 hijau**. Invoice Duitku, active-attempt guard, callback idempotent, expiry, browser return read-only, receipt, Tenant payment list, Super User reconciliation/inquiry, channel control, maintenance mode, dan production fail-closed tersedia. Live sandbox belum dijalankan.
 - Milestone 7: **implementation complete — hosted CI run #13 hijau; release blocked**. Processing/readiness, Customer dan coordinated Tenant delivery scheduling, delivery dispatch/completion atomic, durable notification, Reverb/Echo private channel, polling fallback, dan proof access revocation tersedia. Release tetap bergantung pada blocker eksternal M0/M6.
-- Milestone 8 dan seterusnya: belum diimplementasikan.
+- Milestone 8: **implementation complete locally — hosted CI pending; release blocked**. Finance report, full-refund manual, negative adjustment, Tenant/Driver payout, streamed masked CSV, dashboard rekonsiliasi, dan closure obligation guard tersedia. Release tetap bergantung pada blocker eksternal M0/M6.
+- Milestone 9 dan seterusnya: belum diimplementasikan.
 
-Refund, Driver payout, Tenant payout transaction, physical proof deletion, dan production payment integration belum tersedia. Payout saat ini hanya mencakup onboarding rekening dan payout hold, bukan pemindahan dana. M7 menjadwalkan dan mencabut akses proof setelah 90 hari, tetapi file baru boleh dihapus pada M9 setelah refund guard M8 tersedia.
+Transfer payout/refund otomatis, physical proof deletion, dan production payment integration belum tersedia. M8 hanya mencatat transfer manual di luar sistem secara immutable dan auditable. M7 menjadwalkan serta mencabut akses proof setelah 90 hari; penghapusan object tetap menunggu M9 dengan guard refund M8.
 
 ## Runtime dan dependency aktual
 
@@ -61,6 +62,8 @@ Schema M6 memakai tabel payment attempt dan append-only event yang sudah disiapk
 
 Schema M7 menambahkan durable `notifications` dengan dedupe key, `processing_started_at`, serta expiry/revocation akses proof pada task dan weight confirmation. Migration membackfill processing/proof timestamp secara non-destruktif, reversible, dan tidak menghapus object proof saat akses kedaluwarsa.
 
+Schema M8 menambahkan `refund_requests`, `financial_adjustments`, Tenant payout/payment/adjustment membership, serta Driver payout/commission membership. Nullable unique active/finalized keys melindungi source dari batch concurrent pada SQLite/PostgreSQL. Rekening payout disnapshot dengan encrypted cast; rollback ditolak bila histori finansial sudah ada.
+
 ## Identity, Tenant, dan Super User
 
 Fortify menangani registration Customer, login/logout, reset/update password, email verification, password confirmation, TOTP, recovery codes, dan challenge. Passkeys dinonaktifkan. `/tenant/register` membuat Tenant pending/inactive dan owner; Driver dibuat hanya dari invitation Tenant 48 jam yang tokennya disimpan sebagai hash; Super User hanya dibuat melalui `php artisan super-user:provision` tanpa password argument/output.
@@ -90,7 +93,7 @@ Dashboard preview dan wireflow Milestone 0 tetap memakai fixture. Dashboard meny
 
 ## Frontend
 
-Struktur frontend tetap memisahkan `pages`, `layouts`, reusable `components/ui`, domain composition, dan shared `types`. Halaman foundation responsive, keyboard-focusable, dan hanya menerima konfigurasi publik yang diperlukan. M3 menambahkan discovery/address/workspace; M4 menambahkan checkout, daftar/filter/detail Order, timeline, lifecycle form, dan printable receipt skeleton; M5 menambahkan acceptance invitation, Driver dashboard, serta Tenant driver/dispatch workspace. M6 menambahkan checkout/status/receipt payment, daftar Tenant read-only, reconciliation Super User, serta control channel/maintenance. M7 menambahkan readiness/delivery action, notification center/unread badge, Echo partial reload, dan polling fallback. Payment URL hanya dikirim kepada Customer pemilik selama relevan; props operasional tidak menerimanya.
+Struktur frontend tetap memisahkan `pages`, `layouts`, reusable `components/ui`, domain composition, dan shared `types`. Halaman foundation responsive, keyboard-focusable, dan hanya menerima konfigurasi publik yang diperlukan. M3 menambahkan discovery/address/workspace; M4 menambahkan checkout, daftar/filter/detail Order, timeline, lifecycle form, dan printable receipt skeleton; M5 menambahkan acceptance invitation, Driver dashboard, serta Tenant driver/dispatch workspace. M6 menambahkan checkout/status/receipt payment, daftar Tenant read-only, reconciliation Super User, serta control channel/maintenance. M7 menambahkan readiness/delivery action, notification center/unread badge, Echo partial reload, dan polling fallback. M8 menambahkan dashboard finance Tenant/Driver/Super User, refund detail, payout action eksplisit, serta streamed CSV. Payment URL dan data rekening lengkap tidak dikirim ke props operasional.
 
 ## Quality gates
 

@@ -14,6 +14,8 @@ Target operasional awal adalah **minimal 10 tenant aktif**, bukan 10 concurrent 
 
 Per 22 September 2026, flow invoice/callback/reconciliation M6 tersedia untuk sandbox dan diuji memakai HTTP fake. Aktivasi production tetap di luar scope sampai seluruh blocker legal/provider Milestone 0 selesai dan live sandbox membuktikan create invoice, payment, callback HTTPS, expiry, inquiry, timeout, serta actual fee.
 
+Per 26 September 2026, implementasi M8 menyediakan report cash-basis, full-refund manual, negative adjustment, payout Tenant/Driver manual, serta streamed masked CSV. Implementasi ini tidak mengubah status blocker production payment dan belum merupakan general ledger akuntansi.
+
 ## Ringkasan keputusan final
 
 | Area | Keputusan MVP |

@@ -9,7 +9,9 @@ use App\Infrastructure\LaravelTransactionManager;
 use App\Repositories\Contracts\ActivityLogRepositoryInterface;
 use App\Repositories\Contracts\CustomerAddressRepositoryInterface;
 use App\Repositories\Contracts\DispatchRepositoryInterface;
+use App\Repositories\Contracts\DriverPayoutRepositoryInterface;
 use App\Repositories\Contracts\DriverRepositoryInterface;
+use App\Repositories\Contracts\FinanceReportRepositoryInterface;
 use App\Repositories\Contracts\NotificationRepositoryInterface;
 use App\Repositories\Contracts\OrderRepositoryInterface;
 use App\Repositories\Contracts\OutletRepositoryInterface;
@@ -17,12 +19,16 @@ use App\Repositories\Contracts\PackageRepositoryInterface;
 use App\Repositories\Contracts\PaymentRepositoryInterface;
 use App\Repositories\Contracts\PayoutAccountRepositoryInterface;
 use App\Repositories\Contracts\PlatformSettingRepositoryInterface;
+use App\Repositories\Contracts\RefundRepositoryInterface;
+use App\Repositories\Contracts\TenantPayoutRepositoryInterface;
 use App\Repositories\Contracts\TenantRepositoryInterface;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Repositories\Eloquent\EloquentActivityLogRepository;
 use App\Repositories\Eloquent\EloquentCustomerAddressRepository;
 use App\Repositories\Eloquent\EloquentDispatchRepository;
+use App\Repositories\Eloquent\EloquentDriverPayoutRepository;
 use App\Repositories\Eloquent\EloquentDriverRepository;
+use App\Repositories\Eloquent\EloquentFinanceReportRepository;
 use App\Repositories\Eloquent\EloquentNotificationRepository;
 use App\Repositories\Eloquent\EloquentOrderRepository;
 use App\Repositories\Eloquent\EloquentOutletRepository;
@@ -30,6 +36,8 @@ use App\Repositories\Eloquent\EloquentPackageRepository;
 use App\Repositories\Eloquent\EloquentPaymentRepository;
 use App\Repositories\Eloquent\EloquentPayoutAccountRepository;
 use App\Repositories\Eloquent\EloquentPlatformSettingRepository;
+use App\Repositories\Eloquent\EloquentRefundRepository;
+use App\Repositories\Eloquent\EloquentTenantPayoutRepository;
 use App\Repositories\Eloquent\EloquentTenantRepository;
 use App\Repositories\Eloquent\EloquentUserRepository;
 use Illuminate\Support\Facades\File;
@@ -98,6 +106,10 @@ it('resolves repository contracts to their infrastructure implementations', func
         ->and(app(NotificationRepositoryInterface::class))->toBeInstanceOf(EloquentNotificationRepository::class)
         ->and(app(DispatchRepositoryInterface::class))->toBeInstanceOf(EloquentDispatchRepository::class)
         ->and(app(PaymentRepositoryInterface::class))->toBeInstanceOf(EloquentPaymentRepository::class)
+        ->and(app(RefundRepositoryInterface::class))->toBeInstanceOf(EloquentRefundRepository::class)
+        ->and(app(TenantPayoutRepositoryInterface::class))->toBeInstanceOf(EloquentTenantPayoutRepository::class)
+        ->and(app(DriverPayoutRepositoryInterface::class))->toBeInstanceOf(EloquentDriverPayoutRepository::class)
+        ->and(app(FinanceReportRepositoryInterface::class))->toBeInstanceOf(EloquentFinanceReportRepository::class)
         ->and(app(TransactionManagerInterface::class))->toBeInstanceOf(LaravelTransactionManager::class)
         ->and(app(PrivateProofStorageInterface::class))->toBeInstanceOf(LaravelPrivateProofStorage::class)
         ->and(app(SensitiveAuthenticationVerifierInterface::class))->toBeInstanceOf(FortifySensitiveAuthenticationVerifier::class);

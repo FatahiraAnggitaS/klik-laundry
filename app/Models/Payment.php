@@ -51,6 +51,12 @@ final class Payment extends Model
         return $this->hasMany(PaymentEvent::class);
     }
 
+    /** @return HasMany<RefundRequest, $this> */
+    public function refunds(): HasMany
+    {
+        return $this->hasMany(RefundRequest::class);
+    }
+
     protected function casts(): array
     {
         return [

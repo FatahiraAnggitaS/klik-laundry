@@ -224,6 +224,10 @@ CSV di-stream setelah authorization, menetralisasi formula yang dimulai `=`, `+`
 - Transfer terjadi di luar sistem; Tenant finalisasi dengan amount, method, reference/note, actor, dan timestamp.
 - Driver hanya melihat earned/paid miliknya; refund tidak membalik commission.
 
+Implementasi M8 menyediakan dashboard Inertia Tenant, Driver, dan Super User; full-refund manual; payout batch server-selected; detail source; serta tiga streamed CSV dengan schema tetap. Payment dengan fee unknown tetap muncul sebagai gross, tetapi derived net diberi `isFinal=false` dan tidak pernah memakai fee nol. Cutoff payout adalah akhir hari `Asia/Jakarta`; payment baru eligible bila `completed_at + 72 jam` telah lewat.
+
+Batch Tenant dengan net tidak positif tidak dibuat sehingga source negatif tetap carry-forward. Komisi Driver Rp0 dapat difinalisasi memakai `no_transfer_required` agar tidak menjadi obligation permanen. Closure Tenant kini memeriksa payment belum settled, refund aktif, adjustment unsettled, commission earned, dan payout pending.
+
 ## 11. Sensitive support actions
 
 Action berikut memerlukan Service khusus, reason, re-authentication jika sensitive auth lebih dari 15 menit, dan append-only audit:
