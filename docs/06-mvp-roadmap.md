@@ -2,7 +2,7 @@
 
 > Roadmap menggunakan [`01-product-scope.md`](01-product-scope.md) sebagai scope contract dan [`02-architecture.md`](02-architecture.md) sebagai architecture contract. Milestone berbasis outcome, bukan estimasi kalender.
 
-> Status per 17 September 2026: Milestone 0 tetap memiliki external blocker. Milestone 1–4 **selesai — hosted CI hijau**. Implementation commit M4 `af34964` lulus pada run #7 dengan PostgreSQL 18, Redis 8, seluruh quality gate, dependency audit, dan secret scan.
+> Status per 28 September 2026: Milestone 0 dan 6 tetap memiliki external blocker. Milestone 1–5 selesai. Milestone 7–9 implementation complete, tetapi release tetap diblokir evidence eksternal/staging. Hosted CI M9 hijau pada run #19.
 
 ## Prinsip delivery
 
@@ -214,7 +214,7 @@ Exit criteria:
 
 ## Milestone 9 — Hardening dan pilot
 
-Status: **implementation complete — release blocked**. Privacy, hardening, observability, browser/load harness, serta operations runbook tersedia. Pilot belum boleh dirilis sebelum evidence staging, M0, dan M6 lulus.
+Status per 28 September 2026: **implementation complete — hosted CI run #19 hijau; release blocked**. Commit implementasi `08eb740` beserta patch CI/k6 sampai `09d562c` menyediakan privacy, hardening, observability, browser/load harness, serta operations runbook. Pilot belum boleh dirilis sebelum evidence staging, M0, dan M6 lulus.
 
 Deliverables:
 
