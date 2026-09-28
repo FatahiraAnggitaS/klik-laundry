@@ -135,7 +135,12 @@ jobs:
           M9_VALIDATE_ONLY: '1'
         run: |
           php artisan serve --host=127.0.0.1 --port=8000 > storage/logs/k6-server.log 2>&1 &
-          for attempt in {1..20}; do curl --fail --silent http://127.0.0.1:8000/up && break || sleep 1; done
+          for _ in {1..20}; do
+            if curl --fail --silent http://127.0.0.1:8000/up; then
+              break
+            fi
+            sleep 1
+          done
           k6 run tests/Load/milestone-9.js
 
       - name: Composer audit
