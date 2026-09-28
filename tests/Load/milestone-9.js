@@ -61,8 +61,11 @@ export const options = {
 export function setup() {
     if (!baseUrl) fail('M9_BASE_URL is required.');
 
-    const hostname = new URL(baseUrl).hostname.toLowerCase();
-    const productionLike = !['localhost', '127.0.0.1'].includes(hostname)
+    const target = baseUrl.match(/^https?:\/\/(\[[^\]]+\]|[^/:?#]+)(?::\d+)?(?:[/?#]|$)/i);
+    if (!target) fail('M9_BASE_URL must be an absolute HTTP(S) URL.');
+
+    const hostname = target[1].toLowerCase();
+    const productionLike = !['localhost', '127.0.0.1', '[::1]'].includes(hostname)
         && !hostname.includes('staging')
         && !hostname.endsWith('.test');
 
