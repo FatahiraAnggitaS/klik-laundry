@@ -1,10 +1,11 @@
 <?php
 
+use App\Http\Middleware\ThrottleFortifyPasswordResetRequests;
 use Laravel\Fortify\Features;
 
 return [
     'guard' => 'web',
-    'middleware' => ['web'],
+    'middleware' => ['web', ThrottleFortifyPasswordResetRequests::class],
     'auth_middleware' => 'identity.active',
     'passwords' => 'users',
     'username' => 'email',

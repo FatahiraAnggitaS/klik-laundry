@@ -12,7 +12,7 @@ export function AppLogo({ compact = false }: AppLogoProps) {
             {!compact && (
                 <span>
                     <span className="block text-[15px] font-bold tracking-[-0.02em] text-white">Klik Laundry</span>
-                    <span className="mt-0.5 block text-[10px] font-semibold uppercase tracking-[0.2em] text-white/45">
+                    <span className="mt-0.5 block text-[10px] font-semibold uppercase tracking-[0.2em] text-white/65">
                         Clean operations
                     </span>
                 </span>

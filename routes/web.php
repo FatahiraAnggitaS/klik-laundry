@@ -17,6 +17,7 @@ use App\Http\Controllers\Finance\RefundController;
 use App\Http\Controllers\Finance\TenantPayoutController;
 use App\Http\Controllers\Foundation\ManagePlatformSettingsController;
 use App\Http\Controllers\Foundation\ShowPlatformSettingsController;
+use App\Http\Controllers\Identity\CloseCustomerAccountController;
 use App\Http\Controllers\Identity\ConfirmSensitiveAuthenticationController;
 use App\Http\Controllers\Identity\ShowSecuritySettingsController;
 use App\Http\Controllers\Identity\ShowSensitiveAuthenticationController;
@@ -24,6 +25,7 @@ use App\Http\Controllers\Identity\ShowWorkspaceController;
 use App\Http\Controllers\Identity\UpdateProfileController;
 use App\Http\Controllers\MilestoneZero\ShowWireflowPreviewController;
 use App\Http\Controllers\Notifications\NotificationController;
+use App\Http\Controllers\Operations\ReadinessController;
 use App\Http\Controllers\Orders\OrderController;
 use App\Http\Controllers\Outlets\ChangeOutletStatusController;
 use App\Http\Controllers\Outlets\OperatingHoursController;
@@ -36,8 +38,10 @@ use App\Http\Controllers\Outlets\TenantOperationsController;
 use App\Http\Controllers\Payments\PaymentController;
 use App\Http\Controllers\Payments\PaymentSupportController;
 use App\Http\Controllers\Payments\TenantPaymentController;
+use App\Http\Controllers\SuperUser\AuditReviewController;
 use App\Http\Controllers\SuperUser\CloseTenantController;
 use App\Http\Controllers\SuperUser\ListTenantApplicationsController;
+use App\Http\Controllers\SuperUser\PiiPrivacyController;
 use App\Http\Controllers\SuperUser\ReactivateTenantController;
 use App\Http\Controllers\SuperUser\ReactivateUserController;
 use App\Http\Controllers\SuperUser\ReleasePayoutHoldController;
@@ -57,6 +61,8 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', ShowDashboardPreviewController::class)
     ->defaults('role', UserRole::Customer->value)
     ->name('home');
+
+Route::get('/ready', ReadinessController::class)->name('operations.ready');
 
 Route::get('/preview/{role}', ShowDashboardPreviewController::class)
     ->whereIn('role', array_map(
@@ -82,10 +88,10 @@ Route::middleware('guest')->group(function (): void {
     Route::get('/tenant/register', ShowTenantRegistrationController::class)->name('tenant.register');
     Route::post('/tenant/register', StoreTenantRegistrationController::class)->name('tenant.register.store');
     Route::get('/driver/invitations/{invitation}/{token}', [DriverInvitationController::class, 'consume'])
-        ->middleware('throttle:10,1')->name('driver.invitation.consume');
+        ->middleware('throttle:driver-invitation')->name('driver.invitation.consume');
     Route::get('/driver/invitation/accept', [DriverInvitationController::class, 'create'])->name('driver.invitation.accept.create');
     Route::post('/driver/invitation/accept', [DriverInvitationController::class, 'store'])
-        ->middleware('throttle:5,1')->name('driver.invitation.accept.store');
+        ->middleware('throttle:driver-invitation')->name('driver.invitation.accept.store');
 });
 
 Route::middleware(['auth', 'identity.active'])->group(function (): void {
@@ -102,7 +108,7 @@ Route::middleware(['auth', 'identity.active'])->group(function (): void {
     Route::post('/customer/addresses/{address}/default', [CustomerAddressController::class, 'makeDefault'])->name('customer.addresses.default');
 
     Route::middleware('verified')->group(function (): void {
-        Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
+        Route::post('/orders', [OrderController::class, 'store'])->middleware('throttle:order-create')->name('orders.store');
         Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
         Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
         Route::get('/orders/{order}/receipt', [OrderController::class, 'receipt'])->name('orders.receipt');
@@ -110,7 +116,7 @@ Route::middleware(['auth', 'identity.active'])->group(function (): void {
         Route::post('/orders/{order}/cancellation', [OrderController::class, 'cancel'])->name('orders.cancel');
         Route::patch('/orders/{order}/delivery-schedule', [OrderController::class, 'scheduleDelivery'])->name('orders.delivery-schedule.update');
         Route::get('/orders/{order}/payments/create', [PaymentController::class, 'create'])->name('payments.create');
-        Route::post('/orders/{order}/payments', [PaymentController::class, 'store'])->name('payments.store');
+        Route::post('/orders/{order}/payments', [PaymentController::class, 'store'])->middleware('throttle:payment-create')->name('payments.store');
         Route::get('/payments/return', [PaymentController::class, 'handleReturn'])->name('payments.return');
         Route::get('/payments/{payment}', [PaymentController::class, 'show'])->name('payments.show');
         Route::get('/payments/{payment}/receipt', [PaymentController::class, 'receipt'])->name('payments.receipt');
@@ -131,7 +137,7 @@ Route::middleware(['auth', 'identity.active'])->group(function (): void {
             Route::post('/offers/{offer}/accept', [DriverTaskController::class, 'accept'])->name('offers.accept');
             Route::post('/offers/{offer}/reject', [DriverTaskController::class, 'reject'])->name('offers.reject');
             Route::post('/tasks/{task}/start', [DriverTaskController::class, 'start'])->name('tasks.start');
-            Route::post('/tasks/{task}/complete', [DriverTaskController::class, 'complete'])->middleware('throttle:20,1')->name('tasks.complete');
+            Route::post('/tasks/{task}/complete', [DriverTaskController::class, 'complete'])->middleware('throttle:proof-upload')->name('tasks.complete');
         });
 
         Route::get('/private-proofs/tasks/{task}', [PrivateProofController::class, 'task'])->name('proofs.tasks.show');
@@ -139,7 +145,7 @@ Route::middleware(['auth', 'identity.active'])->group(function (): void {
 
         Route::middleware('two-factor.required')->prefix('tenant')->name('tenant.')->group(function (): void {
             Route::get('/drivers', [TenantDriverController::class, 'index'])->name('drivers.index');
-            Route::post('/driver-invitations', [TenantDriverController::class, 'invite'])->middleware('throttle:10,1')->name('driver-invitations.store');
+            Route::post('/driver-invitations', [TenantDriverController::class, 'invite'])->middleware('throttle:driver-invitation')->name('driver-invitations.store');
             Route::delete('/driver-invitations/{invitation}', [TenantDriverController::class, 'revoke'])->name('driver-invitations.destroy');
             Route::put('/driver-settings/commission', [TenantDriverController::class, 'settings'])->name('driver-settings.commission.update');
             Route::post('/drivers/{driver}/deactivation', [TenantDriverController::class, 'deactivate'])->name('drivers.deactivate');
@@ -148,7 +154,7 @@ Route::middleware(['auth', 'identity.active'])->group(function (): void {
             Route::post('/orders/{order}/driver-offers', [DispatchController::class, 'offer'])->name('driver-offers.store');
             Route::post('/tasks/{task}/reassignment', [DispatchController::class, 'reassign'])->name('tasks.reassign');
             Route::post('/tasks/{task}/cancellation', [DispatchController::class, 'cancel'])->name('tasks.cancel');
-            Route::post('/orders/{order}/weight-confirmations', WeightConfirmationController::class)->middleware('throttle:20,1')->name('weight-confirmations.store');
+            Route::post('/orders/{order}/weight-confirmations', WeightConfirmationController::class)->middleware('throttle:proof-upload')->name('weight-confirmations.store');
             Route::get('/operations', TenantOperationsController::class)->name('operations');
             Route::get('/orders', [OrderController::class, 'tenantIndex'])->name('orders.index');
             Route::get('/payments', [TenantPaymentController::class, 'index'])->name('payments.index');
@@ -186,7 +192,7 @@ Route::middleware(['auth', 'identity.active'])->group(function (): void {
             ->middleware('two-factor.required')
             ->name('identity.sensitive-authentication.create');
         Route::post('/identity/confirm-sensitive-action', ConfirmSensitiveAuthenticationController::class)
-            ->middleware(['two-factor.required', 'throttle:5,1'])
+            ->middleware(['two-factor.required', 'throttle:sensitive-confirmation'])
             ->name('identity.sensitive-authentication.store');
 
         Route::post('/tenant/application/resubmission', ResubmitTenantApplicationController::class)
@@ -194,12 +200,15 @@ Route::middleware(['auth', 'identity.active'])->group(function (): void {
             ->name('tenant.application.resubmit');
 
         Route::middleware(['two-factor.required', 'sensitive.confirmed'])->group(function (): void {
+            Route::delete('/identity/account', CloseCustomerAccountController::class)->name('identity.account.destroy');
             Route::post('/tenant/closure-requests', RequestTenantClosureController::class)->name('tenant.closure-request.store');
             Route::put('/tenant/payout-account', SubmitPayoutAccountController::class)->name('tenant.payout-account.update');
             Route::post('/tenant/driver-payouts/{payout}/finalization', [DriverPayoutController::class, 'finalize'])->name('tenant.driver-payouts.finalize');
             Route::post('/tenant/driver-payouts/{payout}/void', [DriverPayoutController::class, 'void'])->name('tenant.driver-payouts.void');
 
             Route::prefix('super-user')->name('super-user.')->group(function (): void {
+                Route::post('/orders/{order}/pii-reveals', [PiiPrivacyController::class, 'store'])
+                    ->middleware('throttle:pii-reveal')->name('orders.pii-reveals.store');
                 Route::patch('/platform-settings/service-radius', [ManagePlatformSettingsController::class, 'update'])->name('platform-settings.radius.update');
                 Route::patch('/tenants/{tenant}/review', ReviewTenantApplicationController::class)->name('tenants.review');
                 Route::post('/tenants/{tenant}/suspension', SuspendTenantController::class)->name('tenants.suspend');
@@ -210,7 +219,7 @@ Route::middleware(['auth', 'identity.active'])->group(function (): void {
                 Route::patch('/payout-accounts/{account}/review', ReviewPayoutAccountController::class)->name('payout-accounts.review');
                 Route::post('/users/{user}/suspension', SuspendUserController::class)->name('users.suspend');
                 Route::post('/users/{user}/reactivation', ReactivateUserController::class)->name('users.reactivate');
-                Route::post('/payments/{payment}/inquiry', [PaymentSupportController::class, 'inquire'])->middleware('throttle:10,1')->name('payments.inquire');
+                Route::post('/payments/{payment}/inquiry', [PaymentSupportController::class, 'inquire'])->middleware('throttle:payment-inquiry')->name('payments.inquire');
                 Route::patch('/payment-channels/{channel}', [PaymentSupportController::class, 'toggleChannel'])->name('payment-channels.update');
                 Route::patch('/platform-settings/payment-maintenance', [ManagePlatformSettingsController::class, 'updatePaymentMaintenance'])->name('platform-settings.payment-maintenance.update');
                 Route::post('/refunds/{refund}/review', [RefundController::class, 'review'])->name('refunds.review');
@@ -233,11 +242,15 @@ Route::middleware(['auth', 'identity.active'])->group(function (): void {
             ->middleware('two-factor.required')->name('super-user.finance.index');
         Route::get('/super-user/finance/export', [FinanceController::class, 'supportExport'])
             ->middleware('two-factor.required')->name('super-user.finance.export');
+        Route::get('/super-user/audit', AuditReviewController::class)
+            ->middleware('two-factor.required')->name('super-user.audit.index');
+        Route::get('/super-user/orders/{order}/privacy', [PiiPrivacyController::class, 'show'])
+            ->middleware('two-factor.required')->name('super-user.orders.privacy.show');
         Route::post('/super-user/tenant-payouts', [TenantPayoutController::class, 'store'])
             ->middleware('two-factor.required')->name('super-user.tenant-payouts.store');
     });
 });
 
 Route::post('/webhooks/duitku', DuitkuCallbackController::class)
-    ->middleware('throttle:60,1')
+    ->middleware('throttle:duitku-callback')
     ->name('webhooks.duitku');

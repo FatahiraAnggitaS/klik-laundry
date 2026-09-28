@@ -176,10 +176,13 @@ Rollback migration M8 hanya tersedia sebelum record finansial tercipta. Jika ref
 | `notifications` | schema database notification Laravel dengan payload minimal dan dedupe key | unique dedupe key; index recipient/read/created |
 | `activity_logs` | Tenant?, actor, action, subject, reason, safe before/after metadata, timestamp | append-only; index subject/actor/Tenant/time |
 | `pii_access_logs` | Super User, order/Customer target, reason, grant/expiry/access timestamps | append-only dan order-specific |
+| `pii_access_grants` | actor, order, Customer, actor auth version, session hash, reason, grant/expiry/revocation | grant hanya valid untuk actor/order/auth/session yang sama selama 15 menit |
 
 Audit wajib untuk lifecycle Tenant, payout account/hold/finalization, payment inquiry, refund, Driver payout, reschedule/cancel sesudah assignment, dan PII reveal. Jangan menyimpan password, TOTP secret, token, signature, raw callback, atau signed URL.
 
 Tenant melihat contact Customer sampai 3×24 jam setelah completion. Driver melihatnya setelah accept sampai task selesai. Super User mendapat masked PII secara default; reveal memerlukan alasan dan expiry.
+
+M9 menambahkan `users.anonymized_at` dan metadata cleanup proof pada task/weight confirmation. Rollback migration ditolak setelah anonymization, PII access, atau physical proof deletion karena data asli tidak dapat dipulihkan. Grant/access/denial/expiry/revocation PII append-only; reason tidak dikirim kembali pada audit listing.
 
 ## State machines
 

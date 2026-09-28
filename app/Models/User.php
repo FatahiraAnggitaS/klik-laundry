@@ -32,7 +32,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  */
 #[Fillable([
     'public_id', 'tenant_id', 'role', 'status', 'status_reason', 'auth_version', 'role_slot',
-    'name', 'email', 'phone', 'password', 'email_verified_at', 'suspended_at', 'closed_at',
+    'name', 'email', 'phone', 'password', 'email_verified_at', 'suspended_at', 'closed_at', 'anonymized_at',
 ])]
 #[Hidden(['password', 'remember_token', 'two_factor_secret', 'two_factor_recovery_codes'])]
 final class User extends Authenticatable implements IdentityUser
@@ -129,6 +129,7 @@ final class User extends Authenticatable implements IdentityUser
             'two_factor_confirmed_at' => 'datetime',
             'suspended_at' => 'datetime',
             'closed_at' => 'datetime',
+            'anonymized_at' => 'datetime',
         ];
     }
 }

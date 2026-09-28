@@ -327,6 +327,10 @@ Minimum production services:
 - S3-compatible private object storage untuk proof image;
 - central log/error monitoring, metrics, dan uptime check.
 
+M9 menambahkan `/ready` terpisah dari liveness `/up`. Readiness menguji DB, shared cache, dan private storage lalu hanya mengembalikan `200/503` generik. Laravel Pulse default-off dan hanya boleh aktif pada PostgreSQL staging/production; dashboard dilindungi session, status akun aktif, 2FA, dan Gate Super User. Resolver Pulse hanya memakai public user ID serta role; recorder user/request dan outgoing URL yang berisiko PII default-off.
+
+Named rate limiter memakai Redis pada production. Queue worker, scheduler, Reverb, dan `pulse:check` dijalankan sebagai process terpisah dengan graceful restart. Backup PostgreSQL berbentuk custom dump, dienkripsi sebelum meninggalkan host, memiliki checksum, dan hanya diuji restore pada database terisolasi.
+
 Session disimpan pada shared store jika web process lebih dari satu. Upload tidak disimpan permanen pada local disk. Worker/Reverb harus mendapat graceful restart saat deploy.
 
 ## Scaling path

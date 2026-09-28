@@ -17,6 +17,9 @@ return [
 
     'default' => env('CACHE_STORE', 'database'),
 
+    // Production must use Redis so rate limits are shared by every instance.
+    'limiter' => env('CACHE_LIMITER_STORE', env('CACHE_STORE', 'database')),
+
     /*
     |--------------------------------------------------------------------------
     | Cache Stores

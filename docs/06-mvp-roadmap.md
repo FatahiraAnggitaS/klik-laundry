@@ -214,6 +214,8 @@ Exit criteria:
 
 ## Milestone 9 — Hardening dan pilot
 
+Status: **implementation complete — release blocked**. Privacy, hardening, observability, browser/load harness, serta operations runbook tersedia. Pilot belum boleh dirilis sebelum evidence staging, M0, dan M6 lulus.
+
 Deliverables:
 
 - Rate limit, PII reveal expiry, account anonymization/closure, proof cleanup, audit review.

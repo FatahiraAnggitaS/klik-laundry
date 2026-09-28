@@ -48,7 +48,7 @@ function Sidebar({ activeRole, navigation, roles, onNavigate }: SidebarProps) {
                             >
                                 <AppIcon
                                     name={item.icon}
-                                    className={`size-[18px] ${index === 0 ? 'text-brand-600' : 'text-white/45 group-hover:text-white/80'}`}
+                                    className={`size-[18px] ${index === 0 ? 'text-brand-600' : 'text-white/65 group-hover:text-white/80'}`}
                                     strokeWidth={2.1}
                                 />
                                 {item.label}
@@ -63,7 +63,7 @@ function Sidebar({ activeRole, navigation, roles, onNavigate }: SidebarProps) {
                     <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-accent text-xs font-black text-brand-950">AP</span>
                     <span className="min-w-0 flex-1">
                         <span className="block truncate text-sm font-bold text-white">Anggita Saputri</span>
-                        <span className="block truncate text-[11px] text-white/45">{activeRole.label}</span>
+                        <span className="block truncate text-[11px] text-white/65">{activeRole.label}</span>
                     </span>
                     <AppIcon name="chevron-down" className="size-4 text-white/35" />
                 </div>

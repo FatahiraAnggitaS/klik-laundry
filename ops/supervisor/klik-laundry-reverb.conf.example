@@ -1,0 +1,10 @@
+[program:klik-laundry-reverb]
+command=php /var/www/klik-laundry/artisan reverb:start --host=0.0.0.0 --port=8080
+directory=/var/www/klik-laundry
+autostart=true
+autorestart=true
+stopasgroup=true
+killasgroup=true
+stopwaitsecs=30
+redirect_stderr=true
+stdout_logfile=/var/log/supervisor/klik-laundry-reverb.log

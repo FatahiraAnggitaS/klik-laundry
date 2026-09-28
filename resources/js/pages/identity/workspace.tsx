@@ -33,6 +33,7 @@ export default function Workspace({ activity, identity, payoutAccount, tenant }:
             {identity.role === 'super_user' && (
                 <nav aria-label="Finance platform" className="mt-5 flex flex-wrap gap-2">
                     <Link href="/super-user/finance" className="inline-flex min-h-11 items-center rounded-xl border border-line bg-white px-4 text-sm font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-700">Finance & rekonsiliasi</Link>
+                    <Link href="/super-user/audit" className="inline-flex min-h-11 items-center rounded-xl border border-line bg-white px-4 text-sm font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-700">Audit & privacy</Link>
                 </nav>
             )}
             {(identity.role === 'tenant_owner' || identity.role === 'driver') && (

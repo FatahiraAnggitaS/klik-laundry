@@ -19,9 +19,10 @@ Versi di bawah adalah baseline major version untuk bootstrap, divalidasi pada 15
 | Database | SQLite local awal + PostgreSQL 18 target/CI | Local onboarding ringan dan transactional source of truth production | Portability wajib dibuktikan di CI PostgreSQL; SQLite bukan pengganti behavior concurrency PostgreSQL |
 | Cache/queue | Database/array pada foundation; Redis 8 target | Queue, cache, rate-limit coordination, session | Redis diaktifkan saat workload background/realtime masuk scope dan diverifikasi pada CI |
 | Realtime | Laravel Reverb + Echo | WebSocket private-channel status updates | First-party dan self-hosted; perlu process, TLS/proxy, monitoring, serta polling fallback |
+| Observability | Laravel Pulse 1.x | Request/job/query/server serta Reverb metrics | First-party dan terintegrasi Reverb; hanya aktif di PostgreSQL staging/production dengan recorder privacy-safe |
 | Payment | Duitku POP API via Laravel HTTP client | Invoice QRIS/E-Wallet dan callback | Direct integration kecil lebih mudah diaudit daripada package pihak ketiga; perubahan provider menjadi tanggung jawab kita |
 | File | S3-compatible private object storage | Proof pickup/delivery | Stateless deployment dan signed access; biaya/service eksternal bertambah |
-| Test | Pest versi stable yang kompatibel (di atas PHPUnit), Laravel HTTP/database test, dan Vitest bila unit UI diperlukan | Behavior, layer contract, dan regression test | Utamakan Service/feature test; Repository diuji dengan database nyata dan browser E2E dibatasi ke critical flow |
+| Test | Pest 5 + Pest Browser/Playwright, Laravel HTTP/database test, dan k6 | Behavior, layer contract, browser/accessibility, serta performance harness | Browser matrix dan load penuh lebih mahal sehingga per-commit memakai smoke, sedangkan staging menyimpan evidence penuh |
 | Quality | Pint, PHPStan/Larastan setelah compatibility dicek, ESLint, TypeScript, dan architecture checks | Static analysis, coding convention, serta dependency direction | Menangkap defect dan layer violation lebih awal; aturan harus memberi signal yang jelas dan tidak boleh dinonaktifkan diam-diam |
 | CI | GitHub Actions | Test, lint, typecheck, build | Reproducible quality gate; secret CI harus memakai encrypted secrets dan sandbox credential |
 | Local dev | SQLite terlebih dahulu | Menjalankan foundation tanpa service eksternal | Cepat dan sederhana; PostgreSQL CI wajib menjaga compatibility dan Docker dapat ditambahkan saat dibutuhkan |
@@ -136,6 +137,8 @@ REDIS_*
 QUEUE_CONNECTION
 BROADCAST_CONNECTION
 REVERB_*
+PULSE_*
+OPS_*
 DUITKU_ENVIRONMENT
 DUITKU_MERCHANT_CODE
 DUITKU_API_KEY

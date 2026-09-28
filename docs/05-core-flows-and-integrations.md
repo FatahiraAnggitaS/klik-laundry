@@ -240,3 +240,12 @@ Action berikut memerlukan Service khusus, reason, re-authentication jika sensiti
 - time-limited PII reveal.
 
 Super User tidak boleh impersonate, mengedit credential/profile user, melakukan generic order/payment override, atau mengekspor revealed PII.
+
+## 12. Privacy closure, reveal, dan proof cleanup
+
+1. Customer membuka security settings; Service menghitung blocker order non-terminal, payment pending, serta refund submitted/approved.
+2. Setelah sensitive re-authentication, closure me-lock user dan mengulang pemeriksaan dalam transaction.
+3. Service menutup akun, menaikkan `auth_version`, mencabut session/reset/notification/2FA, menghapus address book, dan memseudonimkan identity. Snapshot order/payment/refund tidak diubah.
+4. Super User selalu membuka privacy page masked. Grant baru memerlukan reason, TOTP, sensitive re-auth, dan named rate limit maksimal tiga per 15 menit.
+5. Grant hanya berlaku 15 menit untuk actor, order, `auth_version`, dan session hash yang sama. Setiap access atau denial dicatat; job menutup grant expired secara idempotent.
+6. Cleanup proof harian memilih locator yang melewati 90 hari dan tidak memiliki refund aktif. Object private dihapus lebih dahulu; locator DB baru dikosongkan setelah delete berhasil. Failure mempertahankan locator serta menaikkan attempt untuk retry.

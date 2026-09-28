@@ -21,7 +21,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $proof_access_revoked_at
  * @property Carbon $confirmed_at
  */
-#[Fillable(['public_id', 'order_id', 'actual_grams', 'minimum_grams', 'billable_grams', 'rounding_increment_grams', 'items_subtotal', 'grand_total', 'confirmed_by', 'reason', 'current_order_key', 'superseded_by', 'proof_disk', 'proof_key', 'proof_mime', 'proof_size', 'proof_expires_at', 'proof_access_revoked_at', 'confirmed_at'])]
+#[Fillable(['public_id', 'order_id', 'actual_grams', 'minimum_grams', 'billable_grams', 'rounding_increment_grams', 'items_subtotal', 'grand_total', 'confirmed_by', 'reason', 'current_order_key', 'superseded_by', 'proof_disk', 'proof_key', 'proof_mime', 'proof_size', 'proof_expires_at', 'proof_access_revoked_at', 'proof_deleted_at', 'proof_cleanup_attempts', 'proof_cleanup_failed_at', 'proof_cleanup_error', 'confirmed_at'])]
 final class WeightConfirmation extends Model
 {
     /** @return BelongsTo<Order, $this> */
@@ -32,6 +32,6 @@ final class WeightConfirmation extends Model
 
     protected function casts(): array
     {
-        return ['actual_grams' => 'integer', 'minimum_grams' => 'integer', 'billable_grams' => 'integer', 'items_subtotal' => 'integer', 'grand_total' => 'integer', 'confirmed_at' => 'immutable_datetime', 'proof_expires_at' => 'immutable_datetime', 'proof_access_revoked_at' => 'immutable_datetime'];
+        return ['actual_grams' => 'integer', 'minimum_grams' => 'integer', 'billable_grams' => 'integer', 'items_subtotal' => 'integer', 'grand_total' => 'integer', 'confirmed_at' => 'immutable_datetime', 'proof_expires_at' => 'immutable_datetime', 'proof_access_revoked_at' => 'immutable_datetime', 'proof_deleted_at' => 'immutable_datetime', 'proof_cleanup_attempts' => 'integer', 'proof_cleanup_failed_at' => 'immutable_datetime'];
     }
 }

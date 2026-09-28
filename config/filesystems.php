@@ -2,6 +2,8 @@
 
 return [
 
+    'private_proof_disk' => env('PRIVATE_PROOF_DISK', 'local'),
+
     /*
     |--------------------------------------------------------------------------
     | Default Filesystem Disk

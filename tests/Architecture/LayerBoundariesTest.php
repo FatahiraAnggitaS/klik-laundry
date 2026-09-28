@@ -7,6 +7,7 @@ use App\Gateways\Identity\SensitiveAuthenticationVerifierInterface;
 use App\Infrastructure\LaravelPrivateProofStorage;
 use App\Infrastructure\LaravelTransactionManager;
 use App\Repositories\Contracts\ActivityLogRepositoryInterface;
+use App\Repositories\Contracts\AuditReviewRepositoryInterface;
 use App\Repositories\Contracts\CustomerAddressRepositoryInterface;
 use App\Repositories\Contracts\DispatchRepositoryInterface;
 use App\Repositories\Contracts\DriverPayoutRepositoryInterface;
@@ -19,11 +20,14 @@ use App\Repositories\Contracts\PackageRepositoryInterface;
 use App\Repositories\Contracts\PaymentRepositoryInterface;
 use App\Repositories\Contracts\PayoutAccountRepositoryInterface;
 use App\Repositories\Contracts\PlatformSettingRepositoryInterface;
+use App\Repositories\Contracts\PrivacyRepositoryInterface;
+use App\Repositories\Contracts\ProofRetentionRepositoryInterface;
 use App\Repositories\Contracts\RefundRepositoryInterface;
 use App\Repositories\Contracts\TenantPayoutRepositoryInterface;
 use App\Repositories\Contracts\TenantRepositoryInterface;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Repositories\Eloquent\EloquentActivityLogRepository;
+use App\Repositories\Eloquent\EloquentAuditReviewRepository;
 use App\Repositories\Eloquent\EloquentCustomerAddressRepository;
 use App\Repositories\Eloquent\EloquentDispatchRepository;
 use App\Repositories\Eloquent\EloquentDriverPayoutRepository;
@@ -36,6 +40,8 @@ use App\Repositories\Eloquent\EloquentPackageRepository;
 use App\Repositories\Eloquent\EloquentPaymentRepository;
 use App\Repositories\Eloquent\EloquentPayoutAccountRepository;
 use App\Repositories\Eloquent\EloquentPlatformSettingRepository;
+use App\Repositories\Eloquent\EloquentPrivacyRepository;
+use App\Repositories\Eloquent\EloquentProofRetentionRepository;
 use App\Repositories\Eloquent\EloquentRefundRepository;
 use App\Repositories\Eloquent\EloquentTenantPayoutRepository;
 use App\Repositories\Eloquent\EloquentTenantRepository;
@@ -98,6 +104,9 @@ it('resolves repository contracts to their infrastructure implementations', func
         ->and(app(TenantRepositoryInterface::class))->toBeInstanceOf(EloquentTenantRepository::class)
         ->and(app(PayoutAccountRepositoryInterface::class))->toBeInstanceOf(EloquentPayoutAccountRepository::class)
         ->and(app(ActivityLogRepositoryInterface::class))->toBeInstanceOf(EloquentActivityLogRepository::class)
+        ->and(app(AuditReviewRepositoryInterface::class))->toBeInstanceOf(EloquentAuditReviewRepository::class)
+        ->and(app(PrivacyRepositoryInterface::class))->toBeInstanceOf(EloquentPrivacyRepository::class)
+        ->and(app(ProofRetentionRepositoryInterface::class))->toBeInstanceOf(EloquentProofRetentionRepository::class)
         ->and(app(OutletRepositoryInterface::class))->toBeInstanceOf(EloquentOutletRepository::class)
         ->and(app(OrderRepositoryInterface::class))->toBeInstanceOf(EloquentOrderRepository::class)
         ->and(app(PackageRepositoryInterface::class))->toBeInstanceOf(EloquentPackageRepository::class)

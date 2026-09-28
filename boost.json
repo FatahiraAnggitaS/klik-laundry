@@ -13,6 +13,7 @@
         "fortify-development",
         "laravel-best-practices",
         "testing-best-practices",
+        "pulse-development",
         "inertia-react-development",
         "echo-development",
         "tailwindcss-development"

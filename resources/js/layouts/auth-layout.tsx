@@ -18,7 +18,7 @@ export function AuthLayout({ children, description, title }: AuthLayoutProps) {
                     <h1 className="mt-4 text-4xl font-black tracking-[-0.04em]">Operasional laundry yang tertib sejak identitas pertama.</h1>
                     <p className="mt-5 text-sm leading-7 text-white/60">Session authentication, email verification, 2FA, dan isolation Tenant bekerja di server.</p>
                 </div>
-                <p className="text-xs text-white/40">Responsive web · Bahasa Indonesia · IDR</p>
+                <p className="text-xs text-white/65">Responsive web · Bahasa Indonesia · IDR</p>
             </section>
 
             <section className="mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-xl items-center">

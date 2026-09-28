@@ -18,7 +18,7 @@ final class LaravelPrivateProofStorage implements PrivateProofStorageInterface
             'image/webp' => 'webp',
             default => throw new \InvalidArgumentException('Unsupported proof MIME type.'),
         };
-        $disk = 'local';
+        $disk = (string) config('filesystems.private_proof_disk', 'local');
         $key = trim($directory, '/').'/'.Str::uuid().'.'.$extension;
         Storage::disk($disk)->putFileAs(dirname($key), $file, basename($key));
 

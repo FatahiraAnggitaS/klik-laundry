@@ -21,6 +21,10 @@
 /public/storage
 /storage/*.key
 /storage/pail
+/storage/app/private/milestone-0/evidence.json
+/storage/app/private/milestone-9/evidence.json
+/storage/app/private/operations/backup-status.json
+/tests/Browser/Screenshots
 /vendor
 _ide_helper.php
 Homestead.json

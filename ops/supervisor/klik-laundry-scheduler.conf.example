@@ -1,0 +1,9 @@
+[program:klik-laundry-scheduler]
+command=php /var/www/klik-laundry/artisan schedule:work
+directory=/var/www/klik-laundry
+autostart=true
+autorestart=true
+stopasgroup=true
+killasgroup=true
+redirect_stderr=true
+stdout_logfile=/var/log/supervisor/klik-laundry-scheduler.log

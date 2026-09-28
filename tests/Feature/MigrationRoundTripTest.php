@@ -58,9 +58,12 @@ it('migrates forward and rolls back on an isolated sqlite database', function ()
             ->and(Schema::connection('m2_roundtrip')->hasTable('tenant_payout_adjustments'))->toBeTrue()
             ->and(Schema::connection('m2_roundtrip')->hasTable('driver_payouts'))->toBeTrue()
             ->and(Schema::connection('m2_roundtrip')->hasTable('driver_payout_items'))->toBeTrue()
+            ->and(Schema::connection('m2_roundtrip')->hasTable('pii_access_grants'))->toBeTrue()
+            ->and(Schema::connection('m2_roundtrip')->hasTable('pii_access_logs'))->toBeTrue()
+            ->and(Schema::connection('m2_roundtrip')->hasColumn('users', 'anonymized_at'))->toBeTrue()
             ->and(Schema::connection('m2_roundtrip')->hasColumns('orders', ['processing_started_at', 'estimated_ready_at']))->toBeTrue()
-            ->and(Schema::connection('m2_roundtrip')->hasColumns('delivery_tasks', ['proof_expires_at', 'proof_access_revoked_at']))->toBeTrue()
-            ->and(Schema::connection('m2_roundtrip')->hasColumns('weight_confirmations', ['proof_expires_at', 'proof_access_revoked_at']))->toBeTrue();
+            ->and(Schema::connection('m2_roundtrip')->hasColumns('delivery_tasks', ['proof_expires_at', 'proof_access_revoked_at', 'proof_deleted_at', 'proof_cleanup_attempts']))->toBeTrue()
+            ->and(Schema::connection('m2_roundtrip')->hasColumns('weight_confirmations', ['proof_expires_at', 'proof_access_revoked_at', 'proof_deleted_at', 'proof_cleanup_attempts']))->toBeTrue();
 
         expect(Artisan::call('migrate:reset', ['--database' => 'm2_roundtrip', '--force' => true]))->toBe(0)
             ->and(Schema::connection('m2_roundtrip')->hasTable('tenants'))->toBeFalse()

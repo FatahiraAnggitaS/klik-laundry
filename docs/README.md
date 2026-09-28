@@ -1,6 +1,6 @@
 # Dokumentasi Laundry Multi-Tenant
 
-Dokumen ini adalah blueprint untuk MVP aplikasi laundry multi-tenant. Baseline keputusan divalidasi pada **15 September 2026**. Repository memiliki foundation Laravel/Inertia, prototype Milestone 0, vertical slice M2–M5 yang telah terverifikasi hosted CI, Duitku M6 yang masih diblokir live sandbox, M7 processing/realtime/completion, serta implementasi M8 finance/refund/payout/reporting. Versi aktual pada `composer.lock` dan `package-lock.json` tetap menjadi source of truth.
+Dokumen ini adalah blueprint untuk MVP aplikasi laundry multi-tenant. Baseline keputusan divalidasi pada **15 September 2026**. Repository memiliki vertical slice sampai M8 serta implementasi M9 untuk privacy, hardening, observability, performance harness, dan operations. Release tetap diblokir evidence staging serta blocker eksternal M0/M6. Versi aktual pada lockfile tetap menjadi source of truth.
 
 ## Daftar dokumen
 
@@ -15,6 +15,7 @@ Dokumen ini adalah blueprint untuk MVP aplikasi laundry multi-tenant. Baseline k
 | [`07-security-testing-operations.md`](07-security-testing-operations.md) | Security baseline, test strategy, observability, backup, dan readiness checklist |
 | [`08-implementation-baseline.md`](08-implementation-baseline.md) | Status implementasi aktual, SQLite/PostgreSQL portability, reference slice, dependency, dan quality gate |
 | [`milestone-0/README.md`](milestone-0/README.md) | Decision register, domain contract, wireflow, threat model, dan sandbox spike Milestone 0 |
+| [`milestone-9/production-checklist.md`](milestone-9/production-checklist.md) | Evidence manifest, backup/restore, process recovery, dan rollout checklist M9 |
 
 ## Keputusan ringkas
 

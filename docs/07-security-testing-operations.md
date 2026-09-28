@@ -78,6 +78,8 @@ Layer separation adalah control security: ia mencegah endpoint/job baru melewati
 
 ### Input, output, dan CSV
 
+Implementasi M9 mengikat grant reveal ke actor/order/`auth_version`/hash session selama tepat 15 menit, mengenkripsi Inertia history, dan memberi `Cache-Control: no-store`. Audit listing hanya mengirim metadata aman dan boolean keberadaan reason; reason mentah, before/after, alamat, telepon, email, serta koordinat tidak menjadi props. Account closure memseudonimkan identity tanpa mengubah snapshot transaksi.
+
 - Semua input memakai Form Request server-side; TypeScript/client validation hanya UX.
 - Service tidak mempercayai role, Tenant, Customer, total, fee, weight result, status, atau batch membership dari client.
 - React escaping default dipertahankan; hindari `dangerouslySetInnerHTML`.
@@ -95,6 +97,8 @@ Layer separation adalah control security: ia mencegah endpoint/job baru melewati
 - Jangan melayani SVG/HTML aktif atau mempercayai client MIME.
 
 ### Secret management
+
+Cleanup M9 menghapus object private sebelum locator DB. Refund `submitted|approved` memblokir deletion. Failure mempertahankan locator, mencatat safe error class, menaikkan attempt, dan menghasilkan alert yang dapat di-retry.
 
 - `.env*` sensitif tidak di-track; `.env.example` hanya placeholder aman.
 - Jangan bake `.env` ke image/build context.
@@ -216,6 +220,8 @@ Test tidak boleh ditandai lulus ketika di-skip. Migration compatibility, sandbox
 
 ## Observability
 
+M9 menambahkan Pest Browser desktop/mobile Chromium dan Firefox smoke, serious accessibility check, serta k6 harness dengan target read p95 `<500 ms`, mutation p95 `<1 s`, realtime p95 `<3 s`, dan error `<1%`. CI hanya membuktikan browser serta k6 harness smoke; hasil load penuh tetap membutuhkan evidence staging.
+
 ### Structured logs dan audit
 
 Log teknis memuat correlation ID, safe actor/Tenant/order/payment public ID, event, result, latency, dan error class. Redact password, TOTP/recovery code, token, cookie/session/auth header, Duitku credential/signature, raw callback, PII, dan signed URL.
@@ -256,6 +262,8 @@ Alert harus actionable, memiliki owner dan runbook. Duplicate callback normal di
 - Payment maintenance dapat menghentikan invoice baru tanpa mematikan callback.
 
 ## Operational runbooks minimum
+
+Implementasi operasional M9 menyediakan `/ready`, Pulse privacy-safe, `queue:monitor`, alert QueueBusy/JobFailed/readiness/proof/backup, Supervisor template, encrypted PostgreSQL backup/isolated restore script, fixture staging idempotent, private evidence manifest, dan rollout checklist. `m9:readiness-check` gagal tertutup sampai load, restore, restart, UAT, availability, RPO/RTO, M0, serta M6 berstatus passed.
 
 - Duitku timeout/callback tertunda/resend/inquiry dan local-provider mismatch.
 - Payment maintenance activation/deactivation.

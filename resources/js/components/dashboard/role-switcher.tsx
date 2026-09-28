@@ -12,7 +12,7 @@ export function RoleSwitcher({ activeRole, roles }: RoleSwitcherProps) {
         <details className="group relative">
             <summary className="flex cursor-pointer list-none items-center justify-between rounded-2xl border border-white/10 bg-white/[0.06] px-3 py-3 text-left transition hover:bg-white/[0.1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
                 <span className="min-w-0">
-                    <span className="block text-[10px] font-bold uppercase tracking-[0.16em] text-white/45">Preview sebagai</span>
+                    <span className="block text-[10px] font-bold uppercase tracking-[0.16em] text-white/65">Preview sebagai</span>
                     <span className="mt-1 block truncate text-sm font-bold text-white">{activeRole.label}</span>
                 </span>
                 <AppIcon name="chevron-down" className="size-4 text-white/50 transition group-open:rotate-180" />

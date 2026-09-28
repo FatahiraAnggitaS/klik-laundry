@@ -3,12 +3,14 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { FormField } from '@/components/ui/form-field';
 import type { IdentitySummary } from '@/types/identity';
+import type { AccountClosureReadiness } from '@/types/privacy';
 
-export default function Security({ identity }: { identity: IdentitySummary }) {
+export default function Security({ identity, accountClosure }: { identity: IdentitySummary; accountClosure: AccountClosureReadiness | null }) {
     const [qrCode, setQrCode] = useState<string | null>(null);
     const [recoveryCodes, setRecoveryCodes] = useState<string[]>([]);
     const [code, setCode] = useState('');
     const password = useForm({ current_password: '', password: '', password_confirmation: '' });
+    const closure = useForm({ confirmation: '' });
 
     const loadQr = async () => {
         const response = await fetch('/user/two-factor-qr-code', { headers: { Accept: 'application/json' } });
@@ -53,6 +55,21 @@ export default function Security({ identity }: { identity: IdentitySummary }) {
                     <Button type="submit" disabled={password.processing}>Perbarui password</Button>
                 </form>
             </section>
+            {accountClosure && <section className="mt-5 rounded-panel border border-red-200 bg-surface p-6 shadow-panel sm:p-8">
+                <p className="text-xs font-bold uppercase tracking-[0.16em] text-red-700">Zona sensitif</p>
+                <h2 className="mt-2 text-xl font-black">Tutup dan anonimkan akun</h2>
+                <p className="mt-2 text-sm text-muted">Profil dan address book akan dihapus permanen. Snapshot transaksi minimum tetap disimpan untuk kewajiban finansial dan legal.</p>
+                {!accountClosure.canClose && <ul className="mt-4 rounded-xl bg-red-50 p-4 text-sm text-red-800">
+                    <li>Order aktif: {accountClosure.blockers.activeOrders}</li>
+                    <li>Pembayaran pending: {accountClosure.blockers.pendingPayments}</li>
+                    <li>Refund aktif: {accountClosure.blockers.activeRefunds}</li>
+                </ul>}
+                <form className="mt-5 space-y-4" onSubmit={(event) => { event.preventDefault(); closure.delete('/identity/account'); }}>
+                    <FormField label='Ketik "TUTUP AKUN"' name="confirmation" value={closure.data.confirmation} error={closure.errors.confirmation} onChange={(event) => closure.setData('confirmation', event.target.value)} disabled={!accountClosure.canClose} />
+                    <p className="text-xs text-muted">Recent sensitive authentication wajib. Setelah berhasil, semua sesi dicabut dan tindakan tidak dapat dibatalkan.</p>
+                    <Button type="submit" variant="ghost" disabled={!accountClosure.canClose || closure.processing} className="text-red-700 hover:bg-red-50">Tutup akun</Button>
+                </form>
+            </section>}
         </div>
     </main>;
 }

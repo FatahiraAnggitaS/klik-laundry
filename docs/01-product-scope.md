@@ -356,6 +356,9 @@ Boundary implementasi M7: invitation, availability, pickup/delivery task, weight
 - Tenant dapat melihat alamat dan nomor Customer lengkap selama order aktif sampai 3×24 jam setelah `completed`. Setelah refund window berakhir, PII dimasking pada tampilan histori.
 - Masking tampilan tidak menghapus snapshot transaksi yang perlu dipertahankan untuk rekonsiliasi/audit; akses data mentah tetap dibatasi oleh kebutuhan dan authorization backend.
 - Penutupan akun Customer hanya diproses jika tidak ada order, payment, atau refund aktif. Login/sesi dicabut, PII yang tidak wajib disimpan dianonimkan, dan record transaksi minimum dipertahankan sesuai retention policy.
+- Implementasi M9 membuat penutupan akun sebagai anonymization transactional dan terminal: address book, session, reset token, notification, serta 2FA dihapus; snapshot transaksi tetap dipertahankan.
+- Reveal PII Super User terikat actor, order, `auth_version`, dan hash session selama tepat 15 menit. Masked view tetap default; grant, access, denial, expiry, dan revocation masuk log append-only.
+- Proof private dihapus secara fisik setelah 90 hari hanya jika tidak ada refund `submitted` atau `approved`. Locator dikosongkan sesudah object storage berhasil dihapus; metadata cleanup tetap dipertahankan.
 - Retention period final harus divalidasi secara legal sebelum production; hard delete yang merusak histori transaksi tidak tersedia sebagai action biasa.
 - Akun `suspended` tidak dapat membuat sesi baru dan sesi aktifnya harus dicabut. Pengaktifan kembali tidak mengubah order, payment, atau histori akun.
 - Reset 2FA Super User memerlukan recovery flow terverifikasi dan audit trail; tidak boleh dilakukan melalui perubahan database manual tanpa prosedur insiden.

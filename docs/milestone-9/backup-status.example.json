@@ -1,0 +1,6 @@
+{
+    "run_id": "backup-YYYYMMDD-example",
+    "last_success_at_utc": "2026-09-27T00:00:00Z",
+    "checksum_verified": true,
+    "external_evidence_reference": "external://redacted-reference"
+}

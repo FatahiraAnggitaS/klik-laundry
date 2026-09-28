@@ -1,0 +1,55 @@
+{
+    "schema_version": 1,
+    "environment": "staging",
+    "run_id": "m9-YYYYMMDD-example",
+    "operator_role": "release_operator",
+    "load_test": {
+        "status": "blocked",
+        "executed_at_utc": null,
+        "profile": "10 tenants, 20 outlets, 50 drivers, 500 orders/day, 100 private realtime connections",
+        "threshold_result": null,
+        "evidence_reference": ""
+    },
+    "restore_drill": {
+        "status": "blocked",
+        "executed_at_utc": null,
+        "checksum_verified": false,
+        "integrity_verified": false,
+        "evidence_reference": ""
+    },
+    "process_restart": {
+        "status": "blocked",
+        "executed_at_utc": null,
+        "worker": false,
+        "scheduler": false,
+        "reverb": false,
+        "pulse": false,
+        "evidence_reference": ""
+    },
+    "browser_uat": {
+        "status": "blocked",
+        "executed_at_utc": null,
+        "roles": ["customer", "tenant_owner", "driver", "super_user"],
+        "evidence_reference": ""
+    },
+    "availability": {
+        "status": "blocked",
+        "window_start_utc": null,
+        "window_end_utc": null,
+        "percentage": null,
+        "evidence_reference": ""
+    },
+    "rpo_rto_approval": {
+        "status": "blocked",
+        "rpo": null,
+        "rto": null,
+        "approver_role": null,
+        "approved_at_utc": null,
+        "evidence_reference": ""
+    },
+    "blockers": {
+        "milestone_0": "blocked",
+        "milestone_6": "blocked"
+    },
+    "notes": "Only redacted references are allowed. Never store credentials, cookies, tokens, payment URLs, callbacks, account numbers, or PII."
+}

@@ -37,7 +37,7 @@ use Illuminate\Support\Carbon;
  * @property-read User|null $assignee
  * @property-read Collection<int, DriverTaskHistory> $histories
  */
-#[Fillable(['public_id', 'tenant_id', 'order_id', 'outlet_id', 'type', 'status', 'assignee_id', 'active_driver_key', 'commission_amount', 'scheduled_starts_at', 'scheduled_ends_at', 'note', 'proof_disk', 'proof_key', 'proof_mime', 'proof_size', 'proof_expires_at', 'proof_access_revoked_at', 'offered_at', 'accepted_at', 'started_at', 'completed_at', 'cancelled_at'])]
+#[Fillable(['public_id', 'tenant_id', 'order_id', 'outlet_id', 'type', 'status', 'assignee_id', 'active_driver_key', 'commission_amount', 'scheduled_starts_at', 'scheduled_ends_at', 'note', 'proof_disk', 'proof_key', 'proof_mime', 'proof_size', 'proof_expires_at', 'proof_access_revoked_at', 'proof_deleted_at', 'proof_cleanup_attempts', 'proof_cleanup_failed_at', 'proof_cleanup_error', 'offered_at', 'accepted_at', 'started_at', 'completed_at', 'cancelled_at'])]
 final class DeliveryTask extends Model
 {
     /** @return BelongsTo<Order, $this> */
@@ -72,7 +72,7 @@ final class DeliveryTask extends Model
             'scheduled_ends_at' => 'immutable_datetime', 'offered_at' => 'immutable_datetime',
             'accepted_at' => 'immutable_datetime', 'started_at' => 'immutable_datetime',
             'completed_at' => 'immutable_datetime', 'cancelled_at' => 'immutable_datetime',
-            'proof_expires_at' => 'immutable_datetime', 'proof_access_revoked_at' => 'immutable_datetime',
+            'proof_expires_at' => 'immutable_datetime', 'proof_access_revoked_at' => 'immutable_datetime', 'proof_deleted_at' => 'immutable_datetime', 'proof_cleanup_attempts' => 'integer', 'proof_cleanup_failed_at' => 'immutable_datetime',
         ];
     }
 }
