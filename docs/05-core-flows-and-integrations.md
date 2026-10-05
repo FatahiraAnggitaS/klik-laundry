@@ -164,6 +164,7 @@ Implementasi M6 menyediakan checkout Customer, receipt khusus payment `paid`, re
 - Tenant menandai `ready_for_delivery`; Customer lalu memilih delivery slot dengan lead time dua jam dan horizon tujuh hari sejak readiness.
 - Tanpa pilihan dalam tujuh hari, state tetap `ready_for_delivery` dengan indicator `awaiting_customer`; tidak ada storage fee.
 - Delivery task baru dapat ditawarkan setelah slot dipilih.
+- Dashboard dispatch tidak memasukkan order tanpa delivery slot ke pilihan offer dan menampilkan jumlah order yang masih menunggu Customer.
 - `CompleteDriverTaskService` secara atomic menyelesaikan task, membuat commission idempotent, mengubah order ke `completed`, mencabut contact access, dan menerbitkan event.
 - Tidak ada konfirmasi penerimaan tambahan atau live GPS.
 
@@ -238,6 +239,8 @@ Action berikut memerlukan Service khusus, reason, re-authentication jika sensiti
 - refund approval/completion;
 - Tenant/Driver payout finalization;
 - time-limited PII reveal.
+
+UI menonaktifkan submit action sensitif sampai password dan TOTP dikonfirmasi. Jika konfirmasi kedaluwarsa saat halaman masih terbuka, middleware tidak me-replay mutation atau payload; actor dikembalikan ke halaman asal dan diminta mengirim ulang action setelah konfirmasi berhasil.
 
 Super User tidak boleh impersonate, mengedit credential/profile user, melakukan generic order/payment override, atau mengekspor revealed PII.
 

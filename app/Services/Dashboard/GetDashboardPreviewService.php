@@ -19,7 +19,11 @@ final class GetDashboardPreviewService
         return new DashboardPreviewData(
             activeRole: $role,
             roles: $this->roles(),
-            navigation: $content['navigation'],
+            navigation: array_map(
+                static fn (array $item, int $index): array => [...$item, 'href' => $index === 0 ? '#overview' : '#work-queue'],
+                $content['navigation'],
+                array_keys($content['navigation']),
+            ),
             hero: $content['hero'],
             metrics: $content['metrics'],
             focus: $content['focus'],
@@ -62,10 +66,10 @@ final class GetDashboardPreviewService
                 'secondaryAction' => 'Cari outlet terdekat',
             ],
             'metrics' => [
-                ['label' => 'Pesanan aktif', 'value' => '2', 'change' => '1 sedang diproses', 'tone' => 'blue', 'icon' => 'shopping-bag'],
-                ['label' => 'Siap diantar', 'value' => '1', 'change' => 'Pilih slot delivery', 'tone' => 'green', 'icon' => 'package-check'],
-                ['label' => 'Pengeluaran bulan ini', 'value' => 'Rp286 rb', 'change' => '3 pesanan selesai', 'tone' => 'amber', 'icon' => 'wallet-cards'],
-                ['label' => 'Outlet tersimpan', 'value' => '4', 'change' => 'Dalam radius layanan', 'tone' => 'violet', 'icon' => 'store'],
+                ['label' => 'Pesanan aktif', 'value' => '2', 'numericValue' => 2, 'change' => '1 sedang diproses', 'tone' => 'blue', 'icon' => 'shopping-bag'],
+                ['label' => 'Siap diantar', 'value' => '1', 'numericValue' => 1, 'change' => 'Pilih slot delivery', 'tone' => 'green', 'icon' => 'package-check'],
+                ['label' => 'Pengeluaran bulan ini', 'value' => 'Rp286 rb', 'numericValue' => 286000, 'change' => '3 pesanan selesai', 'tone' => 'amber', 'icon' => 'wallet-cards'],
+                ['label' => 'Outlet tersimpan', 'value' => '4', 'numericValue' => 4, 'change' => 'Dalam radius layanan', 'tone' => 'violet', 'icon' => 'store'],
             ],
             'focus' => [
                 'label' => 'Berikutnya untukmu',
@@ -105,10 +109,10 @@ final class GetDashboardPreviewService
                 'secondaryAction' => 'Lihat semua pesanan',
             ],
             'metrics' => [
-                ['label' => 'Pesanan aktif', 'value' => '24', 'change' => '+8 sejak pagi', 'tone' => 'blue', 'icon' => 'shopping-bag'],
-                ['label' => 'SLA hari ini', 'value' => '94%', 'change' => '2 order perlu perhatian', 'tone' => 'green', 'icon' => 'shield-check'],
-                ['label' => 'Omzet hari ini', 'value' => 'Rp2,48 jt', 'change' => '+12,4% dari kemarin', 'tone' => 'amber', 'icon' => 'wallet-cards'],
-                ['label' => 'Driver tersedia', 'value' => '6/8', 'change' => '2 sedang bertugas', 'tone' => 'violet', 'icon' => 'route'],
+                ['label' => 'Pesanan aktif', 'value' => '24', 'numericValue' => 24, 'change' => '+8 sejak pagi', 'tone' => 'blue', 'icon' => 'shopping-bag'],
+                ['label' => 'SLA hari ini', 'value' => '94%', 'numericValue' => 94, 'change' => '2 order perlu perhatian', 'tone' => 'green', 'icon' => 'shield-check'],
+                ['label' => 'Omzet hari ini', 'value' => 'Rp2,48 jt', 'numericValue' => 2480000, 'change' => '+12,4% dari kemarin', 'tone' => 'amber', 'icon' => 'wallet-cards'],
+                ['label' => 'Driver tersedia', 'value' => '6/8', 'numericValue' => 6, 'change' => '2 sedang bertugas', 'tone' => 'violet', 'icon' => 'route'],
             ],
             'focus' => [
                 'label' => 'Perlu tindakan',
@@ -148,10 +152,10 @@ final class GetDashboardPreviewService
                 'secondaryAction' => 'Atur ketersediaan',
             ],
             'metrics' => [
-                ['label' => 'Tugas hari ini', 'value' => '5', 'change' => '3 sudah selesai', 'tone' => 'blue', 'icon' => 'route'],
-                ['label' => 'Tugas aktif', 'value' => '1', 'change' => 'Pickup sebelum 11.30', 'tone' => 'green', 'icon' => 'clock'],
-                ['label' => 'Komisi minggu ini', 'value' => 'Rp185 rb', 'change' => 'Rp75 rb belum dibayar', 'tone' => 'amber', 'icon' => 'wallet-cards'],
-                ['label' => 'Tepat waktu', 'value' => '96%', 'change' => '24 tugas terakhir', 'tone' => 'violet', 'icon' => 'shield-check'],
+                ['label' => 'Tugas hari ini', 'value' => '5', 'numericValue' => 5, 'change' => '3 sudah selesai', 'tone' => 'blue', 'icon' => 'route'],
+                ['label' => 'Tugas aktif', 'value' => '1', 'numericValue' => 1, 'change' => 'Pickup sebelum 11.30', 'tone' => 'green', 'icon' => 'clock'],
+                ['label' => 'Komisi minggu ini', 'value' => 'Rp185 rb', 'numericValue' => 185000, 'change' => 'Rp75 rb belum dibayar', 'tone' => 'amber', 'icon' => 'wallet-cards'],
+                ['label' => 'Tepat waktu', 'value' => '96%', 'numericValue' => 96, 'change' => '24 tugas terakhir', 'tone' => 'violet', 'icon' => 'shield-check'],
             ],
             'focus' => [
                 'label' => 'Tugas aktif',
@@ -191,10 +195,10 @@ final class GetDashboardPreviewService
                 'secondaryAction' => 'Buka rekonsiliasi',
             ],
             'metrics' => [
-                ['label' => 'Tenant aktif', 'value' => '10', 'change' => '2 menunggu review', 'tone' => 'blue', 'icon' => 'store'],
-                ['label' => 'Order 24 jam', 'value' => '387', 'change' => '96,8% selesai normal', 'tone' => 'green', 'icon' => 'shopping-bag'],
-                ['label' => 'Perlu rekonsiliasi', 'value' => '3', 'change' => 'Tidak ada mismatch kritis', 'tone' => 'amber', 'icon' => 'wallet-cards'],
-                ['label' => 'Availability', 'value' => '99,7%', 'change' => '30 hari berjalan', 'tone' => 'violet', 'icon' => 'shield-check'],
+                ['label' => 'Tenant aktif', 'value' => '10', 'numericValue' => 10, 'change' => '2 menunggu review', 'tone' => 'blue', 'icon' => 'store'],
+                ['label' => 'Order 24 jam', 'value' => '387', 'numericValue' => 387, 'change' => '96,8% selesai normal', 'tone' => 'green', 'icon' => 'shopping-bag'],
+                ['label' => 'Perlu rekonsiliasi', 'value' => '3', 'numericValue' => 3, 'change' => 'Tidak ada mismatch kritis', 'tone' => 'amber', 'icon' => 'wallet-cards'],
+                ['label' => 'Availability', 'value' => '99,7%', 'numericValue' => 99.7, 'change' => '30 hari berjalan', 'tone' => 'violet', 'icon' => 'shield-check'],
             ],
             'focus' => [
                 'label' => 'Risk queue',

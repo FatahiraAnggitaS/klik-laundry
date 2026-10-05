@@ -102,7 +102,7 @@ final class GetWireflowPreviewService
                     ['label' => 'Fixed belum paid', 'result' => 'Pickup belum boleh dijalankan.'],
                     ['label' => 'Per-kg', 'result' => 'Pickup dapat dimulai sebelum invoice final.'],
                 ]),
-                $this->step('dispatch-weighing', '04', 'Dispatch dan timbang', 'Tenant owner', 'Tawarkan satu task ke satu Driver dan konfirmasi berat per-kg.', 'Acceptance atomic; berat dibulatkan naik per 100 gram dan harga dihitung backend.', 'Awaiting weight / assigned', 'Offer hanya menampilkan area; kontak lengkap baru terlihat setelah accept.', [
+                $this->step('dispatch-weighing', '04', 'Dispatch dan timbang', 'Tenant owner', 'Tawarkan satu task ke satu Driver dan konfirmasi berat per-kg.', 'Acceptance atomic; berat dibulatkan naik per 0,1 kg dan harga dihitung backend.', 'Awaiting weight / assigned', 'Offer hanya menampilkan area; kontak lengkap baru terlihat setelah accept.', [
                     ['label' => 'Offer expired', 'result' => 'Task kembali pending dan dapat ditawarkan ulang.'],
                     ['label' => 'Per-kg confirmed', 'result' => 'Total final dikunci dan invoice dapat dibuat.'],
                 ]),

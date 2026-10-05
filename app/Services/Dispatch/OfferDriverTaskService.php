@@ -47,8 +47,11 @@ final readonly class OfferDriverTaskService
                 throw new DomainRecordNotFound;
             }
             $expected = $type === DriverTaskType::Pickup ? FulfillmentStatus::AwaitingPickup->value : FulfillmentStatus::ReadyForDelivery->value;
-            if ($order->fulfillmentStatus !== $expected || ($type === DriverTaskType::Delivery && $order->deliveryStartsAt === null)) {
+            if ($order->fulfillmentStatus !== $expected) {
                 throw new DomainActionConflict('Order is not eligible for this task.', 'Order belum siap ditugaskan untuk leg ini.');
+            }
+            if ($type === DriverTaskType::Delivery && ($order->deliveryStartsAt === null || $order->deliveryEndsAt === null)) {
+                throw new DomainActionConflict('Delivery schedule is required.', 'Customer belum memilih jadwal delivery.');
             }
             $driver = $this->drivers->findOwnedDriver($tenant->id, $driverPublicId, true) ?? throw new DomainRecordNotFound;
             if ($driver->status !== UserStatus::Active->value || $driver->availability !== DriverAvailability::Available->value || $this->dispatch->hasActiveTask($driver->id)) {

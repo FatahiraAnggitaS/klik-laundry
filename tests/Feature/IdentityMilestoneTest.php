@@ -292,10 +292,17 @@ it('requires password and totp for sensitive authentication without auditing sec
 
     $this->actingAs($user)
         ->withSession(['auth.version' => $user->auth_version])
+        ->get('/identity/confirm-sensitive-action?return_to=/super-user/tenants')
+        ->assertOk();
+
+    expect(session('url.intended'))->toBe('/super-user/tenants');
+
+    $this
+        ->withSession(['auth.version' => $user->auth_version])
         ->post('/identity/confirm-sensitive-action', [
             'password' => 'StrongPassword123',
             'code' => $google2fa->getCurrentOtp($secret),
-        ])->assertRedirect('/workspace');
+        ])->assertRedirect('/super-user/tenants');
 
     expect(session('auth.sensitive_confirmed_at'))->toBeInt();
     $audit = ActivityLog::query()->where('action', 'identity.sensitive_authentication_confirmed')->firstOrFail();

@@ -8,9 +8,9 @@ final readonly class DashboardPreviewData
 {
     /**
      * @param  list<array{value: string, label: string, description: string}>  $roles
-     * @param  list<array{label: string, icon: string}>  $navigation
+     * @param  list<array{label: string, icon: string, href: string}>  $navigation
      * @param  array{eyebrow: string, title: string, description: string, primaryAction: string, secondaryAction: string}  $hero
-     * @param  list<array{label: string, value: string, change: string, tone: string, icon: string}>  $metrics
+     * @param  list<array{label: string, value: string, numericValue: int|float, change: string, tone: string, icon: string}>  $metrics
      * @param  array{label: string, title: string, description: string, meta: string, progress: int, action: string, icon: string}  $focus
      * @param  list<array{id: string, title: string, subtitle: string, status: string, statusTone: string, meta: string}>  $workItems
      * @param  list<array{title: string, description: string, status: string}>  $milestones
@@ -30,9 +30,9 @@ final readonly class DashboardPreviewData
      * @return array{
      *     activeRole: array{value: string, label: string},
      *     roles: list<array{value: string, label: string, description: string}>,
-     *     navigation: list<array{label: string, icon: string}>,
+     *     navigation: list<array{label: string, icon: string, href: string}>,
      *     hero: array{eyebrow: string, title: string, description: string, primaryAction: string, secondaryAction: string},
-     *     metrics: list<array{label: string, value: string, change: string, tone: string, icon: string}>,
+     *     metrics: list<array{label: string, value: string, numericValue: int|float, change: string, tone: string, icon: string}>,
      *     focus: array{label: string, title: string, description: string, meta: string, progress: int, action: string, icon: string},
      *     workItems: list<array{id: string, title: string, subtitle: string, status: string, statusTone: string, meta: string}>,
      *     milestones: list<array{title: string, description: string, status: string}>

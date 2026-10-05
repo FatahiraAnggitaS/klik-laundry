@@ -14,6 +14,7 @@ Dokumen ini adalah blueprint untuk MVP aplikasi laundry multi-tenant. Baseline k
 | [`06-mvp-roadmap.md`](06-mvp-roadmap.md) | Tahapan implementasi, prioritas, exit criteria, dan backlog pasca-MVP |
 | [`07-security-testing-operations.md`](07-security-testing-operations.md) | Security baseline, test strategy, observability, backup, dan readiness checklist |
 | [`08-implementation-baseline.md`](08-implementation-baseline.md) | Status implementasi aktual, SQLite/PostgreSQL portability, reference slice, dependency, dan quality gate |
+| [`09-portfolio-readiness.md`](09-portfolio-readiness.md) | Seed demo, browser journey, staging terbatas, dan bukti portfolio |
 | [`milestone-0/README.md`](milestone-0/README.md) | Decision register, domain contract, wireflow, threat model, dan sandbox spike Milestone 0 |
 | [`milestone-9/production-checklist.md`](milestone-9/production-checklist.md) | Evidence manifest, backup/restore, process recovery, dan rollout checklist M9 |
 

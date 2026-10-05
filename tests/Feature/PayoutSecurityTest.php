@@ -120,6 +120,7 @@ it('denies stale sensitive authentication before payout mutation', function () {
 
     $this->actingAs($owner)
         ->withSession(['auth.version' => $owner->auth_version])
+        ->from('/workspace')
         ->put('/tenant/payout-account', [
             'bank_name' => 'Bank Stale',
             'account_holder_name' => 'Pemilik Stale',
@@ -127,6 +128,35 @@ it('denies stale sensitive authentication before payout mutation', function () {
         ])->assertRedirect('/identity/confirm-sensitive-action');
 
     expect(TenantPayoutAccount::query()->count())->toBe(0);
+    expect(session('url.intended'))->toBe(route('workspace'));
+});
+
+it('submits a payout account through http after recent sensitive authentication', function () {
+    ['owner' => $owner, 'superUser' => $superUser] = m2ApprovedTenant();
+
+    $this->actingAs($owner)
+        ->withSession([
+            'auth.version' => $owner->auth_version,
+            'auth.sensitive_confirmed_at' => time(),
+        ])
+        ->put('/tenant/payout-account', [
+            'bank_name' => 'Bank HTTP',
+            'account_holder_name' => 'Pemilik HTTP',
+            'account_number' => '1234567890',
+        ])
+        ->assertRedirect();
+
+    expect(TenantPayoutAccount::query()->where('verification_status', PayoutAccountStatus::Pending)->count())->toBe(1);
+
+    $this->actingAs($superUser)
+        ->withSession([
+            'auth.version' => $superUser->auth_version,
+            'auth.sensitive_confirmed_at' => 0,
+        ])
+        ->get('/super-user/tenants')
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('payoutAccounts.0.bankName', 'Bank HTTP')
+            ->where('sensitiveAuthentication.confirmed', false));
 });
 
 it('exposes only masked payout data to tenant and super user inertia pages', function () {

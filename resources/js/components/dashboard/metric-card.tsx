@@ -16,7 +16,7 @@ const iconTones: Record<Tone, string> = {
 
 export function MetricCard({ metric }: MetricCardProps) {
     return (
-        <Card className="group p-4 transition duration-300 hover:-translate-y-0.5 hover:border-line-strong hover:shadow-panel-hover sm:p-5">
+        <Card className="p-4 sm:p-5">
             <div className="flex items-start justify-between gap-4">
                 <div>
                     <p className="text-xs font-semibold text-muted">{metric.label}</p>

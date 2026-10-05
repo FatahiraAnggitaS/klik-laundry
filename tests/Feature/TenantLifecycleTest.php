@@ -84,6 +84,26 @@ it('supports approval suspension and reactivation while rejecting invalid transi
         ->toThrow(DomainActionConflict::class);
 });
 
+it('approves and activates a pending tenant through http after recent sensitive authentication', function () {
+    app(RegisterTenantService::class)->handle(m2TenantRegistration('http-approval@example.test'));
+    $tenant = Tenant::query()->firstOrFail();
+    $superUser = m2SuperUser();
+
+    $this->actingAs($superUser)
+        ->withSession([
+            'auth.version' => $superUser->auth_version,
+            'auth.sensitive_confirmed_at' => time(),
+        ])
+        ->patch("/super-user/tenants/{$tenant->public_id}/review", [
+            'decision' => 'approved',
+            'reason' => 'Dokumen HTTP lengkap dan valid.',
+        ])
+        ->assertRedirect();
+
+    expect($tenant->refresh()->onboarding_status)->toBe(TenantOnboardingStatus::Approved)
+        ->and($tenant->operational_status)->toBe(TenantOperationalStatus::Active);
+});
+
 it('allows only rejected tenant applications to be resubmitted', function () {
     $owner = app(RegisterTenantService::class)->handle(m2TenantRegistration('resubmit@example.test'));
     $tenant = Tenant::query()->firstOrFail();

@@ -19,7 +19,7 @@ export default function RegisterTenant() {
             <FormField label="Area" name="area" required value={form.data.area} error={form.errors.area} onChange={(e) => form.setData('area', e.target.value)} />
             <FormField label="Latitude" name="latitude" type="number" step="0.0000001" required value={form.data.latitude} error={form.errors.latitude} onChange={(e) => form.setData('latitude', e.target.value)} />
             <FormField label="Longitude" name="longitude" type="number" step="0.0000001" required value={form.data.longitude} error={form.errors.longitude} onChange={(e) => form.setData('longitude', e.target.value)} />
-            <Button type="submit" className="w-full sm:col-span-2" disabled={form.processing}>Kirim pendaftaran</Button>
+            <Button type="submit" className="w-full sm:col-span-2" loading={form.processing} disabled={form.processing}>Kirim pendaftaran</Button>
         </form>
         <Link href="/login" className="mt-6 block text-sm font-semibold text-brand-700">Kembali ke login</Link>
     </AuthLayout>;

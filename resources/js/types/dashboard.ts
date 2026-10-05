@@ -13,6 +13,7 @@ export interface RoleOption extends ActiveRole {
 }
 
 export interface NavigationItem {
+    href: string;
     label: string;
     icon: IconName;
 }
@@ -31,6 +32,7 @@ export interface Metric {
     change: string;
     tone: Tone;
     icon: IconName;
+    numericValue: number;
 }
 
 export interface FocusItem {

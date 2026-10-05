@@ -15,6 +15,7 @@ Versi di bawah adalah baseline major version untuk bootstrap, divalidasi pada 15
 | Frontend bridge | Inertia.js 3.x | Menghubungkan controller Laravel dengan page React | Tidak perlu API terpisah untuk web app; coupling ke server-driven navigation memang disengaja |
 | UI | React 19 + TypeScript | Presentation dan interaction | Sesuai official React starter kit; TypeScript menambah correctness dengan sedikit compile overhead |
 | Styling | Tailwind CSS 4 | Design system dan responsive UI | Sudah menjadi baseline starter kit; jaga reusable component agar class tidak terduplikasi |
+| Visualisasi | Recharts 3.10 + react-is 19 | Grafik interaktif untuk metric finance dan dashboard preview | Kompatibel dengan React 19; grafik hanya memvisualkan agregat yang sudah ada dan wajib memiliki ringkasan teks aksesibel |
 | Build | Vite (versi starter kit) | Dev server dan production assets | Integrasi resmi Laravel; versi aktual mengikuti starter kit/lockfile |
 | Database | SQLite local awal + PostgreSQL 18 target/CI | Local onboarding ringan dan transactional source of truth production | Portability wajib dibuktikan di CI PostgreSQL; SQLite bukan pengganti behavior concurrency PostgreSQL |
 | Cache/queue | Database/array pada foundation; Redis 8 target | Queue, cache, rate-limit coordination, session | Redis diaktifkan saat workload background/realtime masuk scope dan diverifikasi pada CI |
@@ -103,7 +104,9 @@ Pros: cukup untuk 10 tenant dan tidak membutuhkan key provider peta. Trade-off: 
 
 ### UI components
 
-Mulai dari komponen starter kit/shadcn/ui yang memang dibawa official starter kit, lalu bangun shared component seperti `PageHeader`, `FormField`, `StatusBadge`, `EmptyState`, `ConfirmDialog`, dan `Pagination`. Jangan menambah UI framework kedua.
+Bangun shared component project seperti `PageHeader`, `FormField`, `StatusBadge`, `EmptyState`, `ConfirmDialog`, `Drawer`, `Tabs`, `Toast`, `StatCard`, chart wrapper, dan `Pagination`. Jangan menambah UI framework kedua.
+
+Design system menggunakan semantic color token dengan identitas biru-cyan. Theme `system`, `light`, dan `dark` disimpan di browser; script kecil pada HTML root menerapkan tema sebelum stylesheet dimuat untuk mencegah flash. Semua animasi wajib menghormati `prefers-reduced-motion`, dan tampilan cetak selalu memakai palet terang.
 
 ### Date, money, and identifiers
 

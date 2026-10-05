@@ -23,6 +23,7 @@
 - TOTP 2FA serta recovery code wajib bagi Tenant owner dan satu Super User.
 - Customer/Driver tidak memakai 2FA pada MVP; login/reset/invitation tetap rate-limited.
 - Sensitive action meminta password/TOTP confirmation jika sensitive authentication lebih lama dari 15 menit.
+- UI melakukan re-auth sebelum submit mutation sensitif. Middleware fail closed, tidak menyimpan atau me-replay payload mutation, lalu mengembalikan actor hanya ke path internal same-host untuk mengulang action.
 - Suspend/close/deactivate mencabut active session sesuai lifecycle.
 - Super User hanya dibuat melalui interactive command yang tidak menerima/mencetak password pada argument/log.
 - Tidak ada impersonation, web signup Super User, role promotion, atau shared owner credential.
@@ -202,6 +203,8 @@ Feature suite M3 juga membuktikan discovery guest/Customer, filter pricing, urut
   3. Tenant/Super User finance and refund;
   4. cross-role forbidden behavior dan tracking fallback.
 - Accessibility smoke: keyboard, focus, label, error, loading, pending, empty, responsive.
+- UI regression: theme `system/light/dark` persisten tanpa flash, mobile drawer menutup dengan Escape dan mengembalikan fokus, dialog konfirmasi tidak mengirim mutation saat dibatalkan, serta chart memiliki ringkasan tekstual.
+- Jalankan serious accessibility check pada light dan dark mode. `prefers-reduced-motion` harus mematikan motion dekoratif tanpa menghilangkan feedback status.
 
 ## CI quality gates
 

@@ -16,6 +16,12 @@ final readonly class GetDispatchDashboardService
     public function handle(IdentityUser $actor): array
     {
         $tenant = $this->guard->forRead($actor);
+        $pickupOrders = $this->orders->paginateForTenant($tenant->id, ['fulfillment_status' => 'awaiting_pickup'], 100)['items'];
+        $readyDeliveryOrders = $this->orders->paginateForTenant($tenant->id, ['fulfillment_status' => 'ready_for_delivery'], 100)['items'];
+        $scheduledDeliveryOrders = array_values(array_filter(
+            $readyDeliveryOrders,
+            fn (array $order): bool => $order['deliveryStartsAt'] !== null && $order['deliveryEndsAt'] !== null,
+        ));
 
         return [
             'tenant' => ['name' => $tenant->name, 'operationalStatus' => $tenant->operationalStatus],
@@ -23,9 +29,10 @@ final readonly class GetDispatchDashboardService
             'drivers' => $this->drivers->paginateDrivers($tenant->id, 100)['items'],
             'settings' => $this->drivers->settings($tenant->id)->toArray(),
             'eligibleOrders' => [
-                ...$this->orders->paginateForTenant($tenant->id, ['fulfillment_status' => 'awaiting_pickup'], 100)['items'],
-                ...$this->orders->paginateForTenant($tenant->id, ['fulfillment_status' => 'ready_for_delivery'], 100)['items'],
+                ...$pickupOrders,
+                ...$scheduledDeliveryOrders,
             ],
+            'waitingDeliveryScheduleCount' => count($readyDeliveryOrders) - count($scheduledDeliveryOrders),
         ];
     }
 }

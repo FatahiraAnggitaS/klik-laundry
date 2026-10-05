@@ -28,6 +28,17 @@ final class PackageRequest extends AuthenticatedIdentityRequest
         ];
     }
 
+    protected function prepareForValidation(): void
+    {
+        if ($this->input('pricing_type') === PricingType::Fixed->value) {
+            $this->merge(['minimum_weight_grams' => null]);
+        }
+
+        if ($this->input('pricing_type') === PricingType::PerKg->value) {
+            $this->merge(['minimum_quantity' => null]);
+        }
+    }
+
     public function toDto(): PackageInputData
     {
         return new PackageInputData(

@@ -37,6 +37,7 @@ use App\Repositories\Contracts\DriverRepositoryInterface;
 use App\Services\Catalog\ChangePackageStatusService;
 use App\Services\Catalog\ManagePackageService;
 use App\Services\Customers\ManageCustomerAddressService;
+use App\Services\Dispatch\GetDispatchDashboardService;
 use App\Services\Dispatch\GetDriverTaskDashboardService;
 use App\Services\Dispatch\GetPrivateProofUrlService;
 use App\Services\Dispatch\ManageDriverService;
@@ -153,6 +154,35 @@ it('enforces the paid processing gate and customer delivery scheduling boundarie
 
     $otherCustomer = User::factory()->create();
     expect(fn () => $lifecycle->schedule($otherCustomer, $order->public_id, $deliverySlot->public_id, '2026-09-20', null, CarbonImmutable::now()))->toThrow(DomainRecordNotFound::class);
+});
+
+it('offers only delivery orders that already have a customer schedule', function () {
+    $context = m7Context(PricingType::Fixed);
+    $order = m7MoveToProcessing($context);
+    $lifecycle = app(ManageDeliveryLifecycleService::class);
+    $lifecycle->markReady($context['owner'], $order->public_id);
+
+    $waiting = app(GetDispatchDashboardService::class)->handle($context['owner']);
+    expect(collect($waiting['eligibleOrders'])->pluck('publicId'))->not->toContain($order->public_id)
+        ->and($waiting['waitingDeliveryScheduleCount'])->toBe(1);
+    expect(fn () => app(OfferDriverTaskService::class)->handle(
+        $context['owner'],
+        $order->public_id,
+        $context['driver']->publicId,
+        DriverTaskType::Delivery,
+        CarbonImmutable::now(),
+    ))->toThrow(DomainActionConflict::class, 'Delivery schedule is required.');
+
+    $slot = OutletSlot::query()
+        ->where('outlet_id', $context['outlet']->id)
+        ->where('type', SlotType::Delivery)
+        ->where('day_of_week', 0)
+        ->firstOrFail();
+    $lifecycle->schedule($context['customer'], $order->public_id, $slot->public_id, '2026-09-20', null, CarbonImmutable::now());
+
+    $scheduled = app(GetDispatchDashboardService::class)->handle($context['owner']);
+    expect(collect($scheduled['eligibleOrders'])->pluck('publicId'))->toContain($order->public_id)
+        ->and($scheduled['waitingDeliveryScheduleCount'])->toBe(0);
 });
 
 it('lets tenant coordinate a late initial slot only after the customer deadline', function () {

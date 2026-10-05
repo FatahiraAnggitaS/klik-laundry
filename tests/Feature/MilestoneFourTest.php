@@ -241,7 +241,8 @@ it('keeps customer order pagination query count bounded', function () {
     });
     $this->actingAs($context['customer'])->withSession(['auth.version' => $context['customer']->auth_version])
         ->get('/orders')
-        ->assertInertia(fn (Assert $page) => $page->has('orders.items', 12)->where('orders.meta.total', 20));
+        ->assertInertia(fn (Assert $page) => $page->has('orders.items', 12)->where('orders.meta.total', 20)->where('notifications.unreadCount', 0));
 
-    expect($queries)->toBeLessThanOrEqual(10);
+    // The shared notification badge adds one schema check and one unread-count query.
+    expect($queries)->toBeLessThanOrEqual(12);
 });

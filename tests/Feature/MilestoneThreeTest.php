@@ -15,6 +15,7 @@ use App\Exceptions\Domain\DomainRecordNotFound;
 use App\Models\ActivityLog;
 use App\Models\CustomerAddress;
 use App\Models\Outlet;
+use App\Models\ServicePackage;
 use App\Models\Tenant;
 use App\Models\TenantPayoutAccount;
 use App\Models\User;
@@ -118,6 +119,46 @@ it('enforces pricing contracts and protects the last active package', function (
     $packageId = m3MakeOutletReady($context);
     expect(fn () => app(ChangePackageStatusService::class)->handle($context['owner'], $packageId, ResourceStatus::Draft))
         ->toThrow(DomainActionConflict::class);
+});
+
+it('creates package drafts after switching pricing types', function () {
+    $context = m3ApprovedTenant();
+
+    $this->actingAs($context['owner'])
+        ->withSession(['auth.version' => $context['owner']->auth_version])
+        ->post('/tenant/packages', [
+            'name' => 'Cuci Satuan',
+            'description' => null,
+            'pricing_type' => PricingType::Fixed->value,
+            'unit_price' => 15000,
+            'minimum_quantity' => 1,
+            'minimum_weight_grams' => 3000,
+            'estimated_duration_minutes' => 120,
+        ])
+        ->assertRedirect()
+        ->assertSessionHasNoErrors();
+
+    $this->post('/tenant/packages', [
+        'name' => 'Cuci Kiloan',
+        'description' => null,
+        'pricing_type' => PricingType::PerKg->value,
+        'unit_price' => 10000,
+        'minimum_quantity' => 1,
+        'minimum_weight_grams' => 3000,
+        'estimated_duration_minutes' => 180,
+    ])
+        ->assertRedirect()
+        ->assertSessionHasNoErrors();
+
+    $fixed = ServicePackage::query()->where('name', 'Cuci Satuan')->sole();
+    $perKg = ServicePackage::query()->where('name', 'Cuci Kiloan')->sole();
+
+    expect($fixed->status)->toBe(ResourceStatus::Draft)
+        ->and($fixed->minimum_quantity)->toBe(1)
+        ->and($fixed->minimum_weight_grams)->toBeNull()
+        ->and($perKg->status)->toBe(ResourceStatus::Draft)
+        ->and($perKg->minimum_quantity)->toBeNull()
+        ->and($perKg->minimum_weight_grams)->toBe(3000);
 });
 
 it('keeps customer addresses isolated and maintains exactly one default', function () {

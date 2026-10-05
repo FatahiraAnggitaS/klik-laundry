@@ -3,6 +3,7 @@ import { AppIcon } from '@/components/app-icon';
 import { MetricCard } from '@/components/dashboard/metric-card';
 import { MilestoneCard } from '@/components/dashboard/milestone-card';
 import { Card } from '@/components/ui/card';
+import { InteractiveBarChart } from '@/components/ui/interactive-bar-chart';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { AppShell } from '@/layouts/app-shell';
 import type { DashboardPageProps } from '@/types/dashboard';
@@ -53,6 +54,14 @@ export default function Dashboard({ activeRole, roles, navigation, hero, metrics
                 </div>
             </section>
 
+            <section className="mt-5">
+                <InteractiveBarChart
+                    title="Snapshot metrik role"
+                    data={metrics.map((metric) => ({ label: metric.label, value: metric.numericValue }))}
+                    formatValue={(value) => new Intl.NumberFormat('id-ID', { notation: 'compact', maximumFractionDigits: 1 }).format(value)}
+                />
+            </section>
+
             <div className="mt-5 grid gap-5 xl:grid-cols-[minmax(0,1.65fr)_minmax(300px,0.72fr)]">
                 <Card className="relative overflow-hidden bg-brand-50 p-5 sm:p-6">
                     <div className="absolute right-0 top-0 size-52 translate-x-16 -translate-y-16 rounded-full border-[36px] border-white/45" aria-hidden="true" />
@@ -73,7 +82,7 @@ export default function Dashboard({ activeRole, roles, navigation, hero, metrics
                                 <span className="text-muted">Progress alur</span>
                                 <span className="text-brand-700">{focus.progress}%</span>
                             </div>
-                            <div className="h-2 overflow-hidden rounded-full bg-white">
+                            <div className="h-2 overflow-hidden rounded-full bg-surface">
                                 <div className="h-full rounded-full bg-brand-500" style={{ width: `${focus.progress}%` }} />
                             </div>
                         </div>

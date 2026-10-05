@@ -2,7 +2,7 @@
 
 > Roadmap menggunakan [`01-product-scope.md`](01-product-scope.md) sebagai scope contract dan [`02-architecture.md`](02-architecture.md) sebagai architecture contract. Milestone berbasis outcome, bukan estimasi kalender.
 
-> Status per 28 September 2026: Milestone 0 dan 6 tetap memiliki external blocker. Milestone 1–5 selesai. Milestone 7–9 implementation complete, tetapi release tetap diblokir evidence eksternal/staging. Hosted CI M9 hijau pada run #19.
+> Status per 5 Oktober 2026: Milestone 0 dan 6 tetap memiliki external blocker. Milestone 1–5 selesai. Milestone 7–9 implementation complete, tetapi release tetap diblokir evidence eksternal/staging. Hosted CI M9 hijau pada run #19; redesign UI dan seed portfolio menunggu hosted CI terbaru.
 
 ## Prinsip delivery
 
@@ -214,7 +214,7 @@ Exit criteria:
 
 ## Milestone 9 — Hardening dan pilot
 
-Status per 28 September 2026: **implementation complete — hosted CI run #19 hijau; release blocked**. Commit implementasi `08eb740` beserta patch CI/k6 sampai `09d562c` menyediakan privacy, hardening, observability, browser/load harness, serta operations runbook. Pilot belum boleh dirilis sebelum evidence staging, M0, dan M6 lulus.
+Status per 5 Oktober 2026: **implementation complete — release blocked**. Privacy, hardening, observability, browser/load harness, redesign UI biru-cyan dengan light/dark mode, serta seed demo portfolio telah tersedia. Pilot belum boleh dirilis sebelum evidence staging, M0, dan M6 lulus.
 
 Deliverables:
 
@@ -223,6 +223,8 @@ Deliverables:
 - Target p95 read 500 ms, internal mutation 1 detik, realtime 3 detik setelah commit.
 - Backup/restore drill, queue/Reverb supervision, metrics, alerts, dan runbooks.
 - Accessibility/responsive/browser smoke test untuk empat role.
+- Shared responsive shell, theme `system/light/dark`, accessible dialog/drawer, loading feedback, satu akses notifikasi di kanan atas untuk tiap role, serta visualisasi keuangan berbahasa Indonesia berbasis agregat existing.
+- Seed demo idempotent 10 Tenant/20 outlet serta browser journey empat role; prosedur dan batas bukti ada di [`09-portfolio-readiness.md`](09-portfolio-readiness.md).
 - Production configuration checklist dan staged rollout.
 
 Exit criteria:

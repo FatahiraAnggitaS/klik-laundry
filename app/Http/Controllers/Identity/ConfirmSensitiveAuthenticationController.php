@@ -20,6 +20,7 @@ final class ConfirmSensitiveAuthenticationController extends Controller
         );
         $request->session()->put('auth.sensitive_confirmed_at', time());
 
-        return redirect()->intended(route('workspace'));
+        return redirect()->intended(route('workspace'))
+            ->with('status', 'Autentikasi sensitif berhasil. Tindakan dapat dilanjutkan.');
     }
 }

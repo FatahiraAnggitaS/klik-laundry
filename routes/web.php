@@ -58,9 +58,7 @@ use App\Http\Controllers\Tenancy\SubmitPayoutAccountController;
 use App\Http\Controllers\Webhooks\DuitkuCallbackController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', ShowDashboardPreviewController::class)
-    ->defaults('role', UserRole::Customer->value)
-    ->name('home');
+Route::redirect('/', '/login')->name('home');
 
 Route::get('/ready', ReadinessController::class)->name('operations.ready');
 

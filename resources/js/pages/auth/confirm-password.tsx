@@ -8,7 +8,7 @@ export default function ConfirmPassword() {
     return <AuthLayout title="Konfirmasi password" description="Laravel meminta konfirmasi sebelum pengaturan keamanan diubah.">
         <form className="space-y-5" onSubmit={(e) => { e.preventDefault(); form.post('/user/confirm-password'); }}>
             <FormField label="Password" name="password" type="password" required value={form.data.password} error={form.errors.password} onChange={(e) => form.setData('password', e.target.value)} />
-            <Button type="submit" className="w-full" disabled={form.processing}>Konfirmasi</Button>
+            <Button type="submit" className="w-full" loading={form.processing} disabled={form.processing}>Konfirmasi</Button>
         </form>
     </AuthLayout>;
 }

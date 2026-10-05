@@ -3,13 +3,21 @@
 use App\Enums\UserRole;
 use Inertia\Testing\AssertableInertia as Assert;
 
-it('renders the default customer dashboard without a database', function () {
+it('redirects the root page to login', function () {
     $this->get(route('home'))
+        ->assertRedirect(route('login'));
+});
+
+it('renders the customer dashboard preview without a database', function () {
+    $this->get(route('preview.dashboard', ['role' => UserRole::Customer->value]))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->component('dashboard/index')
             ->where('activeRole.value', UserRole::Customer->value)
             ->has('metrics', 4)
+            ->where('metrics.0.numericValue', 2)
+            ->where('theme.defaultPreference', 'system')
+            ->where('navigation.0.href', '#overview')
             ->has('workItems', 3)
             ->has('milestones', 3)
             ->where('milestones.1.status', 'completed')

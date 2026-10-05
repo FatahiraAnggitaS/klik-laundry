@@ -70,7 +70,7 @@ Schema M9 menambahkan `users.anonymized_at`, grant reveal PII berumur 15 menit, 
 
 ## Identity, Tenant, dan Super User
 
-Fortify menangani registration Customer, login/logout, reset/update password, email verification, password confirmation, TOTP, recovery codes, dan challenge. Passkeys dinonaktifkan. `/tenant/register` membuat Tenant pending/inactive dan owner; Driver dibuat hanya dari invitation Tenant 48 jam yang tokennya disimpan sebagai hash; Super User hanya dibuat melalui `php artisan super-user:provision` tanpa password argument/output.
+Fortify menangani registration Customer, login/logout, reset/update password, email verification, password confirmation, TOTP, recovery codes, dan challenge. Passkeys dinonaktifkan. Root `/` mengarahkan guest ke `/login`, sedangkan dashboard demo tetap tersedia melalui `/preview/{role}`. `/tenant/register` membuat Tenant pending/inactive dan owner; Driver dibuat hanya dari invitation Tenant 48 jam yang tokennya disimpan sebagai hash; Super User hanya dibuat melalui `php artisan super-user:provision` tanpa password argument/output.
 
 Route terautentikasi memakai account-status + `auth_version`; Tenant owner dan Super User wajib email verified serta TOTP confirmed. Sensitive mutation memerlukan password+TOTP re-auth yang berumur maksimal 15 menit. Lifecycle dan mutation mengikuti `Form Request -> Controller -> Service -> Repository`, dibungkus transaction bersama append-only audit.
 

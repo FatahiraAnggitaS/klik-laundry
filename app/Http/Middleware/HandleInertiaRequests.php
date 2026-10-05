@@ -23,6 +23,9 @@ final class HandleInertiaRequests extends Middleware
     public function share(Request $request): array
     {
         $user = $request->user();
+        $sensitiveConfirmedAt = $request->session()->get('auth.sensitive_confirmed_at');
+        $sensitiveAuthenticationConfirmed = is_int($sensitiveConfirmedAt)
+            && time() - $sensitiveConfirmedAt <= (int) config('auth.password_timeout', 900);
 
         return [
             ...parent::share($request),
@@ -38,14 +41,14 @@ final class HandleInertiaRequests extends Middleware
                     'role' => $user->role()->value,
                 ] : null,
             ],
+            'theme' => [
+                'defaultPreference' => 'system',
+            ],
+            'sensitiveAuthentication' => [
+                'confirmed' => $sensitiveAuthenticationConfirmed,
+            ],
             'notifications' => [
                 'unreadCount' => fn (): int => $user instanceof IdentityUser
-                    && ($request->routeIs('orders.show')
-                        || $request->routeIs('tenant.orders.show')
-                        || $request->routeIs('driver.tasks.index')
-                        || $request->routeIs('tenant.dispatch.index')
-                        || $request->routeIs('notifications.*')
-                        || $request->routeIs('workspace'))
                     && Schema::hasTable('notifications')
                     ? app(NotificationRepositoryInterface::class)->unreadCount($user->databaseId())
                     : 0,

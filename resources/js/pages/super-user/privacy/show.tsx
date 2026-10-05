@@ -29,7 +29,7 @@ export default function PrivacyShow({ privacy, grant }: { privacy: OrderPrivacy;
                 <p className="mt-2 text-sm text-muted">Hanya untuk investigasi order ini. Sensitive authentication dan alasan minimal 10 karakter wajib.</p>
                 <form className="mt-5 space-y-4" onSubmit={(event) => { event.preventDefault(); form.post(`/super-user/orders/${privacy.orderPublicId}/pii-reveals`); }}>
                     <TextareaField label="Alasan akses" name="reason" value={form.data.reason} error={form.errors.reason} onChange={(event) => form.setData('reason', event.target.value)} maxLength={500} />
-                    <Button type="submit" disabled={form.processing}>Berikan akses sementara</Button>
+                    <Button type="submit" loading={form.processing} disabled={form.processing}>Berikan akses sementara</Button>
                 </form>
             </section>}
         </div>

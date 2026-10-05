@@ -13,7 +13,7 @@ export default function AcceptDriverInvitation({ invitation }: Props) {
             <FormField label="Nama lengkap" name="name" required value={form.data.name} error={form.errors.name} onChange={(event) => form.setData('name', event.target.value)} />
             <FormField label="Password (minimal 12 karakter)" name="password" type="password" required value={form.data.password} error={form.errors.password} onChange={(event) => form.setData('password', event.target.value)} />
             <FormField label="Konfirmasi password" name="password_confirmation" type="password" required value={form.data.password_confirmation} onChange={(event) => form.setData('password_confirmation', event.target.value)} />
-            <Button className="w-full" type="submit" disabled={form.processing}>Aktifkan akun</Button>
+            <Button className="w-full" type="submit" loading={form.processing} disabled={form.processing}>Aktifkan akun</Button>
         </form>
     </AuthLayout>;
 }

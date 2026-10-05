@@ -68,13 +68,13 @@ export default function WireflowPreview({
                         </div>
                         <div className="rounded-2xl border border-white/10 bg-white/[0.065] p-4">
                             <div className="flex items-center justify-between text-xs font-bold">
-                                <span className="text-white/55">Progress prototype</span>
+                                <span className="text-white/70">Progress prototype</span>
                                 <span className="text-accent">{progress}%</span>
                             </div>
                             <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/10">
                                 <div className="h-full rounded-full bg-accent" style={{ width: `${progress}%` }} />
                             </div>
-                            <p className="mt-3 text-xs leading-5 text-white/55">
+                            <p className="mt-3 text-xs leading-5 text-white/70">
                                 Langkah {activeStepIndex + 1} dari {wireflow.steps.length}. Tidak ada mutation atau transaksi nyata pada prototype ini.
                             </p>
                         </div>
@@ -123,7 +123,7 @@ export default function WireflowPreview({
                                         </span>
                                         <span>
                                             <span className="block text-sm font-bold">{step.title}</span>
-                                            <span className={`mt-1 block text-xs ${step.id === activeStep.id ? 'text-white/55' : 'text-muted'}`}>
+                                            <span className={`mt-1 block text-xs ${step.id === activeStep.id ? 'text-white/70' : 'text-muted'}`}>
                                                 {index < activeStepIndex ? 'Sudah ditinjau' : step.status}
                                             </span>
                                         </span>

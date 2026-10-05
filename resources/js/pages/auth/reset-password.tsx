@@ -10,7 +10,7 @@ export default function ResetPassword({ email, token }: { email: string; token: 
             <FormField label="Email" name="email" type="email" readOnly value={form.data.email} error={form.errors.email} />
             <FormField label="Password baru" name="password" type="password" required value={form.data.password} error={form.errors.password} onChange={(e) => form.setData('password', e.target.value)} />
             <FormField label="Konfirmasi password" name="password_confirmation" type="password" required value={form.data.password_confirmation} onChange={(e) => form.setData('password_confirmation', e.target.value)} />
-            <Button type="submit" className="w-full" disabled={form.processing}>Simpan password</Button>
+            <Button type="submit" className="w-full" loading={form.processing} disabled={form.processing}>Simpan password</Button>
         </form>
     </AuthLayout>;
 }

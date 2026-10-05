@@ -1,6 +1,7 @@
 import { Link, router, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { ConfirmButton } from '@/components/ui/confirm-button';
 import { FormField } from '@/components/ui/form-field';
 import type { IdentitySummary } from '@/types/identity';
 import type { AccountClosureReadiness } from '@/types/privacy';
@@ -42,7 +43,7 @@ export default function Security({ identity, accountClosure }: { identity: Ident
                     <p className="rounded-xl bg-success-soft p-4 text-sm font-bold text-success">2FA aktif.</p>
                     <Button variant="secondary" onClick={loadRecoveryCodes}>Tampilkan recovery codes</Button>
                     {recoveryCodes.length > 0 && <ul className="grid gap-2 rounded-xl border border-line bg-canvas p-4 font-mono text-sm sm:grid-cols-2">{recoveryCodes.map((item) => <li key={item}>{item}</li>)}</ul>}
-                    <div className="flex flex-wrap gap-2"><Button variant="secondary" onClick={() => router.post('/user/two-factor-recovery-codes', {}, { onSuccess: loadRecoveryCodes })}>Buat ulang recovery codes</Button><Button variant="ghost" onClick={() => router.delete('/user/two-factor-authentication')}>Nonaktifkan 2FA</Button></div>
+                    <div className="flex flex-wrap gap-2"><ConfirmButton variant="secondary" title="Buat ulang recovery codes?" description="Recovery codes lama tidak dapat dipakai setelah penggantian." confirmLabel="Buat ulang" onConfirm={() => router.post('/user/two-factor-recovery-codes', {}, { onSuccess: loadRecoveryCodes })}>Buat ulang recovery codes</ConfirmButton><ConfirmButton variant="danger" title="Nonaktifkan 2FA?" description="Akun akan kehilangan perlindungan autentikasi dua faktor." confirmLabel="Nonaktifkan 2FA" onConfirm={() => router.delete('/user/two-factor-authentication')}>Nonaktifkan 2FA</ConfirmButton></div>
                 </div>}
             </section>
             <section className="mt-5 rounded-panel border border-line bg-surface p-6 shadow-panel sm:p-8">
@@ -52,7 +53,7 @@ export default function Security({ identity, accountClosure }: { identity: Ident
                     <FormField label="Password saat ini" name="current_password" type="password" autoComplete="current-password" value={password.data.current_password} error={password.errors.current_password} onChange={(event) => password.setData('current_password', event.target.value)} />
                     <FormField label="Password baru" name="password" type="password" autoComplete="new-password" value={password.data.password} error={password.errors.password} onChange={(event) => password.setData('password', event.target.value)} />
                     <FormField label="Konfirmasi password baru" name="password_confirmation" type="password" autoComplete="new-password" value={password.data.password_confirmation} error={password.errors.password_confirmation} onChange={(event) => password.setData('password_confirmation', event.target.value)} />
-                    <Button type="submit" disabled={password.processing}>Perbarui password</Button>
+                    <Button type="submit" loading={password.processing} disabled={password.processing}>Perbarui password</Button>
                 </form>
             </section>
             {accountClosure && <section className="mt-5 rounded-panel border border-red-200 bg-surface p-6 shadow-panel sm:p-8">
@@ -64,11 +65,11 @@ export default function Security({ identity, accountClosure }: { identity: Ident
                     <li>Pembayaran pending: {accountClosure.blockers.pendingPayments}</li>
                     <li>Refund aktif: {accountClosure.blockers.activeRefunds}</li>
                 </ul>}
-                <form className="mt-5 space-y-4" onSubmit={(event) => { event.preventDefault(); closure.delete('/identity/account'); }}>
+                <div className="mt-5 space-y-4">
                     <FormField label='Ketik "TUTUP AKUN"' name="confirmation" value={closure.data.confirmation} error={closure.errors.confirmation} onChange={(event) => closure.setData('confirmation', event.target.value)} disabled={!accountClosure.canClose} />
                     <p className="text-xs text-muted">Recent sensitive authentication wajib. Setelah berhasil, semua sesi dicabut dan tindakan tidak dapat dibatalkan.</p>
-                    <Button type="submit" variant="ghost" disabled={!accountClosure.canClose || closure.processing} className="text-red-700 hover:bg-red-50">Tutup akun</Button>
-                </form>
+                    <ConfirmButton variant="danger" title="Tutup dan anonimkan akun?" description="Profil dan address book dihapus permanen; tindakan ini tidak dapat dibatalkan." confirmLabel="Tutup akun" onConfirm={() => closure.delete('/identity/account')} loading={closure.processing} disabled={!accountClosure.canClose || closure.processing || closure.data.confirmation !== 'TUTUP AKUN'}>Tutup akun</ConfirmButton>
+                </div>
             </section>}
         </div>
     </main>;
